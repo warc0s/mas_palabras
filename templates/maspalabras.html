@@ -8,15 +8,27 @@
             <p class="text-gray-600">Agrega una nueva palabra a tu vocabulario personal</p>
         </div>
 
-        <form method="POST" class="space-y-6">
+        <form method="POST" class="space-y-6" id="wordForm">
             {{ form.hidden_tag() }}
 
-            <!-- Palabra en Inglés -->
+            <!-- Idioma (movido arriba para cambiar etiqueta dinámicamente) -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-language mr-2 text-blue-600"></i>Palabra en Inglés
+                    <i class="fas fa-globe mr-2 text-indigo-600"></i>Idioma
                 </label>
-                {{ form.english_word(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors", placeholder="Ejemplo: house") }}
+                {{ form.language(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors", id="languageSelect") }}
+                {% if form.language.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.language.errors[0] }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Puedes agregar más idiomas en Ajustes</p>
+            </div>
+
+            <!-- Palabra (etiqueta dinámica) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2" id="wordLabel">
+                    <i class="fas fa-language mr-2 text-blue-600"></i>Palabra
+                </label>
+                {{ form.english_word(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors", placeholder="Ejemplo: house", id="wordInput") }}
                 {% if form.english_word.errors %}
                     <p class="mt-1 text-sm text-red-600">{{ form.english_word.errors[0] }}</p>
                 {% endif %}
@@ -25,7 +37,7 @@
             <!-- Traducción -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-globe-americas mr-2 text-green-600"></i>Traducción
+                    <i class="fas fa-globe-americas mr-2 text-green-600"></i>Traducción al Español
                 </label>
                 {{ form.translation(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors", placeholder="Ejemplo: casa") }}
                 {% if form.translation.errors %}
@@ -44,30 +56,16 @@
                 {% endif %}
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Idioma -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-globe mr-2 text-indigo-600"></i>Idioma
-                    </label>
-                    {{ form.language(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors") }}
-                    {% if form.language.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.language.errors[0] }}</p>
-                    {% endif %}
-                    <p class="mt-1 text-sm text-gray-500">Puedes agregar más idiomas en Ajustes</p>
-                </div>
-
-                <!-- Característica -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-tags mr-2 text-orange-600"></i>Característica
-                    </label>
-                    {{ form.feature(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors") }}
-                    {% if form.feature.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.feature.errors[0] }}</p>
-                    {% endif %}
-                    <p class="mt-1 text-sm text-gray-500">Puedes agregar más características en Ajustes</p>
-                </div>
+            <!-- Característica -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-tags mr-2 text-orange-600"></i>Característica
+                </label>
+                {{ form.feature(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors", id="featureSelect") }}
+                {% if form.feature.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.feature.errors[0] }}</p>
+                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Puedes agregar más características en Ajustes</p>
             </div>
 
             <!-- Botones -->
@@ -80,4 +78,83 @@
         </form>
     </div>
 </div>
+
+<script>
+// Mapeo de idiomas a etiquetas
+const languageLabels = {
+    {% for language in languages %}
+    {{ language.id }}: "{{ language.language }}",
+    {% endfor %}
+};
+
+// Función para actualizar la etiqueta del campo palabra
+function updateWordLabel() {
+    const languageSelect = document.getElementById('languageSelect');
+    const wordLabel = document.getElementById('wordLabel');
+    const wordInput = document.getElementById('wordInput');
+    
+    const selectedLanguage = languageLabels[languageSelect.value];
+    if (selectedLanguage) {
+        wordLabel.innerHTML = '<i class="fas fa-language mr-2 text-blue-600"></i>Palabra en ' + selectedLanguage;
+        wordInput.placeholder = 'Ejemplo: ';
+        
+        // Ejemplos específicos por idioma
+        if (selectedLanguage.toLowerCase().includes('inglés')) {
+            wordInput.placeholder += 'house';
+        } else if (selectedLanguage.toLowerCase().includes('alemán')) {
+            wordInput.placeholder += 'haus';
+        } else if (selectedLanguage.toLowerCase().includes('francés')) {
+            wordInput.placeholder += 'maison';
+        } else if (selectedLanguage.toLowerCase().includes('italiano')) {
+            wordInput.placeholder += 'casa';
+        } else {
+            wordInput.placeholder += 'palabra';
+        }
+    }
+}
+
+// Recordar selecciones anteriores
+function loadSavedSelections() {
+    const savedLanguage = localStorage.getItem('lastSelectedLanguage');
+    const savedFeature = localStorage.getItem('lastSelectedFeature');
+    
+    if (savedLanguage) {
+        document.getElementById('languageSelect').value = savedLanguage;
+    }
+    if (savedFeature) {
+        document.getElementById('featureSelect').value = savedFeature;
+    }
+    
+    updateWordLabel();
+}
+
+// Guardar selecciones
+function saveSelections() {
+    const languageSelect = document.getElementById('languageSelect');
+    const featureSelect = document.getElementById('featureSelect');
+    
+    localStorage.setItem('lastSelectedLanguage', languageSelect.value);
+    localStorage.setItem('lastSelectedFeature', featureSelect.value);
+}
+
+// Event listeners
+document.getElementById('languageSelect').addEventListener('change', function() {
+    updateWordLabel();
+    saveSelections();
+});
+
+document.getElementById('featureSelect').addEventListener('change', saveSelections);
+
+// Cargar al inicio
+document.addEventListener('DOMContentLoaded', function() {
+    loadSavedSelections();
+});
+
+// Shortcut: Ctrl+Enter para enviar
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+        document.getElementById('wordForm').submit();
+    }
+});
+</script>
 {% endblock %}
