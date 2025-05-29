@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Configuración</h2>
+        <p class="text-gray-600">Gestiona idiomas y características para tus palabras</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <!-- SECCIÓN IDIOMAS -->
+        <div class="space-y-6">
+            <!-- Formulario añadir idioma -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-globe mr-2 text-blue-600"></i>Agregar Idioma
+                </h3>
+                
+                <form method="POST" class="space-y-4">
+                    {{ language_form.hidden_tag() }}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Idioma</label>
+                        {{ language_form.new_language(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors", placeholder="Ej: Italiano, Portugués...") }}
+                        {% if language_form.new_language.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ language_form.new_language.errors[0] }}</p>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" name="language_submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                        <i class="fas fa-plus mr-2"></i>{{ language_form.submit.label.text }}
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista idiomas -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Idiomas Disponibles</h3>
+                {% if languages %}
+                <div class="space-y-2">
+                    {% for language in languages %}
+                    <div class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <span class="text-blue-800 font-medium">{{ language.language }}</span>
+                        <a href="{{ url_for('delete_language', id=language.id) }}" 
+                           onclick="return confirm('¿Seguro que quieres eliminar este idioma? Si hay palabras asociadas, se mantendrán pero no podrás crear nuevas palabras con este idioma.')"
+                           class="text-red-600 hover:text-red-800 transition-colors">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 italic text-center py-4">No hay idiomas configurados</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SECCIÓN CARACTERÍSTICAS -->
+        <div class="space-y-6">
+            <!-- Formulario añadir característica -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-tags mr-2 text-green-600"></i>Agregar Característica
+                </h3>
+                
+                <form method="POST" class="space-y-4">
+                    {{ feature_form.hidden_tag() }}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de la Característica</label>
+                        {{ feature_form.new_feature(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors", placeholder="Ej: Experto, Técnico, Coloquial...") }}
+                        {% if feature_form.new_feature.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ feature_form.new_feature.errors[0] }}</p>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" name="feature_submit" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium">
+                        <i class="fas fa-plus mr-2"></i>{{ feature_form.submit.label.text }}
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista características -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Características Disponibles</h3>
+                {% if features %}
+                <div class="space-y-2">
+                    {% for feature in features %}
+                    <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                        <span class="text-green-800 font-medium">{{ feature.feature }}</span>
+                        <a href="{{ url_for('delete_feature', id=feature.id) }}" 
+                           onclick="return confirm('¿Seguro que quieres eliminar esta característica? Si hay palabras asociadas, se mantendrán pero no podrás crear nuevas palabras con esta característica.')"
+                           class="text-red-600 hover:text-red-800 transition-colors">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 italic text-center py-4">No hay características configuradas</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón volver -->
+    <div class="mt-8 text-center">
+        <a href="{{ url_for('index') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>Volver al Inicio
+        </a>
+    </div>
+</div>
+{% endblock %}
