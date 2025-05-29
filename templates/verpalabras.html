@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">Tus Palabras</h2>
+                    <p class="text-gray-600">{{ words|length }} palabra{% if words|length != 1 %}s{% endif %} en tu vocabulario</p>
+                </div>
+                <a href="{{ url_for('maspalabras') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i>Añadir Palabra
+                </a>
+            </div>
+        </div>
+
+        {% if words %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Palabra</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Traducción</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Explicación</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Idioma</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Característica</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for word in words %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ word.english_word }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ word.translation }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 max-w-xs truncate">
+                                {% if word.explanation %}
+                                    {{ word.explanation }}
+                                {% else %}
+                                    <span class="text-gray-400 italic">Sin explicación</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ word.language.language }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ word.feature.feature }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('edit', id=word.id) }}" class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 px-3 py-1 rounded-md transition-colors duration-200">
+                                    <i class="fas fa-edit mr-1"></i>Editar
+                                </a>
+                                <a href="{{ url_for('delete', id=word.id) }}" 
+                                   onclick="return confirm('¿Estás seguro de que quieres eliminar esta palabra?')"
+                                   class="bg-red-100 text-red-800 hover:bg-red-200 px-3 py-1 rounded-md transition-colors duration-200">
+                                    <i class="fas fa-trash mr-1"></i>Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-12 text-center">
+            <i class="fas fa-book-open text-6xl text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">No hay palabras todavía</h3>
+            <p class="text-gray-600 mb-6">Comienza añadiendo tu primera palabra al vocabulario</p>
+            <a href="{{ url_for('maspalabras') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>Añadir Primera Palabra
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
