@@ -434,13 +434,11 @@ def register_routes(app):
         
         return result
 
-    @app.route('/practicar', methods=['GET', 'POST'])
+    # ============ SISTEMA DE QUIZ CORREGIDO ============
+    
+    @app.route('/quiz', methods=['GET', 'POST'])
     def quiz():
-        # Si es POST, procesar respuesta
-        if request.method == 'POST':
-            return process_quiz_answer()
-        
-        # Si es GET, mostrar configuración o pregunta
+        """Configuración del quiz"""
         config_form = QuizConfigForm()
         
         # Configurar opciones del formulario
@@ -450,22 +448,31 @@ def register_routes(app):
         config_form.language.choices = [(0, 'Todos los idiomas')] + [(l.id, l.language) for l in languages]
         config_form.feature.choices = [(0, 'Todas las características')] + [(f.id, f.feature) for f in features]
         
-        # Si no hay sesión activa, mostrar configuración
-        if 'quiz_session_id' not in session:
-            if config_form.validate_on_submit():
-                return start_quiz_session(config_form)
-            return render_template('quiz_config.html', form=config_form)
+        if config_form.validate_on_submit():
+            return start_quiz_session(config_form)
         
-        # Obtener siguiente pregunta
+        return render_template('quiz_config.html', form=config_form)
+
+    @app.route('/quiz_question', methods=['GET', 'POST'])
+    def quiz_question():
+        """Mostrar pregunta del quiz"""
+        # Verificar sesión activa
+        if 'quiz_session_id' not in session:
+            flash('No hay sesión de quiz activa. Configura un nuevo quiz.', 'warning')
+            return redirect(url_for('quiz'))
+        
+        # Si es POST, procesar respuesta
+        if request.method == 'POST':
+            return process_quiz_answer()
+        
+        # Si es GET, mostrar pregunta
         return get_next_question()
 
     def start_quiz_session(config_form):
         """Inicia una nueva sesión de quiz"""
         # Limpiar sesión anterior
-        session.pop('quiz_session_id', None)
-        session.pop('used_word_ids', None)
-        session.pop('quiz_config', None)
-        session.pop('quiz_stats', None)
+        for key in ['quiz_session_id', 'used_word_ids', 'quiz_config', 'quiz_stats']:
+            session.pop(key, None)
         
         # Construir consulta según filtros
         query = Word.query
@@ -476,12 +483,11 @@ def register_routes(app):
         if config_form.feature.data:
             query = query.filter(Word.feature_id == config_form.feature.data)
         
-        # CORREGIDO: Filtrar por dificultad con mejor manejo
+        # Filtrar por dificultad
         if config_form.only_difficult.data == 'needs_practice':
             query = query.filter(
                 or_(
                     Word.times_practiced < 3,
-                    Word.times_practiced == 0,
                     and_(
                         Word.times_practiced > 0,
                         (Word.times_correct * 100.0 / Word.times_practiced) < 70
@@ -513,7 +519,7 @@ def register_routes(app):
         }
         
         flash(f'Quiz iniciado con {len(available_words)} palabras disponibles.', 'info')
-        return redirect(url_for('quiz'))
+        return redirect(url_for('quiz_question'))
 
     def get_next_question():
         """Obtiene la siguiente pregunta del quiz"""
@@ -523,7 +529,7 @@ def register_routes(app):
         # Construir consulta base
         query = Word.query
         
-        # CORREGIDO: Excluir palabras usadas solo si hay IDs usados
+        # Excluir palabras usadas
         if used_ids:
             query = query.filter(~Word.id.in_(used_ids))
         
@@ -534,12 +540,11 @@ def register_routes(app):
         if config.get('feature'):
             query = query.filter(Word.feature_id == config['feature'])
         
-        # CORREGIDO: Filtrar por dificultad con mejor manejo de división por cero
+        # Filtrar por dificultad
         if config.get('only_difficult') == 'needs_practice':
             query = query.filter(
                 or_(
                     Word.times_practiced < 3,
-                    Word.times_practiced == 0,
                     and_(
                         Word.times_practiced > 0,
                         (Word.times_correct * 100.0 / Word.times_practiced) < 70
@@ -549,16 +554,14 @@ def register_routes(app):
         elif config.get('only_difficult') == 'new':
             query = query.filter(Word.times_practiced == 0)
         
-        # CORREGIDO: Usar order_by random compatible con SQLite
+        # Obtener palabra aleatoria
         word = query.order_by(func.random()).first()
         
         if not word:
             # Sesión completada
             stats = session.get('quiz_stats', {})
-            session.pop('quiz_session_id', None)
-            session.pop('used_word_ids', None)
-            session.pop('quiz_config', None)
-            session.pop('quiz_stats', None)
+            for key in ['quiz_session_id', 'used_word_ids', 'quiz_config', 'quiz_stats']:
+                session.pop(key, None)
             
             accuracy = (stats['correct_answers'] / stats['total_questions'] * 100) if stats['total_questions'] > 0 else 0
             flash(f'¡Quiz completado! Respondiste {stats["correct_answers"]}/{stats["total_questions"]} correctamente ({accuracy:.1f}%)', 'success')
@@ -569,54 +572,59 @@ def register_routes(app):
         if quiz_type == 'mixed':
             quiz_type = 'to_spanish' if len(used_ids) % 2 == 0 else 'to_original'
         
+        # Crear formulario limpio
         form = QuizForm()
-        form.word_id.data = str(word.id)  # CORREGIDO: Convertir a string
-        form.session_id.data = session['quiz_session_id']
-        form.quiz_type.data = quiz_type
         
         stats = session.get('quiz_stats', {'total_questions': 0, 'correct_answers': 0})
         progress = len(used_ids)
         
-        return render_template('quiz.html', form=form, word=word, 
-                             quiz_type=quiz_type, stats=stats, progress=progress)
+        return render_template('quiz.html', 
+                             form=form, 
+                             word=word, 
+                             quiz_type=quiz_type, 
+                             stats=stats, 
+                             progress=progress,
+                             session_id=session['quiz_session_id'])
 
     def process_quiz_answer():
         """Procesa la respuesta del quiz"""
-        form = QuizForm()
-        
-        if not form.validate_on_submit():
-            # CORREGIDO: Mejor manejo de errores de validación
-            errors = []
-            for field, field_errors in form.errors.items():
-                errors.extend(field_errors)
-            flash(f'Error en el formulario: {", ".join(errors)}', 'error')
-            return redirect(url_for('quiz'))
-        
-        # CORREGIDO: Verificar que la sesión sea válida
+        # Verificar que hay sesión activa
         if 'quiz_session_id' not in session:
             flash('Sesión de quiz expirada. Inicia un nuevo quiz.', 'warning')
             return redirect(url_for('quiz'))
         
+        form = QuizForm()
+        
+        # Validar solo el campo answer que tiene DataRequired()
+        if not form.answer.validate(form):
+            flash('Debes escribir una respuesta.', 'error')
+            return redirect(url_for('quiz_question'))
+        
+        # Obtener datos del formulario (ahora sí deberían estar)
+        answer = form.answer.data.strip()
+        word_id = form.word_id.data
+        quiz_type = form.quiz_type.data
+        
+        # Validar word_id
+        if not word_id:
+            flash('Error: ID de palabra no encontrado.', 'error')
+            return redirect(url_for('quiz_question'))
+        
         try:
-            word_id = int(form.word_id.data)  # CORREGIDO: Convertir a int
+            word_id = int(word_id)
             word = Word.query.get_or_404(word_id)
         except (ValueError, TypeError):
-            flash('ID de palabra inválido.', 'error')
-            return redirect(url_for('quiz'))
-        
-        user_answer = form.answer.data.strip()
-        quiz_type = form.quiz_type.data
+            flash('Error: ID de palabra inválido.', 'error')
+            return redirect(url_for('quiz_question'))
         
         # Determinar respuesta correcta según tipo de quiz
         if quiz_type == 'to_spanish':
             correct_answer = word.translation
-            question_text = word.english_word
         else:  # to_original
             correct_answer = word.english_word
-            question_text = word.translation
         
         # Normalizar respuestas para comparación
-        user_normalized = normalize_text(user_answer)
+        user_normalized = normalize_text(answer)
         correct_normalized = normalize_text(correct_answer)
         
         is_correct = user_normalized == correct_normalized
@@ -644,7 +652,7 @@ def register_routes(app):
         except Exception as e:
             db.session.rollback()
             flash('Error al guardar el progreso.', 'error')
-            return redirect(url_for('quiz'))
+            return redirect(url_for('quiz_question'))
         
         # Mostrar resultado
         if is_correct:
@@ -652,15 +660,13 @@ def register_routes(app):
         else:
             flash(f'Incorrecto. La respuesta correcta era: "{correct_answer}"', 'error')
         
-        return redirect(url_for('quiz'))
+        return redirect(url_for('quiz_question'))
 
     @app.route('/end_quiz')
     def end_quiz():
         """Termina la sesión de quiz actual"""
-        session.pop('quiz_session_id', None)
-        session.pop('used_word_ids', None)
-        session.pop('quiz_config', None)
-        session.pop('quiz_stats', None)
+        for key in ['quiz_session_id', 'used_word_ids', 'quiz_config', 'quiz_stats']:
+            session.pop(key, None)
         flash('Quiz terminado.', 'info')
         return redirect(url_for('quiz'))
 

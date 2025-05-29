@@ -1,0 +1,38 @@
+[
+  {
+    "accuracy": 0,
+    "english_word": "house",
+    "explanation": "donde la gente vive",
+    "feature": "A1",
+    "id": 1,
+    "language": "Ingl\u00e9s",
+    "last_practiced": "Nunca",
+    "times_correct": 0,
+    "times_practiced": 0,
+    "translation": "casa"
+  },
+  {
+    "accuracy": 0,
+    "english_word": "car",
+    "explanation": "donde la gente viaja",
+    "feature": "A1",
+    "id": 2,
+    "language": "Ingl\u00e9s",
+    "last_practiced": "Nunca",
+    "times_correct": 0,
+    "times_practiced": 0,
+    "translation": "coche"
+  },
+  {
+    "accuracy": 0,
+    "english_word": "coffee",
+    "explanation": "lo que la gente bebe",
+    "feature": "A1",
+    "id": 3,
+    "language": "Ingl\u00e9s",
+    "last_practiced": "Nunca",
+    "times_correct": 0,
+    "times_practiced": 0,
+    "translation": "cafe"
+  }
+]

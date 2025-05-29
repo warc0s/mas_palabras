@@ -40,9 +40,9 @@ class WordForm(FlaskForm):
 
 class QuizForm(FlaskForm):
     answer = StringField('Tu Respuesta', validators=[DataRequired()])
-    word_id = HiddenField(validators=[DataRequired()])
-    session_id = HiddenField(validators=[DataRequired()])
-    quiz_type = HiddenField(validators=[DataRequired()])
+    word_id = HiddenField()  # SIN DataRequired para evitar problemas en GET
+    session_id = HiddenField()  # SIN DataRequired
+    quiz_type = HiddenField()  # SIN DataRequired
     submit = SubmitField('Verificar')
 
 class QuizConfigForm(FlaskForm):

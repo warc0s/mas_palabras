@@ -83,8 +83,14 @@
             </div>
         </div>
 
+        <!-- FORMULARIO CON FLASK-WTF (CORRECTO) -->
         <form method="POST" class="space-y-6" id="quizForm">
             {{ form.hidden_tag() }}
+            
+            <!-- Campos de datos usando el formulario Flask-WTF -->
+            {{ form.word_id(value=word.id) }}
+            {{ form.session_id(value=session_id) }}
+            {{ form.quiz_type(value=quiz_type) }}
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -98,7 +104,7 @@
 
             <div class="flex space-x-4">
                 {{ form.submit(class="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-lg") }}
-                <a href="{{ url_for('quiz') }}" class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-center text-lg">
+                <a href="{{ url_for('quiz_question') }}" class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-center text-lg">
                     <i class="fas fa-forward mr-2"></i>Saltar
                 </a>
             </div>
@@ -115,7 +121,7 @@
 <script>
 // Submit con Enter
 document.getElementById('quizForm').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && e.target.type !== 'submit') {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type === 'text') {
         e.preventDefault();
         this.submit();
     }
@@ -123,8 +129,5 @@ document.getElementById('quizForm').addEventListener('keydown', function(e) {
 
 // Focus automático en el input
 document.querySelector('input[name="answer"]').focus();
-
-// Limpiar input al cargar
-document.querySelector('input[name="answer"]').value = '';
 </script>
 {% endblock %}
