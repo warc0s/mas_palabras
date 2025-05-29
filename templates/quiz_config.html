@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-brain text-purple-600 mr-3"></i>Configurar Quiz
+            </h2>
+            <p class="text-gray-600">Personaliza tu sesión de práctica</p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {{ form.hidden_tag() }}
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Filtro por idioma -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-globe mr-2 text-blue-600"></i>Idioma
+                    </label>
+                    {{ form.language(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors") }}
+                </div>
+
+                <!-- Filtro por característica -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tags mr-2 text-green-600"></i>Característica
+                    </label>
+                    {{ form.feature(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors") }}
+                </div>
+            </div>
+
+            <!-- Tipo de quiz -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-exchange-alt mr-2 text-purple-600"></i>Tipo de Quiz
+                </label>
+                {{ form.quiz_type(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors") }}
+                <p class="mt-1 text-sm text-gray-500">Elige la dirección de traducción</p>
+            </div>
+
+            <!-- Dificultad -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-chart-line mr-2 text-orange-600"></i>Dificultad
+                </label>
+                {{ form.only_difficult(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors") }}
+                <p class="mt-1 text-sm text-gray-500">Filtra por nivel de dominio</p>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex space-x-4">
+                {{ form.submit(class="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-lg") }}
+                <a href="{{ url_for('index') }}" class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-center text-lg">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+
+        <!-- Información adicional -->
+        <div class="mt-8 bg-purple-50 rounded-lg p-6">
+            <h3 class="font-medium text-purple-900 mb-2">
+                <i class="fas fa-info-circle mr-2"></i>Consejos para el Quiz
+            </h3>
+            <ul class="text-sm text-purple-700 space-y-1">
+                <li>• Las respuestas no distinguen entre mayúsculas/minúsculas</li>
+                <li>• Los acentos y tildes no afectan la corrección</li>
+                <li>• Cada palabra aparecerá solo una vez por sesión</li>
+                <li>• Puedes terminar el quiz en cualquier momento</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

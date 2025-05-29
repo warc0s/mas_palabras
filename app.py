@@ -1,6 +1,7 @@
 from flask import Flask
 from utils.database import init_db, db
 from utils.routes import register_routes
+import os
 
 def create_app():
     app = Flask(__name__)
@@ -9,6 +10,14 @@ def create_app():
     app.config['SECRET_KEY'] = 'FIJ40$=$=eorFRKLrfk404'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vocab.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    # CONFIGURACIÓN PARA ARCHIVOS
+    app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB máximo
+    app.config['UPLOAD_FOLDER'] = 'uploads'
+    
+    # Crear carpeta de uploads si no existe
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
     
     # Inicializar base de datos
     init_db(app)
@@ -37,19 +46,36 @@ def create_app():
         
         # Crear idiomas por defecto si no existen
         if not Language.query.first():
-            default_languages = ['Inglés', 'Alemán']  # CAMBIADO
+            default_languages = ['Inglés', 'Alemán']
             for lang in default_languages:
                 new_lang = Language(language=lang, active=True)
                 db.session.add(new_lang)
         
         # Crear características por defecto si no existen
         if not Feature.query.first():
-            default_features = ['A1', 'A2', 'B1', 'B2', 'C1']  # CAMBIADO
+            default_features = ['A1', 'A2', 'B1', 'B2', 'C1']
             for feat in default_features:
                 new_feat = Feature(feature=feat, active=True)
                 db.session.add(new_feat)
         
         db.session.commit()
+    
+    # MANEJO DE ERRORES MEJORADO
+    @app.errorhandler(404)
+    def not_found_error(error):
+        flash('Página no encontrada.', 'error')
+        return redirect(url_for('index'))
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        flash('Error interno del servidor.', 'error')
+        return redirect(url_for('index'))
+    
+    @app.errorhandler(413)
+    def too_large(error):
+        flash('El archivo es demasiado grande. Máximo 10MB.', 'error')
+        return redirect(request.url)
     
     return app
 
