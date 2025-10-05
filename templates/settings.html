@@ -27,8 +27,8 @@
                         {% endif %}
                     </div>
 
-                    <button type="submit" name="language_submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
-                        <i class="fas fa-plus mr-2"></i>{{ language_form.submit.label.text }}
+                    <button type="submit" name="language_submit" value="1" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                        <i class="fas fa-plus mr-2"></i>{{ language_form.language_submit.label.text }}
                     </button>
                 </form>
             </div>
@@ -41,11 +41,14 @@
                     {% for language in languages %}
                     <div class="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <span class="text-blue-800 font-medium">{{ language.language }}</span>
-                        <a href="{{ url_for('delete_language', id=language.id) }}" 
-                           onclick="return confirm('¿Seguro que quieres eliminar este idioma? Si hay palabras asociadas, se mantendrán pero no podrás crear nuevas palabras con este idioma.')"
-                           class="text-red-600 hover:text-red-800 transition-colors">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        <form method="POST" action="{{ url_for('settings.delete_language', language_id=language.id) }}" class="inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                onclick="return confirm('¿Seguro que quieres eliminar este idioma? Si hay palabras asociadas, se mantendrán pero no podrás crear nuevas palabras con este idioma.')"
+                                class="text-red-600 hover:text-red-800 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                     {% endfor %}
                 </div>
@@ -74,8 +77,8 @@
                         {% endif %}
                     </div>
 
-                    <button type="submit" name="feature_submit" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium">
-                        <i class="fas fa-plus mr-2"></i>{{ feature_form.submit.label.text }}
+                    <button type="submit" name="feature_submit" value="1" class="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium">
+                        <i class="fas fa-plus mr-2"></i>{{ feature_form.feature_submit.label.text }}
                     </button>
                 </form>
             </div>
@@ -88,11 +91,14 @@
                     {% for feature in features %}
                     <div class="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
                         <span class="text-green-800 font-medium">{{ feature.feature }}</span>
-                        <a href="{{ url_for('delete_feature', id=feature.id) }}" 
-                           onclick="return confirm('¿Seguro que quieres eliminar esta característica? Si hay palabras asociadas, se mantendrán pero no podrás crear nuevas palabras con esta característica.')"
-                           class="text-red-600 hover:text-red-800 transition-colors">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        <form method="POST" action="{{ url_for('settings.delete_feature', feature_id=feature.id) }}" class="inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                onclick="return confirm('¿Seguro que quieres eliminar esta característica? Si hay palabras asociadas, se mantendrán pero no podrás crear nuevas palabras con esta característica.')"
+                                class="text-red-600 hover:text-red-800 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                     {% endfor %}
                 </div>
@@ -105,7 +111,7 @@
 
     <!-- Botón volver -->
     <div class="mt-8 text-center">
-        <a href="{{ url_for('index') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200">
+        <a href="{{ url_for('words.index') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-200">
             <i class="fas fa-arrow-left mr-2"></i>Volver al Inicio
         </a>
     </div>

@@ -1,3 +1,9 @@
 flask
 flask-sqlalchemy
 flask-wtf
+flask-migrate
+sentry-sdk
+python-dotenv
+mypy
+pytest
+gunicorn

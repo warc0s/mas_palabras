@@ -3,12 +3,7 @@ from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import StringField, SubmitField, TextAreaField, SelectField, HiddenField
 from wtforms.validators import DataRequired, Length, ValidationError
 from utils.models import Word
-import unicodedata
-
-def normalize_text(text):
-    """Normaliza texto removiendo acentos para comparación"""
-    return ''.join(c for c in unicodedata.normalize('NFD', text.lower()) 
-                   if unicodedata.category(c) != 'Mn')
+from utils.text import normalize_text
 
 class WordForm(FlaskForm):
     english_word = StringField('Palabra', 
@@ -27,9 +22,10 @@ class WordForm(FlaskForm):
 
     def validate_english_word(self, field):
         """Valida que no exista duplicado"""
+        normalized_word = normalize_text(field.data.strip())
         query = Word.query.filter_by(
-            english_word=field.data.strip(),
-            language_id=self.language.data
+            language_id=self.language.data,
+            normalized_english_word=normalized_word
         )
         if self.word_id:
             query = query.filter(Word.id != self.word_id)
@@ -64,11 +60,11 @@ class QuizConfigForm(FlaskForm):
 # FORMULARIOS SEPARADOS
 class LanguageForm(FlaskForm):
     new_language = StringField('Nuevo Idioma', validators=[DataRequired(), Length(min=1, max=50)])
-    submit = SubmitField('Agregar Idioma')
+    language_submit = SubmitField('Agregar Idioma')
 
 class FeatureForm(FlaskForm):
     new_feature = StringField('Nueva Característica', validators=[DataRequired(), Length(min=1, max=50)])
-    submit = SubmitField('Agregar Característica')
+    feature_submit = SubmitField('Agregar Característica')
 
 class SearchForm(FlaskForm):
     """Formulario de búsqueda y filtros"""
