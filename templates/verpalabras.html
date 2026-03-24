@@ -3,144 +3,234 @@
 {% block content %}
 <div class="max-w-7xl mx-auto">
     <!-- Header con búsqueda -->
-    <div class="bg-white rounded-xl shadow-lg mb-6">
-        <div class="p-6 border-b border-gray-200">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-800">Tus Palabras</h2>
-                    <p class="text-gray-600">{{ total_words }} palabra{% if total_words != 1 %}s{% endif %} en tu vocabulario</p>
+    <div class="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-3xl shadow-xl mb-8">
+        <div class="p-8 border-b border-neutral-200/50">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+                <div class="mb-6 lg:mb-0">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-book-open text-green-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-4xl font-bold bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">
+                                Tu Vocabulario
+                            </h2>
+                            <p class="text-lg text-neutral-600">
+                                {{ words|length }} palabra{% if words|length != 1 %}s{% endif %}
+                                <span class="text-neutral-400">•</span>
+                                Organizadas y listas para practicar
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex space-x-2">
-                    <a href="{{ url_for('words.import_words') }}" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                        <i class="fas fa-upload mr-2"></i>Importar
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ url_for('words.import_words') }}" class="action-button bg-secondary-600 hover:bg-secondary-700 text-white">
+                        <i class="fas fa-upload w-4 h-4"></i>
+                        <span>Importar</span>
                     </a>
-                    <a href="{{ url_for('words.export_words') }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200">
-                        <i class="fas fa-download mr-2"></i>Exportar
+                    <a href="{{ url_for('words.export_words') }}" class="action-button bg-green-600 hover:bg-green-700 text-white">
+                        <i class="fas fa-download w-4 h-4"></i>
+                        <span>Exportar</span>
                     </a>
-                    <a href="{{ url_for('words.create_word') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                        <i class="fas fa-plus mr-2"></i>Añadir Palabra
+                    <a href="{{ url_for('words.create_word') }}" class="action-button bg-primary-600 hover:bg-primary-700 text-white">
+                        <i class="fas fa-plus w-4 h-4"></i>
+                        <span>Añadir Palabra</span>
                     </a>
                 </div>
             </div>
 
             <!-- Formulario de búsqueda y filtros -->
-            <form method="GET" class="grid md:grid-cols-5 gap-4" id="searchForm">
-                <input type="hidden" name="page" id="pageInput" value="{{ page }}">
-                <input type="hidden" name="per_page" value="{{ per_page }}">
-                <div class="md:col-span-2">
-                    {{ search_form.search(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder="Buscar palabras...") }}
+            <form method="GET" class="search-form" id="searchForm">
+                <div class="search-input-container">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-neutral-400"></i>
+                        </div>
+                        {{ search_form.search(class="search-input pl-11", placeholder="Buscar en tu vocabulario...") }}
+                    </div>
                 </div>
-                
-                <div>
-                    {{ search_form.language(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                </div>
-                
-                <div>
-                    {{ search_form.feature(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
-                </div>
-                
-                <div>
-                    {{ search_form.sort_by(class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent") }}
+
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-globe text-primary-600 w-4 h-4"></i>
+                            <span>Idioma</span>
+                        </label>
+                        {{ search_form.language(class="filter-select") }}
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-tags text-secondary-600 w-4 h-4"></i>
+                            <span>Categoría</span>
+                        </label>
+                        {{ search_form.feature(class="filter-select") }}
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-sort text-green-600 w-4 h-4"></i>
+                            <span>Ordenar</span>
+                        </label>
+                        {{ search_form.sort_by(class="filter-select") }}
+                    </div>
                 </div>
             </form>
-            
+
             <!-- Selección múltiple -->
-            <div class="mt-4 flex items-center space-x-4" id="bulkActions" style="display: none;">
-                <span class="text-sm text-gray-600" id="selectedCount">0 seleccionadas</span>
-                <button onclick="deleteSelected()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm">
-                    <i class="fas fa-trash mr-1"></i>Eliminar Seleccionadas
-                </button>
-                <button onclick="clearSelection()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
-                    Limpiar Selección
-                </button>
+            <div class="bulk-actions" id="bulkActions">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-square text-orange-600 text-sm"></i>
+                        </div>
+                        <span class="font-medium text-neutral-700" id="selectedCount">0 seleccionadas</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="deleteSelected()" class="bulk-action-btn bg-red-600 hover:bg-red-700 text-white">
+                            <i class="fas fa-trash w-4 h-4"></i>
+                            <span>Eliminar</span>
+                        </button>
+                        <button onclick="clearSelection()" class="bulk-action-btn bg-neutral-600 hover:bg-neutral-700 text-white">
+                            <i class="fas fa-times w-4 h-4"></i>
+                            <span>Limpiar</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Tabla de palabras -->
-    <div class="bg-white rounded-xl shadow-lg">
+    <!-- Tabla de palabras moderna -->
+    <div class="words-table-container bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-3xl shadow-xl">
         {% if words %}
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-4">
-                            <input type="checkbox" id="selectAll" class="rounded">
+            <table class="w-full modern-table">
+                <thead>
+                    <tr class="table-header">
+                        <th class="table-th">
+                            <div class="flex items-center justify-center">
+                                <input type="checkbox" id="selectAll" class="modern-checkbox">
+                            </div>
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Palabra</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Traducción</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Explicación</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Idioma</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Característica</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progreso</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        <th class="table-th text-left">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-language text-primary-600 w-4 h-4"></i>
+                                <span>Palabra</span>
+                            </div>
+                        </th>
+                        <th class="table-th text-left">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-globe-americas text-green-600 w-4 h-4"></i>
+                                <span>Traducción</span>
+                            </div>
+                        </th>
+                        <th class="table-th text-left">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-info-circle text-purple-600 w-4 h-4"></i>
+                                <span>Explicación</span>
+                            </div>
+                        </th>
+                        <th class="table-th text-left">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-globe text-primary-600 w-4 h-4"></i>
+                                <span>Idioma</span>
+                            </div>
+                        </th>
+                        <th class="table-th text-left">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-tag text-secondary-600 w-4 h-4"></i>
+                                <span>Categoría</span>
+                            </div>
+                        </th>
+                        <th class="table-th text-left">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-chart-line text-orange-600 w-4 h-4"></i>
+                                <span>Progreso</span>
+                            </div>
+                        </th>
+                        <th class="table-th text-center">
+                            <span>Acciones</span>
+                        </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="table-body">
                     {% for word in words %}
-                    <tr class="hover:bg-gray-50" data-word-id="{{ word.id }}">
-                        <td class="px-4 py-4">
-                            <input type="checkbox" class="word-checkbox rounded" value="{{ word.id }}">
+                    <tr class="table-row" data-word-id="{{ word.id }}">
+                        <td class="table-td text-center">
+                            <input type="checkbox" class="word-checkbox modern-checkbox" value="{{ word.id }}">
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ word.english_word }}</div>
+                        <td class="table-td">
+                            <div class="word-display">
+                                <div class="text-lg font-semibold text-neutral-900 mb-1">{{ word.english_word }}</div>
+                                <div class="text-xs text-neutral-500">{{ word.language.language }}</div>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ word.translation }}</div>
+                        <td class="table-td">
+                            <div class="translation-display">
+                                <span class="text-neutral-800 font-medium">{{ word.translation }}</span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900 max-w-xs truncate">
+                        <td class="table-td">
+                            <div class="explanation-display">
                                 {% if word.explanation %}
-                                    {{ word.explanation }}
+                                    <div class="text-neutral-700 text-sm leading-relaxed max-w-xs">
+                                        {{ word.explanation[:60] }}{% if word.explanation|length > 60 %}...{% endif %}
+                                    </div>
                                 {% else %}
-                                    <span class="text-gray-400 italic">Sin explicación</span>
+                                    <span class="text-neutral-400 text-sm italic">Sin explicación</span>
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {{ word.language.language }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {{ word.feature.feature }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-xs">
-                                {% set accuracy = word.get_accuracy() %}
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-gray-600">{{ word.times_practiced }} veces</span>
-                                    {% if word.times_practiced > 0 %}
-                                        <span class="px-2 py-1 rounded text-xs
-                                        {% if accuracy >= 80 %}bg-green-100 text-green-800
-                                        {% elif accuracy >= 60 %}bg-yellow-100 text-yellow-800
-                                        {% else %}bg-red-100 text-red-800{% endif %}">
-                                            {{ accuracy }}%
-                                        </span>
-                                    {% endif %}
-                                    {% if word.needs_practice() %}
-                                        <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">
-                                            Necesita práctica
-                                        </span>
-                                    {% endif %}
-                                </div>
+                        <td class="table-td">
+                            <div class="language-badge">
+                                <i class="fas fa-globe w-3 h-3"></i>
+                                <span>{{ word.language.language }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex space-x-2">
-                                <a href="{{ url_for('words.edit_word', word_id=word.id) }}" class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 px-3 py-1 rounded-md transition-colors duration-200">
-                                    <i class="fas fa-edit mr-1"></i>Editar
+                        <td class="table-td">
+                            <div class="feature-badge">
+                                <i class="fas fa-tag w-3 h-3"></i>
+                                <span>{{ word.feature.feature }}</span>
+                            </div>
+                        </td>
+                        <td class="table-td">
+                            <div class="progress-display">
+                                {% set accuracy = word.get_accuracy() %}
+                                <div class="flex items-center gap-3">
+                                    <div class="text-sm text-neutral-600">
+                                        <div class="font-medium">{{ word.times_practiced }} sesiones</div>
+                                        {% if word.times_practiced > 0 %}
+                                            <div class="text-xs text-neutral-500">{{ accuracy }}% precisión</div>
+                                        {% endif %}
+                                    </div>
+                                    {% if word.times_practiced > 0 %}
+                                        <div class="accuracy-indicator
+                                        {% if accuracy >= 80 %}bg-green-100 border-green-200 text-green-700
+                                        {% elif accuracy >= 60 %}bg-yellow-100 border-yellow-200 text-yellow-700
+                                        {% else %}bg-red-100 border-red-200 text-red-700{% endif %}">
+                                            {{ accuracy }}%
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% if word.needs_practice() %}
+                                    <div class="needs-practice-badge">
+                                        <i class="fas fa-exclamation-triangle w-3 h-3"></i>
+                                        <span>Necesita práctica</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="table-td">
+                            <div class="action-buttons">
+                                <a href="{{ url_for('words.edit_word', word_id=word.id) }}" class="action-btn edit-btn">
+                                    <i class="fas fa-edit w-4 h-4"></i>
+                                    <span>Editar</span>
                                 </a>
-                                <form method="POST" action="{{ url_for('words.delete_word', word_id=word.id) }}" class="inline">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit"
-                                        onclick="return confirm('¿Estás seguro de que quieres eliminar esta palabra?')"
-                                        class="bg-red-100 text-red-800 hover:bg-red-200 px-3 py-1 rounded-md transition-colors duration-200">
-                                        <i class="fas fa-trash mr-1"></i>Eliminar
-                                    </button>
-                                </form>
+                                <button onclick='confirmDelete({{ word.id }}, {{ word.english_word|tojson }})' class="action-btn delete-btn">
+                                    <i class="fas fa-trash w-4 h-4"></i>
+                                    <span>Eliminar</span>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -148,167 +238,441 @@
                 </tbody>
             </table>
         </div>
-        {% if pagination.pages > 1 %}
-        <div class="px-6 py-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-t border-gray-100 bg-gray-50/40">
-            <div class="text-sm text-gray-600">
-                {% if total_words %}
-                    {% set start_item = ((pagination.page - 1) * pagination.per_page) + 1 %}
-                    {% set end_item = [pagination.page * pagination.per_page, total_words]|min %}
-                    Mostrando {{ start_item }} - {{ end_item }} de {{ total_words }}
-                {% else %}
-                    Sin resultados disponibles
-                {% endif %}
-            </div>
-            <div class="flex items-center space-x-2">
-                <button type="button" class="pagination-btn flex items-center bg-white text-gray-700 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed" data-page-target="{{ pagination.prev_num }}" {% if not pagination.has_prev %}disabled{% endif %}>
-                    <i class="fas fa-chevron-left mr-1 text-sm"></i>Anterior
-                </button>
-                <span class="text-sm text-gray-600">Página {{ pagination.page }} de {{ pagination.pages }}</span>
-                <button type="button" class="pagination-btn flex items-center bg-white text-gray-700 border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed" data-page-target="{{ pagination.next_num }}" {% if not pagination.has_next %}disabled{% endif %}>
-                    Siguiente<i class="fas fa-chevron-right ml-1 text-sm"></i>
-                </button>
-            </div>
-        </div>
-        {% endif %}
         {% else %}
-        <div class="p-12 text-center">
-            <i class="fas fa-book-open text-6xl text-gray-400 mb-4"></i>
-            <h3 class="text-xl font-medium text-gray-900 mb-2">No hay palabras todavía</h3>
-            <p class="text-gray-600 mb-6">Comienza añadiendo tu primera palabra al vocabulario</p>
-            <div class="flex justify-center space-x-4">
-                <a href="{{ url_for('words.create_word') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                    <i class="fas fa-plus mr-2"></i>Añadir Primera Palabra
-                </a>
-                <a href="{{ url_for('words.import_words') }}" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                    <i class="fas fa-upload mr-2"></i>Importar Palabras
-                </a>
+        <div class="empty-state">
+            <div class="empty-state-content">
+                <div class="empty-state-icon">
+                    <i class="fas fa-book-open text-neutral-300"></i>
+                </div>
+                <h3 class="empty-state-title">Tu vocabulario está vacío</h3>
+                <p class="empty-state-description">
+                    ¡Es hora de empezar tu viaje de aprendizaje! Añade tu primera palabra o importa un conjunto completo para comenzar.
+                </p>
+                <div class="empty-state-actions">
+                    <a href="{{ url_for('words.create_word') }}" class="empty-state-btn primary">
+                        <i class="fas fa-plus w-4 h-4"></i>
+                        <span>Añadir Primera Palabra</span>
+                    </a>
+                    <a href="{{ url_for('words.import_words') }}" class="empty-state-btn secondary">
+                        <i class="fas fa-upload w-4 h-4"></i>
+                        <span>Importar Vocabulario</span>
+                    </a>
+                </div>
             </div>
         </div>
         {% endif %}
     </div>
 </div>
 
+<style>
+    /* Action buttons */
+    .action-button {
+        @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg;
+    }
+
+    /* Search form */
+    .search-form {
+        @apply space-y-6;
+    }
+
+    .search-input-container {
+        @apply mb-6;
+    }
+
+    .search-input {
+        @apply w-full px-4 py-4 bg-white border border-neutral-300 rounded-2xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:ring-opacity-50 transition-all duration-300 text-lg;
+    }
+
+    .filter-grid {
+        @apply grid md:grid-cols-3 gap-6;
+    }
+
+    .filter-group {
+        @apply space-y-2;
+    }
+
+    .filter-label {
+        @apply flex items-center gap-2 text-sm font-medium text-neutral-700;
+    }
+
+    .filter-select {
+        @apply w-full px-3 py-3 bg-white border border-neutral-300 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-200 focus:ring-opacity-50 transition-all duration-300;
+    }
+
+    /* Bulk actions */
+    .bulk-actions {
+        @apply mt-6 p-4 bg-orange-50 border border-orange-200 rounded-2xl hidden animate-slide-up;
+    }
+
+    .bulk-actions.show {
+        @apply block;
+    }
+
+    .bulk-action-btn {
+        @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 hover:scale-105;
+    }
+
+    /* Modern table */
+    .modern-table {
+        @apply border-separate border-spacing-0;
+    }
+
+    .table-header {
+        @apply bg-gradient-to-r from-neutral-50 to-primary-50/30;
+    }
+
+    .table-th {
+        @apply px-6 py-5 text-sm font-semibold text-neutral-700 border-b border-neutral-200/50 first:rounded-tl-3xl last:rounded-tr-3xl;
+    }
+
+    .table-body {
+        @apply divide-y divide-neutral-200/50;
+    }
+
+    .table-row {
+        @apply hover:bg-neutral-50/50 transition-colors duration-200;
+    }
+
+    .table-row:hover .action-buttons {
+        @apply opacity-100;
+    }
+
+    .table-td {
+        @apply px-6 py-6 align-top;
+    }
+
+    .modern-checkbox {
+        @apply w-5 h-5 text-primary-600 bg-white border-2 border-neutral-300 rounded-lg focus:ring-primary-500 focus:ring-2 focus:ring-opacity-50 transition-all duration-200;
+    }
+
+    /* Word display */
+    .word-display, .translation-display {
+        @apply min-w-0;
+    }
+
+    /* Badges */
+    .language-badge, .feature-badge {
+        @apply inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium;
+    }
+
+    .language-badge {
+        @apply bg-primary-100 border border-primary-200/50 text-primary-700;
+    }
+
+    .feature-badge {
+        @apply bg-secondary-100 border border-secondary-200/50 text-secondary-700;
+    }
+
+    .accuracy-indicator {
+        @apply px-2 py-1 rounded-lg text-xs font-medium border;
+    }
+
+    .needs-practice-badge {
+        @apply inline-flex items-center gap-1 px-2 py-1 bg-orange-100 border border-orange-200 text-orange-700 rounded-lg text-xs font-medium mt-2;
+    }
+
+    /* Action buttons */
+    .action-buttons {
+        @apply flex flex-col gap-2 opacity-60 transition-opacity duration-200;
+    }
+
+    .action-btn {
+        @apply inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105;
+    }
+
+    .edit-btn {
+        @apply bg-yellow-100 border border-yellow-200 text-yellow-700 hover:bg-yellow-200 hover:border-yellow-300;
+    }
+
+    .delete-btn {
+        @apply bg-red-100 border border-red-200 text-red-700 hover:bg-red-200 hover:border-red-300;
+    }
+
+    /* Empty state */
+    .empty-state {
+        @apply p-16 text-center;
+    }
+
+    .empty-state-content {
+        @apply max-w-md mx-auto;
+    }
+
+    .empty-state-icon {
+        @apply text-8xl mb-8;
+    }
+
+    .empty-state-title {
+        @apply text-2xl font-bold text-neutral-900 mb-4;
+    }
+
+    .empty-state-description {
+        @apply text-neutral-600 mb-8 leading-relaxed;
+    }
+
+    .empty-state-actions {
+        @apply flex flex-col sm:flex-row gap-4 justify-center;
+    }
+
+    .empty-state-btn {
+        @apply inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg;
+    }
+
+    .empty-state-btn.primary {
+        @apply bg-primary-600 hover:bg-primary-700 text-white;
+    }
+
+    .empty-state-btn.secondary {
+        @apply bg-white border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 hover:border-neutral-400;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .table-th, .table-td {
+            @apply px-3 py-3;
+        }
+
+        .action-buttons {
+            @apply flex-row gap-1 opacity-100;
+        }
+
+        .action-btn {
+            @apply px-2 py-1 text-xs;
+        }
+
+        .action-btn span {
+            @apply hidden;
+        }
+    }
+</style>
+
 <script>
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-const searchForm = document.getElementById('searchForm');
-const pageInput = document.getElementById('pageInput');
-
-function submitSearch(targetPage) {
-    if (!searchForm) {
-        return;
-    }
-    if (pageInput) {
-        pageInput.value = targetPage || 1;
-    }
-    searchForm.submit();
-}
-
-// Auto-submit del formulario de búsqueda
-document.querySelectorAll('#searchForm select, #searchForm input:not([type="hidden"])').forEach(element => {
-    element.addEventListener('change', function() {
-        submitSearch(1);
-    });
-});
-
-// Búsqueda con debounce
-const searchInput = document.querySelector('input[name="search"]');
+let selectedWords = new Set();
 let searchTimeout;
-if (searchInput) {
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+const bulkDeleteUrl = "{{ url_for('words.bulk_delete_words') }}";
+const deleteBaseUrl = "{{ url_for('words.delete_word', word_id=0) }}".replace(/0$/, '');
+
+// Enhanced search with real-time feedback
+function initializeSearch() {
+    const searchInput = document.querySelector('input[name="search"]');
+    const filterSelects = document.querySelectorAll('#searchForm select');
+
+    // Auto-submit filters
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            document.getElementById('searchForm').submit();
+        });
+    });
+
+    // Enhanced search with loading state
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
+
+        // Show loading state
+        searchInput.style.background = 'linear-gradient(90deg, #f9fafb, #f3f4f6)';
+
         searchTimeout = setTimeout(() => {
-            submitSearch(1);
-        }, 500);
+            searchInput.style.background = '';
+            document.getElementById('searchForm').submit();
+        }, 600);
+    });
+
+    // Search shortcuts
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('searchForm').submit();
+        }
+        if (e.key === 'Escape') {
+            this.value = '';
+            document.getElementById('searchForm').submit();
+        }
     });
 }
 
-// Controles de paginación
-document.querySelectorAll('.pagination-btn[data-page-target]').forEach(button => {
-    button.addEventListener('click', () => {
-        const target = button.getAttribute('data-page-target');
-        if (target && !button.disabled) {
-            submitSearch(target);
-        }
-    });
-});
+// Enhanced selection management
+function initializeSelection() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const wordCheckboxes = document.querySelectorAll('.word-checkbox');
 
-// Selección múltiple
-let selectedWords = new Set();
-
-document.getElementById('selectAll').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.word-checkbox');
-    checkboxes.forEach(cb => {
-        cb.checked = this.checked;
-        if (this.checked) {
-            selectedWords.add(cb.value);
-        } else {
-            selectedWords.delete(cb.value);
-        }
-    });
-    updateBulkActions();
-});
-
-document.querySelectorAll('.word-checkbox').forEach(cb => {
-    cb.addEventListener('change', function() {
-        if (this.checked) {
-            selectedWords.add(this.value);
-        } else {
-            selectedWords.delete(this.value);
-        }
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        wordCheckboxes.forEach(cb => {
+            cb.checked = isChecked;
+            if (isChecked) {
+                selectedWords.add(cb.value);
+                animateSelection(cb.closest('tr'), true);
+            } else {
+                selectedWords.delete(cb.value);
+                animateSelection(cb.closest('tr'), false);
+            }
+        });
         updateBulkActions();
     });
-});
 
+    wordCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            const row = this.closest('tr');
+            if (this.checked) {
+                selectedWords.add(this.value);
+                animateSelection(row, true);
+            } else {
+                selectedWords.delete(this.value);
+                animateSelection(row, false);
+            }
+
+            // Update select all state
+            selectAllCheckbox.checked = selectedWords.size === wordCheckboxes.length;
+            selectAllCheckbox.indeterminate = selectedWords.size > 0 && selectedWords.size < wordCheckboxes.length;
+
+            updateBulkActions();
+        });
+    });
+}
+
+// Selection animation
+function animateSelection(row, selected) {
+    if (selected) {
+        row.classList.add('bg-primary-50', 'border-l-4', 'border-primary-500');
+        row.style.transform = 'scale(1.02)';
+    } else {
+        row.classList.remove('bg-primary-50', 'border-l-4', 'border-primary-500');
+        row.style.transform = 'scale(1)';
+    }
+
+    setTimeout(() => {
+        row.style.transform = '';
+    }, 200);
+}
+
+// Enhanced bulk actions
 function updateBulkActions() {
     const bulkActions = document.getElementById('bulkActions');
     const selectedCount = document.getElementById('selectedCount');
-    
+
     if (selectedWords.size > 0) {
-        bulkActions.style.display = 'flex';
-        selectedCount.textContent = `${selectedWords.size} seleccionada${selectedWords.size > 1 ? 's' : ''}`;
+        bulkActions.classList.add('show');
+        selectedCount.textContent = `${selectedWords.size} palabra${selectedWords.size > 1 ? 's' : ''} seleccionada${selectedWords.size > 1 ? 's' : ''}`;
     } else {
-        bulkActions.style.display = 'none';
+        bulkActions.classList.remove('show');
     }
 }
 
-function deleteSelected() {
+// Enhanced delete confirmation
+function confirmDelete(wordId, wordText) {
+    const modal = createDeleteModal(wordId, wordText);
+    document.body.appendChild(modal);
+
+    // Show with animation
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+}
+
+function createDeleteModal(wordId, wordText) {
+    const modal = document.createElement('div');
+    modal.className = 'delete-modal';
+    modal.innerHTML = `
+        <div class="delete-modal-backdrop" onclick="closeDeleteModal(this.parentElement)"></div>
+        <div class="delete-modal-content">
+            <div class="delete-modal-icon">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="delete-modal-body">
+                <h3 class="delete-modal-title">Confirmar eliminación</h3>
+                <p class="delete-modal-text">
+                    ¿Estás seguro de que quieres eliminar la palabra <strong>"${wordText}"</strong>? Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="delete-modal-actions">
+                <button type="button" onclick="closeDeleteModal(this.closest('.delete-modal'))" class="delete-modal-cancel">Cancelar</button>
+                <form method="POST" action="${deleteBaseUrl}${wordId}" class="inline">
+                    <input type="hidden" name="csrf_token" value="${csrfToken}">
+                    <button type="submit" class="delete-modal-confirm">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    `;
+    return modal;
+}
+
+function closeDeleteModal(modal) {
+    modal.classList.add('hide');
+    setTimeout(() => {
+        modal.remove();
+    }, 300);
+}
+
+// Enhanced bulk delete
+async function deleteSelected() {
     if (selectedWords.size === 0) return;
-    
-    if (confirm(`¿Estás seguro de que quieres eliminar ${selectedWords.size} palabra${selectedWords.size > 1 ? 's' : ''}?`)) {
-        fetch('/bulk_delete', {
+
+    const count = selectedWords.size;
+    const confirmed = confirm(`¿Estás seguro de que quieres eliminar ${count} palabra${count > 1 ? 's' : ''}? Esta acción no se puede deshacer.`);
+
+    if (!confirmed) return;
+
+    // Show loading state
+    const deleteBtn = document.querySelector('[onclick="deleteSelected()"]');
+    const originalText = deleteBtn.innerHTML;
+    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin w-4 h-4"></i><span>Eliminando...</span>';
+    deleteBtn.disabled = true;
+
+    try {
+        const response = await fetch(bulkDeleteUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken,
             },
+            credentials: 'same-origin',
             body: JSON.stringify({
                 word_ids: Array.from(selectedWords)
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert('Error: ' + data.error);
-            } else {
-                location.reload();
-            }
-        })
-        .catch(error => {
-            alert('Error al eliminar palabras');
         });
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Success animation before reload
+        selectedWords.forEach(wordId => {
+            const row = document.querySelector(`tr[data-word-id="${wordId}"]`);
+            if (row) {
+                row.style.animation = 'fadeOut 0.3s ease-out forwards';
+            }
+        });
+
+        setTimeout(() => {
+            location.reload();
+        }, 300);
+
+    } catch (error) {
+        alert(`Error al eliminar palabras: ${error.message}`);
+        deleteBtn.innerHTML = originalText;
+        deleteBtn.disabled = false;
     }
 }
 
 function clearSelection() {
     selectedWords.clear();
-    document.querySelectorAll('.word-checkbox').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.word-checkbox').forEach(cb => {
+        cb.checked = false;
+        animateSelection(cb.closest('tr'), false);
+    });
     document.getElementById('selectAll').checked = false;
+    document.getElementById('selectAll').indeterminate = false;
     updateBulkActions();
 }
 
-// Shortcuts de teclado
+// Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey) {
+    // Don't trigger shortcuts if user is typing in an input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+    if (e.ctrlKey || e.metaKey) {
         switch(e.key) {
             case 'a':
                 e.preventDefault();
@@ -318,8 +682,175 @@ document.addEventListener('keydown', function(e) {
                 e.preventDefault();
                 document.querySelector('input[name="search"]').focus();
                 break;
+            case '/':
+                e.preventDefault();
+                showKeyboardShortcuts();
+                break;
         }
     }
+
+    // ESC to clear selection
+    if (e.key === 'Escape') {
+        clearSelection();
+    }
 });
+
+function showKeyboardShortcuts() {
+    alert('Atajos de teclado:\n\nCtrl+A - Seleccionar todo\nCtrl+F - Buscar\nCtrl+/ - Ver atajos\nEsc - Limpiar selección');
+}
+
+// Row hover effects
+document.querySelectorAll('.table-row').forEach(row => {
+    row.addEventListener('mouseenter', function() {
+        if (!this.classList.contains('bg-primary-50')) {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+        }
+    });
+
+    row.addEventListener('mouseleave', function() {
+        if (!this.classList.contains('bg-primary-50')) {
+            this.style.transform = '';
+            this.style.boxShadow = '';
+        }
+    });
+});
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSearch();
+    initializeSelection();
+
+    // Add staggered animation to table rows
+    document.querySelectorAll('.table-row').forEach((row, index) => {
+        row.style.animation = `fadeIn 0.5s ease-out ${index * 0.05}s both`;
+    });
+});
+
+// CSS for additional animations
+const additionalStyles = `
+    <style>
+        .delete-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .delete-modal.show {
+            opacity: 1;
+        }
+
+        .delete-modal.hide {
+            opacity: 0;
+        }
+
+        .delete-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .delete-modal-content {
+            position: relative;
+            max-width: 400px;
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .delete-modal.show .delete-modal-content {
+            transform: scale(1);
+        }
+
+        .delete-modal-icon {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .delete-modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .delete-modal-text {
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .delete-modal-cancel, .delete-modal-confirm {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .delete-modal-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .delete-modal-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .delete-modal-confirm {
+            background: #dc2626;
+            color: white;
+            border: 1px solid #dc2626;
+        }
+
+        .delete-modal-confirm:hover {
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+`;
+
+document.head.insertAdjacentHTML('beforeend', additionalStyles);
 </script>
 {% endblock %}

@@ -1,136 +1,417 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <!-- Barra de progreso y estadísticas -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-800">Progreso del Quiz</h3>
-            <div class="flex space-x-4 text-sm">
-                <span class="text-green-600">
-                    <i class="fas fa-check mr-1"></i>{{ stats.correct_answers }} correctas
-                </span>
-                <span class="text-red-600">
-                    <i class="fas fa-times mr-1"></i>{{ stats.answered - stats.correct_answers }} incorrectas
-                </span>
-                <span class="text-blue-600">
-                    <i class="fas fa-list mr-1"></i>{{ stats.answered }}/{{ stats.total_available }} completadas
-                </span>
-                {% if stats.answered > 0 %}
-                <span class="text-blue-600">
-                    <i class="fas fa-percentage mr-1"></i>{{ ((stats.correct_answers / stats.answered) * 100)|round(1) }}%
-                </span>
-                {% endif %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header con progreso -->
+    <div class="bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-3xl shadow-xl p-8 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <div>
+                <h3 class="text-2xl font-bold bg-gradient-to-r from-secondary-600 to-secondary-800 bg-clip-text text-transparent mb-2">
+                    Sesión de Práctica
+                </h3>
+                <p class="text-neutral-600">Fortalece tu vocabulario con ejercicios adaptativos</p>
+            </div>
+            <div class="flex items-center gap-6 mt-4 md:mt-0">
+                <div class="flex space-x-4">
+                    <div class="stat-badge bg-green-50 border-green-200 text-green-700">
+                        <i class="fas fa-check w-4 h-4"></i>
+                        <span class="font-bold">{{ stats.correct_answers }}</span>
+                        <span class="text-sm">correctas</span>
+                    </div>
+	                    <div class="stat-badge bg-red-50 border-red-200 text-red-700">
+	                        <i class="fas fa-times w-4 h-4"></i>
+	                        <span class="font-bold">{{ stats.answered - stats.correct_answers }}</span>
+	                        <span class="text-sm">incorrectas</span>
+	                    </div>
+	                    {% if stats.answered > 0 %}
+	                    <div class="stat-badge bg-primary-50 border-primary-200 text-primary-700">
+	                        <i class="fas fa-percentage w-4 h-4"></i>
+	                        <span class="font-bold">{{ ((stats.correct_answers / stats.answered) * 100)|round(1) }}%</span>
+	                        <span class="text-sm">precisión</span>
+	                    </div>
+	                    {% endif %}
+                </div>
+                <button onclick="endQuiz()" class="end-quiz-btn">
+                    <i class="fas fa-stop w-4 h-4"></i>
+                    <span>Terminar</span>
+                </button>
             </div>
         </div>
-        
-        <div class="flex justify-between items-center">
-            <span class="text-sm text-gray-600">Pregunta {{ progress + 1 }} de {{ stats.total_available }}</span>
-            <a href="{{ url_for('quiz.end') }}" class="text-red-600 hover:text-red-800 text-sm">
-                <i class="fas fa-stop mr-1"></i>Terminar Quiz
-            </a>
-        </div>
+
+        <!-- Barra de progreso -->
+	        <div class="progress-container">
+	            <div class="progress-bar-bg">
+	                <div class="progress-bar-fill" style="width: {{ (((progress + 1) / stats.total_available) * 100)|round if stats.total_available else 0 }}%"></div>
+	            </div>
+	            <div class="progress-text">
+	                Pregunta {{ progress + 1 }} de {{ stats.total_available }}
+	            </div>
+	        </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-lg p-8">
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">
-                <i class="fas fa-brain text-purple-600 mr-3"></i>
-                {% if quiz_type == 'to_spanish' %}
-                    Traduce al Español
-                {% else %}
-                    Traduce al {{ word.language.language }}
-                {% endif %}
-            </h2>
+    <!-- Tarjeta de pregunta -->
+    <div class="question-card bg-white/80 backdrop-blur-sm border border-neutral-200/50 rounded-3xl shadow-xl p-10">
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-secondary-50 to-primary-50 border border-secondary-200/50 rounded-2xl mb-8">
+                <div class="w-10 h-10 bg-secondary-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-brain text-secondary-600"></i>
+                </div>
+                <span class="text-lg font-semibold text-neutral-800">
+                    {% if quiz_type == 'to_spanish' %}
+                        Traduce al Español
+                    {% else %}
+                        Traduce al {{ word.language.language }}
+                    {% endif %}
+                </span>
+            </div>
         </div>
 
-        <div class="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-8 mb-8">
+        <!-- Palabra a traducir -->
+        <div class="word-display-card bg-gradient-to-br from-neutral-50 to-primary-50/30 border-2 border-dashed border-primary-300/50 rounded-3xl p-12 mb-10">
             <div class="text-center">
-                <h3 class="text-sm font-medium text-gray-600 mb-2">
+                <p class="text-sm font-medium text-neutral-600 mb-4 uppercase tracking-wider">
                     {% if quiz_type == 'to_spanish' %}
-                        Traduce esta palabra al español:
+                        Palabra en {{ word.language.language }}:
                     {% else %}
-                        Traduce esta palabra al {{ word.language.language }}:
+                        Palabra en Español:
                     {% endif %}
-                </h3>
-                <div class="text-4xl font-bold text-gray-800 mb-4">
+                </p>
+                <div class="word-display text-5xl md:text-6xl font-bold bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent mb-6">
                     {% if quiz_type == 'to_spanish' %}
                         {{ word.english_word }}
                     {% else %}
                         {{ word.translation }}
                     {% endif %}
                 </div>
-                
+
                 {% if word.explanation %}
-                <div class="bg-white bg-opacity-70 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-gray-700">
-                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
-                        <strong>Pista:</strong> {{ word.explanation }}
-                    </p>
+                <div class="hint-card bg-white/80 backdrop-blur-sm border border-yellow-200/50 rounded-2xl p-6 mb-6">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i class="fas fa-lightbulb text-yellow-600 text-sm"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="font-semibold text-neutral-800 mb-1">💡 Pista:</p>
+                            <p class="text-neutral-700">{{ word.explanation }}</p>
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
 
-                <div class="flex justify-center space-x-4 text-sm">
-                    <span class="bg-white bg-opacity-70 px-3 py-1 rounded-full">
-                        <i class="fas fa-globe mr-1 text-blue-600"></i>{{ word.language.language if word.language else 'N/A' }}
-                    </span>
-                    <span class="bg-white bg-opacity-70 px-3 py-1 rounded-full">
-                        <i class="fas fa-tag mr-1 text-green-600"></i>{{ word.feature.feature }}
-                    </span>
+                <!-- Etiquetas de contexto -->
+                <div class="flex justify-center flex-wrap gap-3 text-sm">
+                    <div class="context-tag bg-primary-100 border-primary-200 text-primary-700">
+                        <i class="fas fa-globe w-4 h-4"></i>
+                        <span>{{ word.language.language if word.language else 'N/A' }}</span>
+                    </div>
+                    <div class="context-tag bg-green-100 border-green-200 text-green-700">
+                        <i class="fas fa-tag w-4 h-4"></i>
+                        <span>{{ word.feature.feature }}</span>
+                    </div>
                     {% if word.times_practiced > 0 %}
-                    <span class="bg-white bg-opacity-70 px-3 py-1 rounded-full">
-                        <i class="fas fa-chart-line mr-1 text-purple-600"></i>{{ word.get_accuracy() }}% precisión
-                    </span>
+                    <div class="context-tag bg-purple-100 border-purple-200 text-purple-700">
+                        <i class="fas fa-chart-line w-4 h-4"></i>
+                        <span>{{ word.get_accuracy() }}% precisión</span>
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- FORMULARIO CON FLASK-WTF (CORRECTO) -->
-        <form method="POST" class="space-y-6" id="quizForm">
+        <!-- Formulario de respuesta -->
+        <form method="POST" class="space-y-8" id="quizForm">
             {{ form.hidden_tag() }}
-            
-            <!-- Campos de datos usando el formulario Flask-WTF -->
+
+            <!-- Campos ocultos -->
             {{ form.word_id(value=word.id) }}
             {{ form.session_id(value=session_id) }}
             {{ form.quiz_type(value=quiz_type) }}
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-keyboard mr-2 text-green-600"></i>Tu Respuesta
-                </label>
-                {{ form.answer(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors text-lg", placeholder="Escribe la traducción aquí...", autofocus=true, autocomplete="off") }}
-                {% if form.answer.errors %}
-                    <p class="mt-1 text-sm text-red-600">{{ form.answer.errors[0] }}</p>
-                {% endif %}
+
+            <!-- Campo de respuesta -->
+            <div class="answer-section">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-keyboard text-green-600 text-sm"></i>
+                    </div>
+                    <label class="text-lg font-semibold text-neutral-800">Tu Respuesta</label>
+                </div>
+
+                <div class="answer-input-container">
+                    {{ form.answer(class="answer-input", placeholder="Escribe la traducción aquí...", autofocus=true, autocomplete="off") }}
+                    {% if form.answer.errors %}
+                        <p class="form-error">{{ form.answer.errors[0] }}</p>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="flex space-x-4">
-                {{ form.submit(class="flex-1 bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-lg") }}
-                <a href="{{ url_for('quiz.question', skip=1) }}" class="flex-1 bg-gray-600 text-white py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium text-center text-lg">
-                    <i class="fas fa-forward mr-2"></i>Saltar
+            <!-- Botones de acción -->
+            <div class="action-buttons">
+                {{ form.submit(class="quiz-submit-btn", id="submitBtn") }}
+	                <a href="{{ url_for('quiz.question') }}" class="quiz-skip-btn">
+                    <i class="fas fa-forward w-4 h-4"></i>
+                    <span>Saltar Pregunta</span>
+                </a>
+            </div>
+
+            <!-- Enlaces auxiliares -->
+            <div class="text-center pt-6 border-t border-neutral-200">
+	                <a href="{{ url_for('words.view_words') }}" class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 text-sm font-medium">
+                    <i class="fas fa-list mr-2"></i>Ver todas las palabras
                 </a>
             </div>
         </form>
-
-        <div class="mt-8 text-center">
-            <a href="{{ url_for('words.view_words') }}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                <i class="fas fa-list mr-2"></i>Ver todas las palabras
-            </a>
-        </div>
     </div>
 </div>
 
+<style>
+    .question-card {
+        @apply animate-fade-in;
+    }
+
+    .stat-badge {
+        @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl border font-medium transition-all duration-200 hover:scale-105;
+    }
+
+    .end-quiz-btn {
+        @apply inline-flex items-center gap-2 px-4 py-2 bg-red-100 border border-red-200 text-red-700 rounded-xl font-medium hover:bg-red-200 hover:border-red-300 transition-all duration-200;
+    }
+
+    .progress-container {
+        @apply flex items-center justify-between gap-4;
+    }
+
+    .progress-bar-bg {
+        @apply flex-1 h-3 bg-neutral-200 rounded-full overflow-hidden;
+    }
+
+    .progress-bar-fill {
+        @apply h-full bg-gradient-to-r from-secondary-500 to-primary-500 rounded-full transition-all duration-1000 ease-out;
+    }
+
+    .progress-text {
+        @apply text-sm font-medium text-neutral-600 whitespace-nowrap;
+    }
+
+    .word-display-card {
+        @apply animate-scale-in;
+    }
+
+    .word-display {
+        @apply animate-pulse;
+        animation-duration: 2s;
+    }
+
+    .hint-card {
+        @apply animate-slide-up;
+        animation-delay: 0.3s;
+    }
+
+    .context-tag {
+        @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border font-medium;
+    }
+
+    .answer-section {
+        @apply animate-slide-up;
+        animation-delay: 0.5s;
+    }
+
+    .answer-input-container {
+        @apply relative;
+    }
+
+    .answer-input {
+        @apply w-full px-6 py-4 text-2xl font-medium text-center bg-white border-2 border-neutral-300 rounded-2xl focus:border-secondary-500 focus:ring-4 focus:ring-secondary-200 focus:ring-opacity-50 placeholder-neutral-400 transition-all duration-300 hover:border-neutral-400;
+    }
+
+    .answer-input:focus {
+        @apply shadow-2xl transform scale-105;
+        animation: answerPulse 0.3s ease-out;
+    }
+
+    .form-error {
+        @apply mt-2 text-sm text-red-600 font-medium animate-slide-up;
+    }
+
+    .action-buttons {
+        @apply flex flex-col sm:flex-row gap-4 animate-slide-up;
+        animation-delay: 0.7s;
+    }
+
+    .quiz-submit-btn {
+        @apply flex-1 inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-secondary-600 to-secondary-700 text-white font-bold text-lg rounded-2xl hover:from-secondary-700 hover:to-secondary-800 focus:ring-4 focus:ring-secondary-300 focus:ring-opacity-50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+    }
+
+    .quiz-skip-btn {
+        @apply flex-1 inline-flex items-center justify-center gap-2 px-8 py-4 bg-white border-2 border-neutral-300 text-neutral-700 font-semibold rounded-2xl hover:bg-neutral-50 hover:border-neutral-400 focus:ring-4 focus:ring-neutral-200 focus:ring-opacity-50 transform hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md;
+    }
+
+    /* Loading state */
+    .quiz-submit-btn.loading {
+        @apply opacity-75 cursor-not-allowed;
+        pointer-events: none;
+    }
+
+    .quiz-submit-btn.loading::after {
+        content: '';
+        @apply w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin ml-2;
+    }
+
+    /* Success animation */
+    .answer-input.correct {
+        @apply border-green-500 bg-green-50;
+        animation: correctPulse 0.6s ease-out;
+    }
+
+    .answer-input.incorrect {
+        @apply border-red-500 bg-red-50;
+        animation: incorrectShake 0.6s ease-out;
+    }
+
+    @keyframes answerPulse {
+        0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+        70% { box-shadow: 0 0 0 20px rgba(168, 85, 247, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+    }
+
+    @keyframes correctPulse {
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+        50% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    @keyframes incorrectShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+        @apply absolute right-4 top-1/2 transform -translate-y-1/2 text-neutral-400;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .answer-input:focus + .typing-indicator {
+        opacity: 1;
+    }
+</style>
+
 <script>
-// Submit con Enter
+let isSubmitting = false;
+let typingTimer;
+const answerInput = document.querySelector('input[name="answer"]');
+const submitBtn = document.getElementById('submitBtn');
+
+// Enhanced form submission with loading state
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    if (isSubmitting) {
+        e.preventDefault();
+        return;
+    }
+
+    isSubmitting = true;
+    submitBtn.classList.add('loading');
+    const originalValue = submitBtn.value;
+    submitBtn.value = 'Enviando...';
+
+    // Reset after timeout as fallback
+    setTimeout(() => {
+        isSubmitting = false;
+        submitBtn.classList.remove('loading');
+        submitBtn.value = originalValue;
+    }, 5000);
+});
+
+// Enhanced keyboard handling
 document.getElementById('quizForm').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type === 'text') {
         e.preventDefault();
-        this.submit();
+        if (!isSubmitting && answerInput.value.trim()) {
+            this.submit();
+        }
+    }
+
+    // Escape key to skip
+    if (e.key === 'Escape') {
+	        window.location.href = "{{ url_for('quiz.question') }}";
     }
 });
 
-// Focus automático en el input
-document.querySelector('input[name="answer"]').focus();
+// Typing feedback and validation
+answerInput.addEventListener('input', function() {
+    clearTimeout(typingTimer);
+
+    // Remove previous states
+    this.classList.remove('correct', 'incorrect');
+
+    // Add typing feedback
+    if (this.value.length > 0) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+    }
+
+    // Typing indicator (simulate real-time validation)
+    typingTimer = setTimeout(() => {
+        if (this.value.length >= 2) {
+            // Add subtle positive feedback for longer answers
+            this.style.borderColor = '#10b981';
+        }
+    }, 1000);
+});
+
+// Focus management
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus with slight delay for better UX
+    setTimeout(() => {
+        answerInput.focus();
+        answerInput.select();
+    }, 300);
+
+    // Initial button state
+    if (!answerInput.value.trim()) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+    }
+});
+
+// Progress bar animation on load
+window.addEventListener('load', function() {
+    const progressBar = document.querySelector('.progress-bar-fill');
+    if (progressBar) {
+        // Trigger reflow and animate
+        progressBar.style.width = '0%';
+        setTimeout(() => {
+	            progressBar.style.width = '{{ (((progress + 1) / stats.total_available) * 100)|round if stats.total_available else 0 }}%';
+        }, 100);
+    }
+});
+
+// End quiz confirmation
+function endQuiz() {
+    if (confirm('¿Estás seguro de que quieres terminar la sesión de práctica?')) {
+	        window.location.href = "{{ url_for('quiz.end') }}";
+    }
+}
+
+// Prevent accidental navigation
+window.addEventListener('beforeunload', function(e) {
+    if (answerInput.value.trim() && !isSubmitting) {
+        e.preventDefault();
+        e.returnValue = '¿Estás seguro de que quieres salir? Se perderá tu respuesta actual.';
+        return e.returnValue;
+    }
+});
+
+// Add keyboard shortcut hints
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        alert('Atajos de teclado:\n\nEnter - Enviar respuesta\nEsc - Saltar pregunta\nCtrl+/ - Ver ayuda');
+    }
+});
 </script>
 {% endblock %}
