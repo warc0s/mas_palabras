@@ -1,6 +1,6 @@
 # AGENTS.md — Mas_Palabras
 
-App Flask para gestionar vocabulario personal y practicarlo con quizzes adaptativos.
+App Next.js para gestionar vocabulario personal y practicarlo con quizzes adaptativos.
 
 ## Qué leer antes de tocar código
 
@@ -13,21 +13,21 @@ Lectura obligatoria antes de cada sesión de trabajo:
 ### Mapa de guías
 
 - `Guides/architecture.md` — Stack, estructura de ficheros, flujo de arranque de la app
-- `Guides/backend.md` — Blueprints, rutas, lógica de negocio, helpers
-- `Guides/api.md` — REST API /api/v1/*, endpoints, formatos, errores
-- `Guides/database.md` — Esquema (4 tablas), relaciones, migraciones, métodos de modelo
-- `Guides/frontend.md` — Templates, Tailwind config, componentes, dónde tocar estilos
-- `Guides/security.md` — CSRF, sesiones, env vars, lo que falta por implementar
+- `Guides/backend.md` — Server actions, route handlers, lógica de negocio
+- `Guides/api.md` — Superficie HTTP actual y ausencia de API REST pública
+- `Guides/database.md` — Prisma, SQLite, esquema (4 tablas), migraciones
+- `Guides/frontend.md` — App Router, componentes, Tailwind, dónde tocar estilos
+- `Guides/security.md` — Validación server-side, cookie del quiz, gaps pendientes
 - `Guides/testing.md` — Cómo ejecutar tests, estructura, convenciones
-- `Guides/deploys.md` — Setup local, migraciones, Gunicorn, config por entorno
+- `Guides/deploys.md` — Setup local, Prisma, build standalone y arranque Node
 - `Guides/import-export.md` — Formato JSON, opciones de import, códigos de error
 
 ### Lectura rápida por tipo de cambio
 
-- Tocar rutas o lógica -> `Guides/backend.md`
+- Tocar rutas, server actions o lógica -> `Guides/backend.md`
 - Tocar modelos o BD -> `Guides/database.md`
-- Tocar API REST -> `Guides/api.md`
-- Tocar templates o estilos -> `Guides/frontend.md`
+- Tocar superficie HTTP -> `Guides/api.md`
+- Tocar componentes o estilos -> `Guides/frontend.md`
 - Tocar config, env vars, despliegue -> `Guides/deploys.md` + `Guides/security.md`
 - Tocar import/export -> `Guides/import-export.md`
 - Añadir tests -> `Guides/testing.md`
@@ -35,16 +35,11 @@ Lectura obligatoria antes de cada sesión de trabajo:
 ## Estructura del proyecto
 
 ```
-app.py              # Factory create_app(), entry point
-config.py           # Config classes + apply_env_overrides
-wsgi.py             # Wrapper Gunicorn
-gunicorn.conf.py    # Config producción
-blueprints/         # 4 blueprints: words, quiz, api, settings
-utils/              # models, forms, text, database, logging_config
-templates/          # Jinja2 + Tailwind CDN (sin build step)
-tests/              # pytest + unittest
-migrations/         # Alembic
-instance/           # .env alternativo, datos de ejemplo
+app/                # Rutas Next.js App Router
+components/         # Shell, banner, tabla y piezas reutilizables
+lib/                # Prisma, servicios de dominio, validación y server actions
+prisma/             # schema.prisma + migraciones
+tests/              # Vitest
 Guides/             # Documentación de referencia
 ```
 
@@ -58,12 +53,12 @@ Guides/             # Documentación de referencia
 
 ## Reglas de código
 
-- Código e identificadores en inglés. Mensajes flash en español.
-- Las rutas y views deben ser ligeras. Lógica de negocio fuera de templates.
-- Las plantillas solo presentan, no calculan ni deciden.
+- Código e identificadores en inglés. Copy visible y mensajes en español.
+- Las páginas y route handlers deben ser ligeros. Lógica de negocio fuera de `app/`.
+- Los componentes presentan; las reglas viven en `lib/`.
 - Centraliza validaciones y reglas compartidas. Si algo crece, extráelo a un módulo.
 - Comentarios solo cuando aclaren una decisión no obvia.
-- Todo type-hintado. mypy falla si hay funciones sin tipar en módulos supervisados.
+- Todo tipado. `next build` debe pasar sin errores de TypeScript.
 
 ## Modelo de dominio — reglas clave
 
@@ -88,8 +83,7 @@ Antes de cambiar el esquema: documenta el motivo, revisa impacto en datos existe
 ## Seguridad
 
 - Nunca commitees secretos. Variables sensibles en `.env`.
-- CSRF activado globalmente (Flask-WTF).
-- Valida siempre inputs de usuario.
+- Valida siempre inputs de usuario en server actions o servicios.
 - Antes de borrados o migraciones irreversibles, confirma intención.
 - La app no tiene autenticación ni rate limiting. Ver `Guides/security.md` para gaps conocidos.
 
@@ -119,3 +113,8 @@ Ejemplos: `feat: add quiz result summary`, `fix: prevent duplicate vocabulary en
 - Responde siempre en español.
 - No dejes procesos persistentes corriendo sin avisar.
 - Si un comando puede tardar o modificar datos, avisa antes.
+- Comandos principales del proyecto:
+  - `pnpm dev`
+  - `pnpm build`
+  - `pnpm start`
+  - `pnpm test`

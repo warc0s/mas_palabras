@@ -1,106 +1,85 @@
-# Backend — Blueprints y Lógica
+# Backend
 
-## Blueprint `words` (blueprints/words.py)
+## Filosofía
 
-### Rutas
+Ya no existe un backend Flask separado. El backend vive dentro de Next.js y se reparte entre:
 
-- `GET /` -> `index()` — Dashboard: cuenta palabras, idiomas, features, precisión media, pendientes
-- `GET|POST /maspalabras` -> `create_word()` — Formulario alta palabra
-- `GET /verpalabras` -> `view_words()` — Listado paginado con filtros y ordenación
-- `GET /get_word/<id>` -> `get_word()` — JSON de una palabra
-- `GET|POST /edit/<id>` -> `edit_word()` — Editar palabra
-- `POST /delete/<id>` -> `delete_word()` — Eliminar palabra
-- `POST /bulk_delete` -> `bulk_delete_words()` — Borrado masivo (JSON body `{word_ids: [...]}`)
-- `GET|POST /import_words` -> `import_words()` — Importar desde JSON file
-- `GET /export_words` -> `export_words()` — Exportar todas como JSON attachment
+- páginas server-side para lectura
+- server actions para mutación
+- route handlers mínimos para casos de I/O como export o fin explícito del quiz
 
-### Parámetros de `view_words` (query string)
+## Acciones por dominio
 
-- `search` — texto libre (busca en english_word, translation, explanation con ILIKE)
-- `language` — ID idioma (0 = todos)
-- `feature` — ID categoría (0 = todas)
-- `sort_by` — `english_word`, `translation`, `created_at_desc`, `created_at_asc`, `accuracy_desc`, `accuracy_asc`, `needs_practice`
-- `page` — página (default 1)
-- `per_page` — items/página (1–100, default 25)
+### `lib/actions/word-actions.ts`
 
-### Lógica de importación (`process_import`)
+- `createWordAction` — crea palabra y redirige a `/verpalabras`
+- `updateWordAction` — actualiza palabra existente
+- `deleteWordAction` — elimina una palabra
+- `bulkDeleteWordsAction` — borra varias palabras
+- `importWordsAction` — procesa upload JSON y redirige con resumen
 
-Recibe lista de dicts. Para cada item:
-1. `_sanitize_import_item()` — valida campos requeridos, normaliza, parsea stats y fechas
-2. `_ensure_relations()` — resuelve/crea Language y Feature
-3. `_find_existing_word()` — busca duplicado por idioma + normalized_english
-4. Si existe → skip o update según `overwrite_mode`
-5. Si no existe → `_build_new_word()` y bulk_save
+### `lib/actions/settings-actions.ts`
 
-`overwrite_mode`: `skip` (default) o `update`
-`create_missing_mode`: `create` (default) o `skip`
+- `createLanguageAction`
+- `createFeatureAction`
+- `deleteLanguageAction`
+- `deleteFeatureAction`
 
----
+### `lib/actions/quiz-actions.ts`
 
-## Blueprint `quiz` (blueprints/quiz.py)
+- `startQuizAction` — crea sesión y cookie `mas-palabras-quiz`
+- `submitQuizAnswerAction` — valida respuesta, actualiza progreso y avanza
+- `skipQuizAnswerAction` — cuenta intento fallido y avanza
+- `endQuizAction` — termina la sesión activa
 
-### Rutas
+## Servicios de dominio
 
-- `GET|POST /quiz` -> `configure_quiz()` — Config + inicio sesión
-- `GET|POST /quiz_question` -> `quiz_question()` — Mostrar pregunta / procesar respuesta
-- `GET /end_quiz` -> `end_quiz()` — Forzar fin de sesión
+### `lib/words.ts`
 
-### Flujo del quiz
+- `getDashboardStats()`
+- `listWords(filters)`
+- `getWordById(id)`
+- `createWord(input)`
+- `updateWord(id, input)`
+- `deleteWord(id)`
+- `bulkDeleteWords(ids)`
+- `exportWords()`
 
-```
-configure_quiz [POST]
-  → cierra sesión activa si existe
-  → filtra palabras por language, feature, difficulty
-  → genera UUID, shuffle(word_ids)
-  → crea QuizSession en BD
-  → session["quiz_session_id"] = UUID
-  → redirect /quiz_question
+### `lib/settings.ts`
 
-quiz_question [GET]
-  → recupera QuizSession por cookie
-  → lee word_ids[current_index]
-  → determina quiz_type (to_spanish/to_original/mixed)
-  → render quiz.html con stats
+- listas activas de idiomas y características
+- alta o reactivación
+- soft-delete o hard-delete según uso
 
-quiz_question [POST]
-  → normaliza respuesta del usuario vs correcta
-  → actualiza Word.times_practiced, times_correct, last_practiced
-  → avanza current_index
-  → si completo → _finalize_quiz() con stats
+### `lib/quiz.ts`
 
-query param ?skip=1 → avanza sin contar acierto
-```
+- `startQuizSession`
+- `getActiveQuizSession`
+- `getQuizQuestionData`
+- `submitQuizAnswer`
+- `skipQuizAnswer`
+- `endActiveQuiz`
 
-### Tipos de quiz
-- `to_spanish` — muestra english_word, espera translation
-- `to_original` — muestra translation, espera english_word
-- `mixed` — alterna entre ambos
+La sesión activa se identifica con una cookie `httpOnly` y persiste además en la tabla `quiz_session`.
 
-### Filtros de dificultad (`only_difficult`)
-- `all` — todas las palabras
-- `needs_practice` — times_practiced < 3 OR accuracy < 70%
-- `new` — times_practiced == 0
+### `lib/import-export.ts`
 
----
+- `processImport(data, overwriteMode, createMissingMode)`
+- sanitiza registros
+- parsea fechas flexibles
+- crea relaciones faltantes si se ha pedido
+- detecta duplicados normalizados por idioma
 
-## Blueprint `settings` (blueprints/settings.py)
+## Redirects con feedback
 
-- `GET|POST /settings` — Gestión idiomas y categorías
-- `POST /delete_language/<id>` — Elimina o desactiva idioma
-- `POST /delete_feature/<id>` — Elimina o desactiva categoría
+No hay flashes de servidor al estilo Flask. El patrón nuevo es:
 
-- Si el idioma/categoría tiene palabras -> soft-delete (`active=False`)
-- Si no tiene palabras -> hard-delete
-- Si se da de alta uno que existe inactivo -> se reactiva
+1. la action hace la mutación
+2. invalida caché con `revalidatePath`
+3. redirige con `status` y `message`
+4. la página muestra `FlashBanner`
 
----
+## Route handlers
 
-## Blueprint `api_v1` (blueprints/api.py)
-
-Ver guía `api.md`.
-
-## Helpers clave
-
-- `utils/text.py` -> `normalize_text(value)` — `unicodedata.normalize("NFD", casefold())` + quitar categoría Mn. Usado para comparar respuestas y detectar duplicados.
-- `utils/database.py` -> `init_db(app)` — Wrapper de `db.init_app()`
-- `config.py` -> `apply_env_overrides(app)` — Lee env vars y pisa config de la app
+- `app/export_words/route.ts` — descarga JSON
+- `app/end_quiz/route.ts` — termina sesión y redirige

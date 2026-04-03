@@ -3,101 +3,53 @@
 ## Setup local
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+pnpm install
+cp .env.example .env
+npx prisma migrate dev --name init
 ```
 
-## Variables de entorno mínimas
-
-Crear `.env` en la raíz:
-```
-SECRET_KEY=tu-clave-secreta
-SQLALCHEMY_DATABASE_URI=sqlite:///instance/app.db
-FLASK_CONFIG=development
-```
-
-## Ejecutar en desarrollo
+## Desarrollo
 
 ```bash
-flask --app app run
-# o directamente:
-python app.py
+pnpm dev
 ```
 
-La app corre en `http://127.0.0.1:5000`.
+La app corre en `http://127.0.0.1:3000`.
 
-Modo check (valida que la app arranca sin lanzar servidor):
-```bash
-python app.py --check
-```
-
-## Base de datos
+## Build de producción
 
 ```bash
-# Inicializar migraciones (solo primera vez)
-flask db init
-
-# Crear migración tras cambios en modelos
-flask db migrate -m "descripción del cambio"
-
-# Aplicar migraciones
-flask db upgrade
+pnpm build
+pnpm start
 ```
 
-## Tests
+`pnpm start` ejecuta el servidor standalone de Next y fija `DATABASE_URL` absoluta para usar `prisma/dev.db`.
+
+## Migraciones
 
 ```bash
-pytest                      # Ejecutar todos
-pytest -v                   # Verbose
-pytest -k test_quiz         # Solo tests de quiz
-pytest --tb=short           # Tracebacks cortos
+npx prisma migrate dev --name nombre_del_cambio
+npx prisma migrate deploy
+npx prisma generate
 ```
 
-## Tipado estático
+## Variables de entorno
 
-```bash
-mypy --config-file mypy.ini
+Mínimo:
+
+```env
+DATABASE_URL="file:./dev.db"
 ```
 
-## Despliegue en producción
+Para desarrollo y build del repo actual, los scripts ya convierten esa ruta a absoluta al arrancar Next.
 
-```bash
-gunicorn -c gunicorn.conf.py wsgi:app
-```
+## Despliegue self-host
 
-### Config Gunicorn (`gunicorn.conf.py`)
+El flujo esperado es:
 
-Define: `preload_app`, keep-alive, timeouts razonables.
+1. `pnpm install`
+2. `npx prisma migrate deploy`
+3. `pnpm build`
+4. `pnpm start`
 
-### Config necesaria en producción
-
-```
-SECRET_KEY=clave-secreta-fuerte
-SQLALCHEMY_DATABASE_URI=sqlite:///ruta/absoluta/produccion.db
-FLASK_CONFIG=production
-SESSION_COOKIE_SECURE=true
-SESSION_COOKIE_SAMESITE=Strict
-STRUCTURED_LOGS=true
-SENTRY_DSN=https://xxx@sentry.io/xxx
-SENTRY_ENVIRONMENT=production
-```
-
-## Comandos útiles
-
-- `flask shell` — REPL con context de app
-- `flask db current` — Migración actual
-- `flask db history` — Historial migraciones
-- `python app.py --check` — Valida arranque sin servidor
-
-## Dependencias (requirements.txt)
-
-- flask — Framework web
-- flask-sqlalchemy — ORM
-- flask-wtf — Forms + CSRF
-- flask-migrate — Migraciones Alembic
-- sentry-sdk — Monitorización errores
-- python-dotenv — Carga .env
-- gunicorn — Servidor WSGI producción
-- mypy — Tipado estático
-- pytest — Testing
+Si usas otra ubicación para SQLite, exporta `DATABASE_URL` absoluta antes de arrancar el proceso Node.

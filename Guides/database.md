@@ -2,88 +2,80 @@
 
 ## ORM
 
-SQLAlchemy vía Flask-SQLAlchemy. Inicialización en `utils/database.py`:
-```python
-db = SQLAlchemy()
-init_db(app)  # llama db.init_app(app)
-```
+Prisma con SQLite.
 
-## Esquema (4 tablas)
+- esquema fuente: `prisma/schema.prisma`
+- cliente singleton: `lib/prisma.ts`
+- migraciones: `prisma/migrations/`
+
+## Tablas
 
 ### `word`
 
-- `id` — Integer PK, auto-increment
-- `english_word` — String(100), NOT NULL, indexed
-- `normalized_english_word` — String(100), NOT NULL, indexed. casefold + sin acentos. Se auto-actualiza via `@validates('english_word')`
-- `translation` — String(100), NOT NULL
-- `explanation` — String(300), nullable
-- `language_id` — Integer FK -> `language.id`, NOT NULL, indexed
-- `feature_id` — Integer FK -> `feature.id`, NOT NULL, indexed
-- `times_practiced` — Integer, default 0
-- `times_correct` — Integer, default 0
-- `last_practiced` — DateTime, nullable
-- `created_at` — DateTime, default `datetime.utcnow`
+- `id`
+- `english_word`
+- `normalized_english_word`
+- `translation`
+- `explanation`
+- `language_id`
+- `feature_id`
+- `times_practiced`
+- `times_correct`
+- `last_practiced`
+- `created_at`
 
-Unique constraint: `uq_words_language_normalized` sobre `(language_id, normalized_english_word)`
+Restricción única:
+
+`(language_id, normalized_english_word)`
 
 ### `language`
 
-- `id` — Integer PK
-- `language` — String(50), NOT NULL, UNIQUE
-- `active` — Boolean, default True, NOT NULL
+- `id`
+- `language`
+- `active`
+- `created_at`
+- `updated_at`
 
 ### `feature`
 
-- `id` — Integer PK
-- `feature` — String(50), NOT NULL, UNIQUE
-- `active` — Boolean, default True, NOT NULL
+- `id`
+- `feature`
+- `active`
+- `created_at`
+- `updated_at`
 
 ### `quiz_session`
 
-- `id` — Integer PK
-- `session_id` — String(36), UUID v4, NOT NULL
-- `word_ids` — Text, JSON array de IDs
-- `created_at` — DateTime
-- `total_questions` — Integer, default 0
-- `correct_answers` — Integer, default 0
-- `current_index` — Integer, default 0, NOT NULL
-- `is_completed` — Boolean, default False, NOT NULL
-- `quiz_config` — Text, JSON con config del quiz
+- `id`
+- `session_id`
+- `word_ids`
+- `total_questions`
+- `correct_answers`
+- `current_index`
+- `is_completed`
+- `quiz_config`
+- `created_at`
 
-## Relaciones
+## Reglas de dominio
 
-```
-Language 1──N Word  (backref='language')
-Feature  1──N Word  (backref='feature')
-```
-
-## Métodos clave del modelo Word
-
-```python
-word.to_dict()           # dict con accuracy calculada, fechas ISO, nombres de language/feature
-word.get_accuracy()      # (times_correct / times_practiced * 100) or 0
-word.needs_practice()    # True si: nunca practicada, <3 intentos, o <70% accuracy
-word.practice_priority() # 3=nueva, 2=<3 intentos, 1=<70% accuracy, 0=ok
-word.set_normalized_english()  # actualiza normalized_english_word
-```
+- los duplicados se detectan por idioma + palabra inglesa normalizada
+- `normalized_english_word` se calcula con NFD, eliminación de marcas y lowercase
+- `Language` y `Feature` hacen soft-delete si tienen palabras asociadas
+- cada respuesta de quiz actualiza `times_practiced`, `times_correct` y `last_practiced`
+- una palabra necesita práctica si nunca se practicó, tiene menos de 3 intentos o precisión menor al 70%
 
 ## Migraciones
 
-Alembic vía Flask-Migrate. Las migraciones están en `migrations/versions/`.
+Comandos habituales:
 
 ```bash
-flask db migrate -m "descripción"
-flask db upgrade
+npx prisma migrate dev --name nombre_del_cambio
+npx prisma migrate deploy
+npx prisma generate
 ```
 
-Dos migraciones existentes:
-1. `2024022501_initial_schema` — esquema inicial
-2. `2024072001_normalized_words_and_quiz_session` — añade normalized_english_word + QuizSession
+## Ruta de la base
 
-## Normalización SQLite
-
-`_normalise_sqlite_uri()` en `app.py` resuelve rutas relativas de SQLite al directorio raíz del proyecto. Crea el directorio padre si no existe.
-
-## Convención de soft-delete
-
-Language y Feature nunca se borran de verdad si tienen palabras asociadas. Se marca `active=False`. Al listar se filtra por `active=True` salvo que se pida explícitamente lo contrario.
+- Para Prisma CLI, `.env` usa `DATABASE_URL="file:./dev.db"` y la resuelve desde `prisma/`.
+- Para `pnpm dev`, `pnpm build` y `pnpm start`, los scripts fijan una ruta absoluta a `prisma/dev.db`.
+- Si cambias esta estrategia, asegúrate de que `dev`, `build`, `start` y Prisma CLI sigan apuntando a la misma BD.

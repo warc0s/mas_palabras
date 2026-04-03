@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Word {
+  id                     Int       @id @default(autoincrement())
+  englishWord            String    @map("english_word")
+  normalizedEnglishWord  String    @map("normalized_english_word")
+  translation            String
+  explanation            String?
+  languageId             Int       @map("language_id")
+  featureId              Int       @map("feature_id")
+  timesPracticed         Int       @default(0) @map("times_practiced")
+  timesCorrect           Int       @default(0) @map("times_correct")
+  lastPracticed          DateTime? @map("last_practiced")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  language               Language  @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  feature                Feature   @relation(fields: [featureId], references: [id], onDelete: Restrict)
+
+  @@unique([languageId, normalizedEnglishWord], map: "uq_words_language_normalized")
+  @@map("word")
+}
+
+model Language {
+  id        Int      @id @default(autoincrement())
+  language  String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  words     Word[]
+
+  @@map("language")
+}
+
+model Feature {
+  id        Int      @id @default(autoincrement())
+  feature   String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  words     Word[]
+
+  @@map("feature")
+}
+
+model QuizSession {
+  id             Int      @id @default(autoincrement())
+  sessionId      String   @unique @map("session_id")
+  wordIdsJson    String   @map("word_ids")
+  totalQuestions Int      @default(0) @map("total_questions")
+  correctAnswers Int      @default(0) @map("correct_answers")
+  currentIndex   Int      @default(0) @map("current_index")
+  isCompleted    Boolean  @default(false) @map("is_completed")
+  quizConfigJson String?  @map("quiz_config")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("quiz_session")
+}

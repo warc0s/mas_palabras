@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply min-h-screen bg-gradient-to-br from-neutral-25 via-primary-50/30 to-secondary-50/20 font-sans text-neutral-900 antialiased;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    @apply transition-all duration-200;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-primary-50/50 hover:text-primary-600;
+  }
+
+  .mobile-nav-link {
+    @apply flex items-center gap-3 rounded-lg px-4 py-3 text-neutral-700 hover:bg-primary-50/50 hover:text-primary-600;
+  }
+
+  .page-card {
+    @apply rounded-3xl border border-neutral-200/50 bg-white/80 shadow-xl backdrop-blur-sm;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-3 font-medium text-white hover:bg-primary-700;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-700 px-4 py-3 font-medium text-white hover:bg-neutral-800;
+  }
+
+  .outline-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 font-medium text-neutral-800 hover:bg-neutral-50;
+  }
+
+  .input-label {
+    @apply mb-2 block text-sm font-medium text-neutral-700;
+  }
+
+  .text-input,
+  .select-input,
+  .textarea-input {
+    @apply w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100;
+  }
+
+  .textarea-input {
+    @apply min-h-[120px];
+  }
+}

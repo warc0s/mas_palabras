@@ -1,93 +1,52 @@
-# Frontend — Templates y UI
+# Frontend
 
 ## Stack visual
 
-- Tailwind CSS vía CDN (`cdn.tailwindcss.com`) con config inline en `base.html`
-- Font Awesome 6 para iconos
-- Google Fonts: Inter (300–700)
-- Sin build step: todo es Tailwind CDN + `<style type="text/tailwindcss">`
+- Next.js App Router
+- React Server Components por defecto
+- Client Components solo cuando hay interacción real
+- Tailwind CSS
+- `next/font` para Inter
+- Font Awesome vía script global
 
-## Estructura de templates
+## Componentes principales
 
-Todos extienden `base.html`:
-```
-base.html
-├── <nav>              # Sticky, glassmorphism, responsive (mobile menu)
-├── flash messages     # Auto-hide a 5s, animaciones
-├── {% block content %} # Cada template sobrescribe esto
-└── <footer>
-```
+- `components/site-shell.tsx` — nav, footer y contenedor general
+- `components/mobile-nav.tsx` — menú responsive
+- `components/flash-banner.tsx` — mensajes de estado
+- `components/words-table.tsx` — tabla con selección múltiple y borrados
 
-## Tailwind config (en base.html)
+## Rutas UI
 
-Tema personalizado con 3 paletas:
-- primary — Sky blue (#0ea5e9 hasta #0c4a6e)
-- secondary — Purple (#a855f7 hasta #581c87)
-- accent — Amber (#f59e0b)
-- neutral — Gris estándar + neutral-25 extra
+- `/` — dashboard
+- `/maspalabras` — alta
+- `/verpalabras` — listado y filtros
+- `/edit/[id]` — edición
+- `/quiz` — configuración del quiz
+- `/quiz_question` — pregunta activa
+- `/import_words` — import JSON
+- `/settings` — idiomas y características
 
-Animaciones definidas: `fade-in`, `slide-up`, `scale-in`, `shimmer`
+## Línea visual
 
-## Componentes CSS reutilizables
+Se ha conservado el look general de la app anterior:
 
-Definidos con `@apply` en `<style type="text/tailwindcss">` dentro de cada template:
+- fondos con gradiente suave
+- tarjetas blancas translúcidas
+- colores `primary`, `secondary`, `neutral`
+- copy y estructura muy parecidos a las plantillas Jinja originales
 
-- `.nav-link` (base.html) — Links de navegación desktop
-- `.mobile-nav-link` (base.html) — Links navegación mobile
-- `.stats-pill` (index.html) — Pastillas de estadísticas
-- `.feature-card` (index.html) — Tarjetas de features
-- `.modern-button` (index.html) — Botones con efecto hover
-- `.progress-card` / `.progress-bar` / `.progress-fill` (index.html) — Barras de progreso
+No conviertas esta UI en otro dashboard genérico. Si hay que tocar diseño, respeta primero el lenguaje visual ya existente.
 
-## Templates por página
+## Dónde tocar qué
 
-### `index.html` — Dashboard
-- Hero section con título y stats pills
-- 3 feature cards: Añadir, Explorar, Practicar
-- Progress dashboard (si hay palabras): total, sesiones, precisión, pendientes
-- CTA "Practicar Palabras Difíciles" si hay pendientes
+- layout general, nav y footer -> `components/site-shell.tsx`
+- estilos compartidos -> `app/globals.css`
+- tabla de vocabulario -> `components/words-table.tsx`
+- copy o estructura de una pantalla -> su `app/.../page.tsx`
 
-### `maspalabras.html` — Alta palabra
-- Formulario WordForm con campos: english_word, translation, explanation, language (select), feature (select)
+## Límite server/client
 
-### `verpalabras.html` — Listado
-- Barra de búsqueda + filtros (idioma, categoría) + sort
-- Tabla de palabras paginada
-- Info: "Mostrando X - Y de Z · Página N de M"
-- Acciones por palabra: editar, eliminar
-
-### `edit.html` — Edición
-- Mismo formulario que maspalabras, pre-rellenado
-
-### `quiz_config.html` — Configurar quiz
-- Formulario: idioma, categoría, tipo de quiz, dificultad
-
-### `quiz.html` — Pregunta activa
-- Muestra palabra según quiz_type
-- Input respuesta + botones verificar/skip
-- Stats: respondidas, correctas, total disponible
-
-### `import_words.html` — Importar
-- Upload JSON + opciones duplicados + creación automática
-
-### `settings.html` — Ajustes
-- Dos formularios: nuevo idioma, nueva categoría
-- Lista de idiomas y categorías activos con botón eliminar
-
-### Error pages
-- `404.html`, `500.html`, `413.html` — páginas de error custom
-
-## Patrones JS (inline en base.html)
-
-- Mobile menu toggle: `#mobile-menu-button` -> `#mobile-menu` classList toggle
-- Auto-hide flashes: setTimeout 5s, fade-out + remove
-- Smooth scroll: para anchors internos
-
-## Donde tocar qué
-
-- Cambiar colores globalmente -> Tailwind config en `base.html`
-- Añadir una sección al nav -> `base.html` nav desktop + mobile
-- Cambiar estilos de cards/botones -> `@apply` blocks en cada template
-- Añadir JS global -> `<script>` en `base.html` al final
-- Nueva página -> Crear template, extender `base.html`, bloque `content`
-- Cambiar layout general -> `base.html`
+- páginas y fetch de datos: server component
+- selección múltiple y confirmaciones de borrado: client component
+- formularios: server actions

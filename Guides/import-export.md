@@ -1,11 +1,11 @@
-# Import / Export de Palabras
+# Import / Export
 
 ## Export
 
 Ruta: `GET /export_words`
-Formato: JSON array, descarga como `palabras.json`
 
-Cada objeto:
+Devuelve un array JSON descargable con esta forma:
+
 ```json
 {
   "id": 1,
@@ -18,15 +18,15 @@ Cada objeto:
   "times_correct": 0,
   "accuracy": 0,
   "last_practiced": null,
-  "created_at": "2024-02-25T10:00:00"
+  "created_at": "2026-04-03T15:00:00.000Z"
 }
 ```
 
 ## Import
 
-Ruta: `GET|POST /import_words`
+Ruta: `/import_words`
 
-### Formato esperado (JSON array)
+El formulario acepta un JSON array con objetos como:
 
 ```json
 [
@@ -38,79 +38,43 @@ Ruta: `GET|POST /import_words`
     "feature": "A1",
     "times_practiced": 2,
     "times_correct": 1,
-    "last_practiced": "2024-07-10T12:00:00Z"
+    "last_practiced": "2026-04-03T15:00:00Z"
   }
 ]
 ```
 
-Campos requeridos: `english_word`, `translation`, `language`, `feature`
-Opcionales: `explanation`, `times_practiced`, `times_correct`, `last_practiced`
+## Opciones
 
-### Parseo de `last_practiced`
+### Duplicados
 
-Acepta múltiples formatos:
-- ISO 8601: `"2024-07-10T12:00:00Z"`, `"2024-07-10T15:00:00+02:00"`
-- Fechas: `"2024-07-10"`, `"10/07/2024"`, `"10-07-2024"`, `"2024/07/10"`
-- Timestamp Unix: `1720612800`
-- Valores nulos: `null`, `""`, `"Nunca"`, `"nunca"` → `None`
+- `skip` — omite la palabra si ya existe por idioma + palabra normalizada
+- `update` — actualiza la existente
 
-### Opciones del formulario
+### Relaciones faltantes
 
-Duplicados (`overwrite_duplicates`):
-- `skip` (default) — omite palabras duplicadas, las cuenta como skipped
-- `update` — sobrescribe translation, explanation, feature_id (y stats si vienen)
+- `create` — crea idiomas o características inexistentes
+- `skip` — omite la palabra
 
-Datos faltantes (`create_missing`):
-- `create` (default) — crea idiomas/categorías que no existan
-- `skip` — omite palabras cuyo idioma o categoría no exista en BD
+## Parseo de fechas
 
-### Lógica de procesamiento (process_import en words.py)
+Se aceptan:
 
-```
-Por cada item en el array:
-  1. sanitize: valida campos, normaliza texto, parsea stats/fechas
-     - Errores → se registran con código (missing_fields, empty_fields, invalid_fields, negative_stats...)
-  2. ensure_relations: resuelve language y feature por nombre
-     - Si no existen y create_missing="create" → los crea
-     - Si no existen y create_missing="skip" → salta la palabra
-  3. find_existing_word: busca por (language_id, normalized_english_word)
-     - Si existe y overwrite="skip" → skipped
-     - Si existe y overwrite="update" → actualiza campos
-     - Si no existe → crea nueva
-  4. bulk_save de todas las nuevas
-  5. commit (o rollback si falla)
-```
+- ISO 8601
+- `dd/mm/yyyy`
+- `dd-mm-yyyy`
+- `yyyy/mm/dd`
+- timestamp Unix en segundos
+- `null`, `""`, `Nunca`, `nunca`
 
-### Detección de duplicados
+## Códigos de incidencia por línea
 
-Se compara `normalized_english_word` (casefold + sin acentos).
-"Café" == "cafe" == "CAFÉ" → mismo duplicado.
-
-### Resultado (ImportResult)
-
-```python
-{
-  "success": 5,        # palabras creadas/actualizadas
-  "skipped": 2,        # omitidas (duplicados o datos faltantes)
-  "errors": 1,         # errores (registro inválido)
-  "created_languages": ["Francés"],
-  "created_features": ["B2"],
-  "issues": [
-    {"line": 3, "code": "duplicate", "action": "skipped"},
-    {"line": 7, "code": "missing_fields", "action": "error"}
-  ]
-}
-```
-
-### Códigos de error por línea
-
-- `missing_fields` (error) — Faltan campos requeridos
-- `empty_fields` (error) — Campos vacíos tras strip
-- `invalid_fields` (error) — TypeError/ValueError al leer campos
-- `invalid_record` (error) — Item no es dict
-- `negative_stats` (error) — times_practiced/correct < 0
-- `invalid_date_format` (error) — last_practiced no parseable
-- `invalid_integer` (error) — times_practiced/correct no son int
-- `language_missing` (skipped) — Idioma no existe y create_missing="skip"
-- `feature_missing` (skipped) — Feature no existe y create_missing="skip"
-- `duplicate` (skipped) — Palabra ya existe y overwrite="skip"
+- `missing_fields`
+- `empty_fields`
+- `invalid_fields`
+- `invalid_record`
+- `negative_stats`
+- `invalid_integer`
+- `invalid_date_format`
+- `language_missing`
+- `feature_missing`
+- `duplicate`
