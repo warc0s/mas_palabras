@@ -3,8 +3,16 @@ __pycache__/
 *.egg-info/
 .env
 .env.*
+.codex
 instance/*.db
 instance/*.db*
 *.sqlite3
 *.log
 utils/__pycache__/
+node_modules/
+.next/
+coverage/
+dist/
+vitest.config.ts.timestamp-*
+prisma/dev.db
+prisma/dev.db-journal
