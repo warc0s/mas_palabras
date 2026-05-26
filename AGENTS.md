@@ -53,7 +53,7 @@ Guides/             # Documentación de referencia
 
 ## Principios
 
-- Prioriza base sólida sobre features rápidas. Si falta información, deja un TODO explícito antes que inventar.
+- Prioriza base sólida sobre funcionalidades rápidas. Si falta información, deja un TODO explícito antes que inventar.
 - Cambios pequeños y focalizados. Nada de refactors masivos no pedidos.
 - Si una decisión cambia el enfoque o el alcance, pausa y pide confirmación.
 - Ataca la causa raíz. No maquilles estados ni acumules deuda sin señalarla.
@@ -70,12 +70,12 @@ Guides/             # Documentación de referencia
 
 ## Modelo de dominio — reglas clave
 
-El modelo gira en torno a 4 tablas: `word`, `language`, `feature`, `quiz_session`.
+El modelo gira en torno a 4 tablas: `word`, `language`, `tag`, `quiz_session`.
 
 Reglas que no se pueden romper:
 
 - Los duplicados se detectan por `(language_id, normalized_english_word)`. En código, la normalización está en `lib/text.ts`: `trim`, NFD, eliminación de marcas Unicode y `toLocaleLowerCase("es")`.
-- Language y Feature hacen soft-delete (active=False) si tienen palabras asociadas.
+- Language y Tag hacen soft-delete (active=False) si tienen palabras asociadas.
 - El tracking de progreso (`times_practiced`, `times_correct`, `last_practiced`) se actualiza en cada respuesta de quiz.
 - Una palabra "necesita práctica" si: nunca practicada, menos de 3 intentos, o precisión menor al 70%.
 

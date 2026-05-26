@@ -13,7 +13,7 @@ export async function createWordAction(formData: FormData) {
     translation: formData.get("translation"),
     explanation: formData.get("explanation"),
     languageId: formData.get("languageId"),
-    featureId: formData.get("featureId"),
+    tagId: formData.get("tagId"),
   });
 
   if (!parsed.success) {
@@ -39,7 +39,7 @@ export async function updateWordAction(formData: FormData) {
     translation: formData.get("translation"),
     explanation: formData.get("explanation"),
     languageId: formData.get("languageId"),
-    featureId: formData.get("featureId"),
+    tagId: formData.get("tagId"),
   });
 
   if (!Number.isInteger(wordId) || !parsed.success) {
@@ -135,8 +135,8 @@ function mapWordError(error: unknown): string {
       return "La palabra ya existe en este idioma.";
     case "language_not_found":
       return "El idioma seleccionado no existe o está inactivo.";
-    case "feature_not_found":
-      return "La característica seleccionada no existe o está inactiva.";
+    case "tag_not_found":
+      return "La etiqueta seleccionada no existe o está inactiva.";
     case "word_not_found":
       return "La palabra no existe.";
     default:

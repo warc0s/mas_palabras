@@ -3,16 +3,16 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/flash-banner";
 import { startQuizAction } from "@/lib/actions/quiz-actions";
 import { resolveSearchParams } from "@/lib/flash";
-import { getActiveFeatures, getActiveLanguages } from "@/lib/settings";
+import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 
 export default async function QuizConfigPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [languages, features, params] = await Promise.all([
+  const [languages, tags, params] = await Promise.all([
     getActiveLanguages(),
-    getActiveFeatures(),
+    getActiveTags(),
     resolveSearchParams(searchParams),
   ]);
 
@@ -43,14 +43,14 @@ export default async function QuizConfigPage({
                 </select>
               </div>
               <div>
-                <label className="input-label" htmlFor="featureId">
-                  Característica
+                <label className="input-label" htmlFor="tagId">
+                  Etiqueta
                 </label>
-                <select className="select-input" defaultValue={0} id="featureId" name="featureId">
-                  <option value={0}>Todas las características</option>
-                  {features.map((feature) => (
-                    <option key={feature.id} value={feature.id}>
-                      {feature.feature}
+                <select className="select-input" defaultValue={0} id="tagId" name="tagId">
+                  <option value={0}>Todas las etiquetas</option>
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.id}>
+                      {tag.tag}
                     </option>
                   ))}
                 </select>

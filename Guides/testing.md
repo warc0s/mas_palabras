@@ -28,6 +28,11 @@ pnpm build
 
 - construcción y lectura de mensajes de redirect
 
+`tests/unit/import-export.test.ts`
+
+- import JSON con campo `tag`
+- rechazo de payloads sin campo `tag`
+
 ## Validación funcional mínima recomendada
 
 Además de la suite, valida manualmente:

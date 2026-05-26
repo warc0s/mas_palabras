@@ -25,7 +25,7 @@
 - `/quiz` — configuración del quiz
 - `/quiz_question` — pregunta activa
 - `/import_words` — import JSON
-- `/settings` — idiomas y características
+- `/settings` — idiomas y etiquetas
 
 ## Línea visual
 

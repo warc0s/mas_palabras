@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 
 import { redirectWithFlash } from "@/lib/flash";
 import {
-  createOrReactivateFeature,
+  createOrReactivateTag,
   createOrReactivateLanguage,
-  deleteFeature,
+  deleteTag,
   deleteLanguage,
 } from "@/lib/settings";
 import { settingsItemSchema } from "@/lib/validators";
@@ -27,16 +27,16 @@ export async function createLanguageAction(formData: FormData) {
   redirectWithFlash("/settings", message.includes("ya existe") ? "warning" : "success", message);
 }
 
-export async function createFeatureAction(formData: FormData) {
+export async function createTagAction(formData: FormData) {
   const parsed = settingsItemSchema.safeParse({
     name: formData.get("name"),
   });
 
   if (!parsed.success) {
-    redirectWithFlash("/settings", "error", "Introduce una característica válida.");
+    redirectWithFlash("/settings", "error", "Introduce una etiqueta válida.");
   }
 
-  const message = await createOrReactivateFeature(parsed.data.name);
+  const message = await createOrReactivateTag(parsed.data.name);
   revalidatePath("/settings");
   revalidatePath("/maspalabras");
   revalidatePath("/edit/[id]");
@@ -53,9 +53,9 @@ export async function deleteLanguageAction(languageId: number) {
   }
 }
 
-export async function deleteFeatureAction(featureId: number) {
+export async function deleteTagAction(tagId: number) {
   try {
-    const message = await deleteFeature(featureId);
+    const message = await deleteTag(tagId);
     revalidatePath("/settings");
     redirectWithFlash(
       "/settings",
@@ -63,6 +63,6 @@ export async function deleteFeatureAction(featureId: number) {
       message,
     );
   } catch {
-    redirectWithFlash("/settings", "error", "No se pudo eliminar la característica.");
+    redirectWithFlash("/settings", "error", "No se pudo eliminar la etiqueta.");
   }
 }

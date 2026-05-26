@@ -21,7 +21,7 @@ export type WordWithRelations = {
   translation: string;
   explanation: string | null;
   languageId: number;
-  featureId: number;
+  tagId: number;
   timesPracticed: number;
   timesCorrect: number;
   lastPracticed: Date | null;
@@ -31,9 +31,9 @@ export type WordWithRelations = {
     language: string;
     active: boolean;
   };
-  feature: {
+  tag: {
     id: number;
-    feature: string;
+    tag: string;
     active: boolean;
   };
 };
@@ -49,6 +49,6 @@ export type ImportResult = {
   skipped: number;
   errors: number;
   createdLanguages: string[];
-  createdFeatures: string[];
+  createdTags: string[];
   issues: ImportIssue[];
 };

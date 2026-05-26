@@ -14,7 +14,7 @@ Devuelve un array JSON descargable con esta forma:
     "translation": "casa",
     "explanation": "donde la gente vive",
     "language": "Inglés",
-    "feature": "A1",
+    "tag": "A1",
     "times_practiced": 0,
     "times_correct": 0,
     "accuracy": 0,
@@ -37,7 +37,7 @@ El formulario acepta un JSON array con objetos como:
     "translation": "casa",
     "explanation": "donde la gente vive",
     "language": "Inglés",
-    "feature": "A1",
+    "tag": "A1",
     "times_practiced": 2,
     "times_correct": 1,
     "last_practiced": "2026-04-03T15:00:00Z"
@@ -54,7 +54,7 @@ El formulario acepta un JSON array con objetos como:
 
 ### Relaciones faltantes
 
-- `create` — crea idiomas o características inexistentes
+- `create` — crea idiomas o etiquetas inexistentes
 - `skip` — omite la palabra
 
 ## Parseo de fechas
@@ -78,6 +78,6 @@ Se aceptan:
 - `invalid_integer`
 - `invalid_date_format`
 - `language_missing`
-- `feature_missing`
+- `tag_missing`
 - `duplicate`
 - `unknown_error`

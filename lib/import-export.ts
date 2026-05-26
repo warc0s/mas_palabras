@@ -13,9 +13,9 @@ type SanitizedImportItem = {
   translation: string;
   explanation: string;
   language: string;
-  feature: string;
+  tag: string;
   languageId?: number;
-  featureId?: number;
+  tagId?: number;
   timesPracticed: number;
   timesCorrect: number;
   hasStats: boolean;
@@ -39,12 +39,12 @@ export async function processImport(
     skipped: 0,
     errors: 0,
     createdLanguages: [],
-    createdFeatures: [],
+    createdTags: [],
     issues: [],
   };
 
   const createdLanguages = new Set<string>();
-  const createdFeatures = new Set<string>();
+  const createdTags = new Set<string>();
   const pendingNewRecords = new Map<string, number>();
 
   await prisma.$transaction(async (tx) => {
@@ -65,10 +65,10 @@ export async function processImport(
           sanitized,
           createMissingMode,
           createdLanguages,
-          createdFeatures,
+          createdTags,
         );
         sanitized.languageId = relations.languageId;
-        sanitized.featureId = relations.featureId;
+        sanitized.tagId = relations.tagId;
       } catch (error) {
         registerImportIssue(result, line, getErrorCode(error), "skipped");
         continue;
@@ -94,7 +94,7 @@ export async function processImport(
             data: {
               translation: sanitized.translation,
               explanation: sanitized.explanation,
-              featureId: sanitized.featureId,
+              tagId: sanitized.tagId,
               ...(sanitized.hasStats
                 ? {
                     timesPracticed: sanitized.timesPracticed,
@@ -121,7 +121,7 @@ export async function processImport(
           translation: sanitized.translation,
           explanation: sanitized.explanation,
           languageId: sanitized.languageId!,
-          featureId: sanitized.featureId!,
+          tagId: sanitized.tagId!,
           timesPracticed: sanitized.timesPracticed,
           timesCorrect: sanitized.timesCorrect,
           lastPracticed: sanitized.lastPracticed,
@@ -134,7 +134,7 @@ export async function processImport(
   });
 
   result.createdLanguages = [...createdLanguages].sort();
-  result.createdFeatures = [...createdFeatures].sort();
+  result.createdTags = [...createdTags].sort();
   return result;
 }
 
@@ -143,13 +143,13 @@ async function ensureRelations(
   sanitized: SanitizedImportItem,
   createMissingMode: CreateMissingMode,
   createdLanguages: Set<string>,
-  createdFeatures: Set<string>,
+  createdTags: Set<string>,
 ) {
   let language = await tx.language.findUnique({
     where: { language: sanitized.language },
   });
-  let feature = await tx.feature.findUnique({
-    where: { feature: sanitized.feature },
+  let tag = await tx.tag.findUnique({
+    where: { tag: sanitized.tag },
   });
 
   if (!language) {
@@ -162,17 +162,17 @@ async function ensureRelations(
     createdLanguages.add(language.language);
   }
 
-  if (!feature) {
+  if (!tag) {
     if (createMissingMode !== "create") {
-      throw new Error("feature_missing");
+      throw new Error("tag_missing");
     }
-    feature = await tx.feature.create({
-      data: { feature: sanitized.feature, active: true },
+    tag = await tx.tag.create({
+      data: { tag: sanitized.tag, active: true },
     });
-    createdFeatures.add(feature.feature);
+    createdTags.add(tag.tag);
   }
 
-  return { languageId: language.id, featureId: feature.id };
+  return { languageId: language.id, tagId: tag.id };
 }
 
 function sanitizeImportItem(item: unknown): SanitizedImportItem {
@@ -181,7 +181,7 @@ function sanitizeImportItem(item: unknown): SanitizedImportItem {
   }
 
   const record = item as Record<string, unknown>;
-  const requiredFields = ["english_word", "translation", "language", "feature"] as const;
+  const requiredFields = ["english_word", "translation", "language", "tag"] as const;
   const missingFields = requiredFields.filter((field) => !(field in record));
   if (missingFields.length > 0) {
     throw new Error("missing_fields");
@@ -190,10 +190,10 @@ function sanitizeImportItem(item: unknown): SanitizedImportItem {
   const englishWord = readString(record.english_word);
   const translation = readString(record.translation);
   const language = readString(record.language);
-  const feature = readString(record.feature);
+  const tag = readString(record.tag);
   const explanation = readOptionalString(record.explanation);
 
-  if (!englishWord || !translation || !language || !feature) {
+  if (!englishWord || !translation || !language || !tag) {
     throw new Error("empty_fields");
   }
 
@@ -207,7 +207,7 @@ function sanitizeImportItem(item: unknown): SanitizedImportItem {
     translation,
     explanation,
     language,
-    feature,
+    tag,
     timesPracticed: parsedStats.timesPracticed,
     timesCorrect: parsedStats.timesCorrect,
     hasStats: parsedStats.hasStats,

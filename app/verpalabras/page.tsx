@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/flash-banner";
 import { WordsTable } from "@/components/words-table";
 import { getSingleParam, resolveSearchParams } from "@/lib/flash";
-import { getActiveFeatures, getActiveLanguages } from "@/lib/settings";
+import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 import { getAccuracy, needsPractice } from "@/lib/word-metrics";
 import { listWords } from "@/lib/words";
 
@@ -15,7 +15,7 @@ export default async function ViewWordsPage({
   const params = await resolveSearchParams(searchParams);
 
   const languageId = Number(getSingleParam(params, "language") ?? "0");
-  const featureId = Number(getSingleParam(params, "feature") ?? "0");
+  const tagId = Number(getSingleParam(params, "tag") ?? "0");
   const page = Number(getSingleParam(params, "page") ?? "1");
   const perPage = Number(getSingleParam(params, "per_page") ?? "25");
   const sortBy = (getSingleParam(params, "sort_by") ?? "english_word") as
@@ -27,13 +27,13 @@ export default async function ViewWordsPage({
     | "accuracy_asc"
     | "needs_practice";
 
-  const [languages, features, data] = await Promise.all([
+  const [languages, tags, data] = await Promise.all([
     getActiveLanguages(),
-    getActiveFeatures(),
+    getActiveTags(),
     listWords({
       search: getSingleParam(params, "search") ?? "",
       languageId: Number.isInteger(languageId) && languageId > 0 ? languageId : undefined,
-      featureId: Number.isInteger(featureId) && featureId > 0 ? featureId : undefined,
+      tagId: Number.isInteger(tagId) && tagId > 0 ? tagId : undefined,
       sortBy,
       page: Number.isInteger(page) ? page : 1,
       perPage: Number.isInteger(perPage) ? perPage : 25,
@@ -46,7 +46,7 @@ export default async function ViewWordsPage({
     translation: word.translation,
     explanation: word.explanation ?? "",
     language: word.language.language,
-    feature: word.feature.feature,
+    tag: word.tag.tag,
     timesPracticed: word.timesPracticed,
     accuracy: getAccuracy(word.timesPracticed, word.timesCorrect),
     needsPractice: needsPractice(word.timesPracticed, word.timesCorrect),
@@ -60,8 +60,8 @@ export default async function ViewWordsPage({
   if (languageId > 0) {
     queryBase.set("language", String(languageId));
   }
-  if (featureId > 0) {
-    queryBase.set("feature", String(featureId));
+  if (tagId > 0) {
+    queryBase.set("tag", String(tagId));
   }
   queryBase.set("sort_by", sortBy);
   queryBase.set("per_page", String(data.perPage));
@@ -136,14 +136,14 @@ export default async function ViewWordsPage({
                   </select>
                 </div>
                 <div>
-                  <label className="input-label" htmlFor="feature">
-                    Categoría
+                  <label className="input-label" htmlFor="tag">
+                    Etiqueta
                   </label>
-                  <select className="select-input" defaultValue={featureId} id="feature" name="feature">
-                    <option value={0}>Todas las características</option>
-                    {features.map((feature) => (
-                      <option key={feature.id} value={feature.id}>
-                        {feature.feature}
+                  <select className="select-input" defaultValue={tagId} id="tag" name="tag">
+                    <option value={0}>Todas las etiquetas</option>
+                    {tags.map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.tag}
                       </option>
                     ))}
                   </select>

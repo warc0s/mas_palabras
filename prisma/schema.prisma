@@ -8,19 +8,19 @@ datasource db {
 }
 
 model Word {
-  id                     Int       @id @default(autoincrement())
-  englishWord            String    @map("english_word")
-  normalizedEnglishWord  String    @map("normalized_english_word")
-  translation            String
-  explanation            String?
-  languageId             Int       @map("language_id")
-  featureId              Int       @map("feature_id")
-  timesPracticed         Int       @default(0) @map("times_practiced")
-  timesCorrect           Int       @default(0) @map("times_correct")
-  lastPracticed          DateTime? @map("last_practiced")
-  createdAt              DateTime  @default(now()) @map("created_at")
-  language               Language  @relation(fields: [languageId], references: [id], onDelete: Restrict)
-  feature                Feature   @relation(fields: [featureId], references: [id], onDelete: Restrict)
+  id                    Int       @id @default(autoincrement())
+  englishWord           String    @map("english_word")
+  normalizedEnglishWord String    @map("normalized_english_word")
+  translation           String
+  explanation           String?
+  languageId            Int       @map("language_id")
+  tagId                 Int       @map("tag_id")
+  timesPracticed        Int       @default(0) @map("times_practiced")
+  timesCorrect          Int       @default(0) @map("times_correct")
+  lastPracticed         DateTime? @map("last_practiced")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  language              Language  @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  tag                   Tag       @relation(fields: [tagId], references: [id], onDelete: Restrict)
 
   @@unique([languageId, normalizedEnglishWord], map: "uq_words_language_normalized")
   @@map("word")
@@ -37,15 +37,15 @@ model Language {
   @@map("language")
 }
 
-model Feature {
+model Tag {
   id        Int      @id @default(autoincrement())
-  feature   String   @unique
+  tag       String   @unique
   active    Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   words     Word[]
 
-  @@map("feature")
+  @@map("tag")
 }
 
 model QuizSession {
