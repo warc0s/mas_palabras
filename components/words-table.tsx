@@ -11,7 +11,7 @@ type WordRow = {
   translation: string;
   explanation: string;
   language: string;
-  feature: string;
+  tag: string;
   timesPracticed: number;
   accuracy: number;
   needsPractice: boolean;
@@ -102,7 +102,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
                   type="checkbox"
                 />
               </th>
-              {["Palabra", "Traducción", "Explicación", "Idioma", "Categoría", "Progreso", "Acciones"].map(
+              {["Palabra", "Traducción", "Explicación", "Idioma", "Etiqueta", "Progreso", "Acciones"].map(
                 (label, index) => (
                   <th
                     className={`border-b border-neutral-200/50 px-6 py-5 text-left text-sm font-semibold text-neutral-700 ${
@@ -152,7 +152,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
                 <td className="px-6 py-6 align-top">
                   <div className="inline-flex items-center gap-2 rounded-xl border border-secondary-200/50 bg-secondary-100 px-3 py-2 text-sm font-medium text-secondary-700">
                     <i className="fa-solid fa-tag w-3" />
-                    <span>{word.feature}</span>
+                    <span>{word.tag}</span>
                   </div>
                 </td>
                 <td className="px-6 py-6 align-top">

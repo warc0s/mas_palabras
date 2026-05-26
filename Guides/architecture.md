@@ -30,7 +30,7 @@ app/
   quiz_question/        # pregunta activa
   import_words/         # importación JSON
   export_words/route.ts # descarga JSON
-  settings/             # idiomas y características
+  settings/             # idiomas y etiquetas
   end_quiz/route.ts     # cierre explícito de sesión de quiz
 
 components/
@@ -44,7 +44,7 @@ lib/
   text.ts               # normalización
   word-metrics.ts       # accuracy, needsPractice, priority
   words.ts              # queries y mutaciones de palabras/dashboard/export
-  settings.ts           # idiomas y características
+  settings.ts           # idiomas y etiquetas
   quiz.ts               # sesiones y gameplay
   import-export.ts      # importación JSON
   validators.ts         # esquemas Zod

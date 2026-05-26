@@ -31,12 +31,12 @@ export default async function ImportWordsPage({
     "translation": "casa",
     "explanation": "donde la gente vive",
     "language": "Inglés",
-    "feature": "A1"
+    "tag": "A1"
   }
 ]`}</code>
             </pre>
             <div className="mt-3 text-sm text-blue-700">
-              <p>Campos requeridos: english_word, translation, language, feature</p>
+              <p>Campos requeridos: english_word, translation, language, tag (etiqueta)</p>
               <p>Campos opcionales: explanation, times_practiced, times_correct, last_practiced</p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export default async function ImportWordsPage({
 
             <div>
               <label className="input-label" htmlFor="createMissing">
-                Idiomas/Características Faltantes
+                Idiomas/Etiquetas Faltantes
               </label>
               <select className="select-input" defaultValue="create" id="createMissing" name="createMissing">
                 <option value="create">Crear automáticamente</option>

@@ -1,21 +1,21 @@
 import { FlashBanner } from "@/components/flash-banner";
 import {
-  createFeatureAction,
+  createTagAction,
   createLanguageAction,
-  deleteFeatureAction,
+  deleteTagAction,
   deleteLanguageAction,
 } from "@/lib/actions/settings-actions";
 import { resolveSearchParams } from "@/lib/flash";
-import { getActiveFeatures, getActiveLanguages } from "@/lib/settings";
+import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 
 export default async function SettingsPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [languages, features, params] = await Promise.all([
+  const [languages, tags, params] = await Promise.all([
     getActiveLanguages(),
-    getActiveFeatures(),
+    getActiveTags(),
     resolveSearchParams(searchParams),
   ]);
 
@@ -26,7 +26,7 @@ export default async function SettingsPage({
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 text-center">
           <h1 className="mb-2 text-3xl font-bold text-gray-800">Configuración</h1>
-          <p className="text-gray-600">Gestiona idiomas y características para tus palabras</p>
+          <p className="text-gray-600">Gestiona idiomas y etiquetas para tus palabras</p>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
@@ -72,31 +72,31 @@ export default async function SettingsPage({
 
           <div className="space-y-6">
             <div className="page-card p-6">
-              <h2 className="mb-4 text-xl font-bold text-gray-800">Agregar Característica</h2>
-              <form action={createFeatureAction} className="space-y-4">
+              <h2 className="mb-4 text-xl font-bold text-gray-800">Agregar Etiqueta</h2>
+              <form action={createTagAction} className="space-y-4">
                 <div>
-                  <label className="input-label" htmlFor="feature-name">
-                    Nombre de la Característica
+                  <label className="input-label" htmlFor="tag-name">
+                    Nombre de la Etiqueta
                   </label>
-                  <input className="text-input" id="feature-name" name="name" required />
+                  <input className="text-input" id="tag-name" name="name" required />
                 </div>
                 <button className="primary-button w-full bg-green-600 hover:bg-green-700" type="submit">
-                  Agregar Característica
+                  Agregar Etiqueta
                 </button>
               </form>
             </div>
 
             <div className="page-card p-6">
-              <h2 className="mb-4 text-lg font-bold text-gray-800">Características Disponibles</h2>
-              {features.length > 0 ? (
+              <h2 className="mb-4 text-lg font-bold text-gray-800">Etiquetas Disponibles</h2>
+              {tags.length > 0 ? (
                 <div className="space-y-2">
-                  {features.map((feature) => (
+                  {tags.map((tag) => (
                     <div
                       className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3"
-                      key={feature.id}
+                      key={tag.id}
                     >
-                      <span className="font-medium text-green-800">{feature.feature}</span>
-                      <form action={deleteFeatureAction.bind(null, feature.id)}>
+                      <span className="font-medium text-green-800">{tag.tag}</span>
+                      <form action={deleteTagAction.bind(null, tag.id)}>
                         <button className="text-red-600 hover:text-red-800" type="submit">
                           <i className="fa-solid fa-trash" />
                         </button>
@@ -106,7 +106,7 @@ export default async function SettingsPage({
                 </div>
               ) : (
                 <p className="py-4 text-center italic text-gray-500">
-                  No hay características configuradas
+                  No hay etiquetas configuradas
                 </p>
               )}
             </div>

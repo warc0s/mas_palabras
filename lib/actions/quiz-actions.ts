@@ -7,7 +7,7 @@ import { quizAnswerSchema, quizConfigSchema } from "@/lib/validators";
 export async function startQuizAction(formData: FormData) {
   const parsed = quizConfigSchema.safeParse({
     languageId: formData.get("languageId"),
-    featureId: formData.get("featureId"),
+    tagId: formData.get("tagId"),
     quizType: formData.get("quizType"),
     onlyDifficult: formData.get("onlyDifficult"),
   });

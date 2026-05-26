@@ -21,9 +21,9 @@ El servidor vive dentro de Next.js y se reparte entre:
 ### `lib/actions/settings-actions.ts`
 
 - `createLanguageAction`
-- `createFeatureAction`
+- `createTagAction`
 - `deleteLanguageAction`
-- `deleteFeatureAction`
+- `deleteTagAction`
 
 ### `lib/actions/quiz-actions.ts`
 
@@ -47,7 +47,7 @@ El servidor vive dentro de Next.js y se reparte entre:
 
 ### `lib/settings.ts`
 
-- listas activas de idiomas y características
+- listas activas de idiomas y etiquetas
 - alta o reactivación
 - soft-delete o hard-delete según uso
 

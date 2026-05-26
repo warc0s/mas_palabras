@@ -44,7 +44,7 @@ export default async function HomePage({
           <div className="mb-10 flex flex-wrap justify-center gap-3">
             <StatPill color="primary" icon="fa-book" label="Palabras" value={stats.wordCount} />
             <StatPill color="green" icon="fa-globe" label="Idiomas" value={stats.languageCount} />
-            <StatPill color="secondary" icon="fa-tags" label="Categorías" value={stats.featureCount} />
+            <StatPill color="secondary" icon="fa-tags" label="Etiquetas" value={stats.tagCount} />
             {stats.totalPracticed > 0 ? (
               <StatPill
                 color="orange"
@@ -58,21 +58,21 @@ export default async function HomePage({
       </div>
 
       <div className="mt-20 grid gap-8 md:grid-cols-3">
-        <FeatureCard
+        <ShortcutCard
           href="/maspalabras"
           icon="fa-plus"
-          text="Expande tu vocabulario añadiendo palabras nuevas con traducciones, explicaciones y categorías personalizadas."
+          text="Expande tu vocabulario añadiendo palabras nuevas con traducciones, explicaciones y etiquetas personalizadas."
           title="Añadir Palabras"
           tone="primary"
         />
-        <FeatureCard
+        <ShortcutCard
           href="/verpalabras"
           icon="fa-list"
-          text="Navega tu colección completa con búsqueda inteligente, filtros avanzados y organización por categorías."
+          text="Navega tu colección completa con búsqueda inteligente, filtros avanzados y organización por etiquetas."
           title="Explorar Vocabulario"
           tone="green"
         />
-        <FeatureCard
+        <ShortcutCard
           href="/quiz"
           icon="fa-brain"
           text="Fortalece tu memoria con ejercicios adaptativos que priorizan las palabras que más necesitas practicar."
@@ -176,7 +176,7 @@ function StatPill({
   );
 }
 
-function FeatureCard({
+function ShortcutCard({
   href,
   title,
   text,

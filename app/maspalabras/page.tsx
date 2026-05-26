@@ -3,18 +3,20 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/flash-banner";
 import { createWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
-import { getActiveFeatures, getActiveLanguages } from "@/lib/settings";
+import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 
 export default async function CreateWordPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [languages, features, params] = await Promise.all([
+  const [languages, tags, params] = await Promise.all([
     getActiveLanguages(),
-    getActiveFeatures(),
+    getActiveTags(),
     resolveSearchParams(searchParams),
   ]);
+  const hasLanguages = languages.length > 0;
+  const hasTags = tags.length > 0;
 
   return (
     <>
@@ -34,24 +36,50 @@ export default async function CreateWordPage({
                   Idioma
                 </label>
                 <select className="select-input" id="languageId" name="languageId" required>
-                  {languages.map((language) => (
-                    <option key={language.id} value={language.id}>
-                      {language.language}
-                    </option>
-                  ))}
+                  {hasLanguages ? (
+                    languages.map((language) => (
+                      <option key={language.id} value={language.id}>
+                        {language.language}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Sin idiomas configurados</option>
+                  )}
                 </select>
+                {!hasLanguages ? (
+                  <p className="mt-2 text-sm text-neutral-500">
+                    Hey, añade tu primer idioma en{" "}
+                    <Link className="font-medium text-primary hover:underline" href="/settings">
+                      Ajustes
+                    </Link>
+                    .
+                  </p>
+                ) : null}
               </div>
               <div>
-                <label className="input-label" htmlFor="featureId">
-                  Característica
+                <label className="input-label" htmlFor="tagId">
+                  Etiqueta
                 </label>
-                <select className="select-input" id="featureId" name="featureId" required>
-                  {features.map((feature) => (
-                    <option key={feature.id} value={feature.id}>
-                      {feature.feature}
-                    </option>
-                  ))}
+                <select className="select-input" id="tagId" name="tagId" required>
+                  {hasTags ? (
+                    tags.map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.tag}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Sin etiquetas configuradas</option>
+                  )}
                 </select>
+                {!hasTags ? (
+                  <p className="mt-2 text-sm text-neutral-500">
+                    Hey, añade tu primera etiqueta en{" "}
+                    <Link className="font-medium text-primary hover:underline" href="/settings">
+                      Ajustes
+                    </Link>
+                    .
+                  </p>
+                ) : null}
               </div>
             </div>
 

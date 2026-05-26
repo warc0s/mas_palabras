@@ -7,10 +7,10 @@ export async function getActiveLanguages() {
   });
 }
 
-export async function getActiveFeatures() {
-  return prisma.feature.findMany({
+export async function getActiveTags() {
+  return prisma.tag.findMany({
     where: { active: true },
-    orderBy: { feature: "asc" },
+    orderBy: { tag: "asc" },
   });
 }
 
@@ -36,26 +36,26 @@ export async function createOrReactivateLanguage(name: string): Promise<string> 
   return `Idioma "${name}" agregado exitosamente.`;
 }
 
-export async function createOrReactivateFeature(name: string): Promise<string> {
-  const existing = await prisma.feature.findUnique({
-    where: { feature: name },
+export async function createOrReactivateTag(name: string): Promise<string> {
+  const existing = await prisma.tag.findUnique({
+    where: { tag: name },
   });
 
   if (existing) {
     if (!existing.active) {
-      await prisma.feature.update({
+      await prisma.tag.update({
         where: { id: existing.id },
         data: { active: true },
       });
-      return `Característica "${name}" reactivada exitosamente.`;
+      return `Etiqueta "${name}" reactivada exitosamente.`;
     }
-    return `La característica "${name}" ya existe.`;
+    return `La etiqueta "${name}" ya existe.`;
   }
 
-  await prisma.feature.create({
-    data: { feature: name, active: true },
+  await prisma.tag.create({
+    data: { tag: name, active: true },
   });
-  return `Característica "${name}" agregada exitosamente.`;
+  return `Etiqueta "${name}" agregada exitosamente.`;
 }
 
 export async function deleteLanguage(languageId: number): Promise<string> {
@@ -85,29 +85,29 @@ export async function deleteLanguage(languageId: number): Promise<string> {
   return `Idioma "${language.language}" eliminado completamente.`;
 }
 
-export async function deleteFeature(featureId: number): Promise<string> {
-  const feature = await prisma.feature.findUnique({
-    where: { id: featureId },
+export async function deleteTag(tagId: number): Promise<string> {
+  const tag = await prisma.tag.findUnique({
+    where: { id: tagId },
   });
 
-  if (!feature) {
-    throw new Error("feature_not_found");
+  if (!tag) {
+    throw new Error("tag_not_found");
   }
 
   const wordCount = await prisma.word.count({
-    where: { featureId },
+    where: { tagId },
   });
 
   if (wordCount > 0) {
-    await prisma.feature.update({
-      where: { id: featureId },
+    await prisma.tag.update({
+      where: { id: tagId },
       data: { active: false },
     });
-    return `Característica "${feature.feature}" desactivada. Las ${wordCount} palabras asociadas se mantienen.`;
+    return `Etiqueta "${tag.tag}" desactivada. Las ${wordCount} palabras asociadas se mantienen.`;
   }
 
-  await prisma.feature.delete({
-    where: { id: featureId },
+  await prisma.tag.delete({
+    where: { id: tagId },
   });
-  return `Característica "${feature.feature}" eliminada completamente.`;
+  return `Etiqueta "${tag.tag}" eliminada completamente.`;
 }

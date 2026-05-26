@@ -8,23 +8,23 @@ type WordInput = {
   translation: string;
   explanation?: string;
   languageId: number;
-  featureId: number;
+  tagId: number;
 };
 
 type WordFilters = {
   search?: string;
   languageId?: number;
-  featureId?: number;
+  tagId?: number;
   sortBy?: SortBy;
   page?: number;
   perPage?: number;
 };
 
 export async function getDashboardStats() {
-  const [wordCount, languageCount, featureCount, words] = await Promise.all([
+  const [wordCount, languageCount, tagCount, words] = await Promise.all([
     prisma.word.count(),
     prisma.language.count({ where: { active: true } }),
-    prisma.feature.count({ where: { active: true } }),
+    prisma.tag.count({ where: { active: true } }),
     prisma.word.findMany({
       select: {
         timesPracticed: true,
@@ -53,7 +53,7 @@ export async function getDashboardStats() {
   return {
     wordCount,
     languageCount,
-    featureCount,
+    tagCount,
     totalPracticed,
     avgAccuracy,
     wordsNeedPractice,
@@ -69,7 +69,7 @@ export async function listWords(filters: WordFilters) {
   const words = (await prisma.word.findMany({
     where: {
       ...(filters.languageId ? { languageId: filters.languageId } : {}),
-      ...(filters.featureId ? { featureId: filters.featureId } : {}),
+      ...(filters.tagId ? { tagId: filters.tagId } : {}),
       ...(search
         ? {
             OR: [
@@ -82,7 +82,7 @@ export async function listWords(filters: WordFilters) {
     },
     include: {
       language: true,
-      feature: true,
+      tag: true,
     },
   })) as WordWithRelations[];
 
@@ -141,14 +141,14 @@ export async function getWordById(wordId: number) {
     where: { id: wordId },
     include: {
       language: true,
-      feature: true,
+      tag: true,
     },
   });
 }
 
 export async function createWord(input: WordInput) {
   const normalized = normalizeText(input.englishWord);
-  await ensureWordRelations(input.languageId, input.featureId);
+  await ensureWordRelations(input.languageId, input.tagId);
   await ensureWordNotDuplicated(input.languageId, normalized);
 
   return prisma.word.create({
@@ -158,7 +158,7 @@ export async function createWord(input: WordInput) {
       translation: input.translation.trim(),
       explanation: input.explanation?.trim() ?? "",
       languageId: input.languageId,
-      featureId: input.featureId,
+      tagId: input.tagId,
     },
   });
 }
@@ -170,7 +170,7 @@ export async function updateWord(wordId: number, input: WordInput) {
   }
 
   const normalized = normalizeText(input.englishWord);
-  await ensureWordRelations(input.languageId, input.featureId);
+  await ensureWordRelations(input.languageId, input.tagId);
   await ensureWordNotDuplicated(input.languageId, normalized, wordId);
 
   return prisma.word.update({
@@ -181,7 +181,7 @@ export async function updateWord(wordId: number, input: WordInput) {
       translation: input.translation.trim(),
       explanation: input.explanation?.trim() ?? "",
       languageId: input.languageId,
-      featureId: input.featureId,
+      tagId: input.tagId,
     },
   });
 }
@@ -204,7 +204,7 @@ export async function exportWords() {
   const words = (await prisma.word.findMany({
     include: {
       language: true,
-      feature: true,
+      tag: true,
     },
     orderBy: { englishWord: "asc" },
   })) as WordWithRelations[];
@@ -215,7 +215,7 @@ export async function exportWords() {
     translation: word.translation,
     explanation: word.explanation ?? "",
     language: word.language.language,
-    feature: word.feature.feature,
+    tag: word.tag.tag,
     times_practiced: word.timesPracticed,
     times_correct: word.timesCorrect,
     accuracy: getAccuracy(word.timesPracticed, word.timesCorrect),
@@ -224,17 +224,17 @@ export async function exportWords() {
   }));
 }
 
-async function ensureWordRelations(languageId: number, featureId: number) {
-  const [language, feature] = await Promise.all([
+async function ensureWordRelations(languageId: number, tagId: number) {
+  const [language, tag] = await Promise.all([
     prisma.language.findUnique({ where: { id: languageId } }),
-    prisma.feature.findUnique({ where: { id: featureId } }),
+    prisma.tag.findUnique({ where: { id: tagId } }),
   ]);
 
   if (!language || !language.active) {
     throw new Error("language_not_found");
   }
-  if (!feature || !feature.active) {
-    throw new Error("feature_not_found");
+  if (!tag || !tag.active) {
+    throw new Error("tag_not_found");
   }
 }
 

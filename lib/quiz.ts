@@ -13,14 +13,14 @@ const QUIZ_COOKIE_NAME = "mas-palabras-quiz";
 type QuizConfig = {
   quizType: QuizType;
   languageId: number;
-  featureId: number;
+  tagId: number;
   onlyDifficult: DifficultyFilter;
   poolSize: number;
 };
 
 export async function startQuizSession(input: {
   languageId: number;
-  featureId: number;
+  tagId: number;
   quizType: QuizType;
   onlyDifficult: DifficultyFilter;
 }) {
@@ -35,7 +35,7 @@ export async function startQuizSession(input: {
   const words = await prisma.word.findMany({
     where: {
       ...(input.languageId ? { languageId: input.languageId } : {}),
-      ...(input.featureId ? { featureId: input.featureId } : {}),
+      ...(input.tagId ? { tagId: input.tagId } : {}),
     },
     select: {
       id: true,
@@ -63,7 +63,7 @@ export async function startQuizSession(input: {
   const quizConfig: QuizConfig = {
     quizType: input.quizType,
     languageId: input.languageId,
-    featureId: input.featureId,
+    tagId: input.tagId,
     onlyDifficult: input.onlyDifficult,
     poolSize: shuffledIds.length,
   };
@@ -126,7 +126,7 @@ export async function getQuizQuestionData() {
     where: { id: wordId },
     include: {
       language: true,
-      feature: true,
+      tag: true,
     },
   });
 
@@ -341,7 +341,7 @@ function parseQuizConfig(raw: string | null): QuizConfig {
   const fallback: QuizConfig = {
     quizType: "to_spanish",
     languageId: 0,
-    featureId: 0,
+    tagId: 0,
     onlyDifficult: "all",
     poolSize: 0,
   };

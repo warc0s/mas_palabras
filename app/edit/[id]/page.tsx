@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { FlashBanner } from "@/components/flash-banner";
 import { updateWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
-import { getActiveFeatures, getActiveLanguages } from "@/lib/settings";
+import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 import { getWordById } from "@/lib/words";
 
 export default async function EditWordPage({
@@ -20,10 +20,10 @@ export default async function EditWordPage({
     notFound();
   }
 
-  const [word, languages, features] = await Promise.all([
+  const [word, languages, tags] = await Promise.all([
     getWordById(wordId),
     getActiveLanguages(),
-    getActiveFeatures(),
+    getActiveTags(),
   ]);
 
   if (!word) {
@@ -103,19 +103,19 @@ export default async function EditWordPage({
                 </select>
               </div>
               <div>
-                <label className="input-label" htmlFor="featureId">
-                  Característica
+                <label className="input-label" htmlFor="tagId">
+                  Etiqueta
                 </label>
                 <select
                   className="select-input"
-                  defaultValue={word.featureId}
-                  id="featureId"
-                  name="featureId"
+                  defaultValue={word.tagId}
+                  id="tagId"
+                  name="tagId"
                   required
                 >
-                  {features.map((feature) => (
-                    <option key={feature.id} value={feature.id}>
-                      {feature.feature}
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.id}>
+                      {tag.tag}
                     </option>
                   ))}
                 </select>

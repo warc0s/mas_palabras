@@ -121,7 +121,7 @@ export default async function QuizQuestionPage({
                 </div>
                 <div className="rounded-xl border border-green-200 bg-green-100 px-3 py-1.5 font-medium text-green-700">
                   <i className="fa-solid fa-tag mr-2 w-4" />
-                  {quiz.word.feature.feature}
+                  {quiz.word.tag.tag}
                 </div>
                 {quiz.word.timesPracticed > 0 ? (
                   <div className="rounded-xl border border-purple-200 bg-purple-100 px-3 py-1.5 font-medium text-purple-700">

@@ -18,7 +18,7 @@ Prisma con SQLite.
 - `translation`
 - `explanation`
 - `language_id`
-- `feature_id`
+- `tag_id`
 - `times_practiced`
 - `times_correct`
 - `last_practiced`
@@ -36,10 +36,10 @@ Restricción única:
 - `created_at`
 - `updated_at`
 
-### `feature`
+### `tag`
 
 - `id`
-- `feature`
+- `tag`
 - `active`
 - `created_at`
 - `updated_at`
@@ -60,7 +60,7 @@ Restricción única:
 
 - los duplicados se detectan por idioma + palabra inglesa normalizada
 - `normalized_english_word` se calcula en `lib/text.ts` con `trim`, NFD, eliminación de marcas Unicode y `toLocaleLowerCase("es")`
-- `Language` y `Feature` hacen soft-delete si tienen palabras asociadas
+- `Language` y `Tag` hacen soft-delete si tienen palabras asociadas
 - cada respuesta de quiz actualiza `times_practiced`, `times_correct` y `last_practiced`
 - una palabra necesita práctica si nunca se practicó, tiene menos de 3 intentos o precisión menor al 70%
 
