@@ -7,19 +7,21 @@ Ruta: `GET /export_words`
 Devuelve un array JSON descargable con esta forma:
 
 ```json
-{
-  "id": 1,
-  "english_word": "house",
-  "translation": "casa",
-  "explanation": "donde la gente vive",
-  "language": "Inglés",
-  "feature": "A1",
-  "times_practiced": 0,
-  "times_correct": 0,
-  "accuracy": 0,
-  "last_practiced": null,
-  "created_at": "2026-04-03T15:00:00.000Z"
-}
+[
+  {
+    "id": 1,
+    "english_word": "house",
+    "translation": "casa",
+    "explanation": "donde la gente vive",
+    "language": "Inglés",
+    "feature": "A1",
+    "times_practiced": 0,
+    "times_correct": 0,
+    "accuracy": 0,
+    "last_practiced": null,
+    "created_at": "2026-04-03T15:00:00.000Z"
+  }
+]
 ```
 
 ## Import
@@ -59,12 +61,12 @@ El formulario acepta un JSON array con objetos como:
 
 Se aceptan:
 
-- ISO 8601
 - `dd/mm/yyyy`
 - `dd-mm-yyyy`
 - `yyyy/mm/dd`
-- timestamp Unix en segundos
-- `null`, `""`, `Nunca`, `nunca`
+- ISO 8601
+- timestamp Unix numérico en segundos
+- `null`, `""`, `Nunca`, `nunca`, `never`
 
 ## Códigos de incidencia por línea
 
@@ -78,3 +80,4 @@ Se aceptan:
 - `language_missing`
 - `feature_missing`
 - `duplicate`
+- `unknown_error`

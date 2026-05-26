@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "DATABASE_URL=\"file:$(pwd)/prisma/dev.db\" next dev",
     "build": "DATABASE_URL=\"file:$(pwd)/prisma/dev.db\" next build",
-    "start": "DATABASE_URL=\"file:$(pwd)/prisma/dev.db\" node .next/standalone/server.js",
+    "start": "node .next/standalone/server.js",
+    "start:local": "DATABASE_URL=\"file:$(pwd)/prisma/dev.db\" node .next/standalone/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",

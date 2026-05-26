@@ -7,7 +7,7 @@
 - Client Components solo cuando hay interacción real
 - Tailwind CSS
 - `next/font` para Inter
-- Font Awesome vía script global
+- Font Awesome vía stylesheet global en `app/layout.tsx`
 
 ## Componentes principales
 
@@ -29,12 +29,11 @@
 
 ## Línea visual
 
-Se ha conservado el look general de la app anterior:
+La UI actual usa:
 
 - fondos con gradiente suave
 - tarjetas blancas translúcidas
 - colores `primary`, `secondary`, `neutral`
-- copy y estructura muy parecidos a las plantillas Jinja originales
 
 No conviertas esta UI en otro dashboard genérico. Si hay que tocar diseño, respeta primero el lenguaje visual ya existente.
 

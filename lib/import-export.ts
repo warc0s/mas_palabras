@@ -283,11 +283,6 @@ function parseOptionalDate(value: unknown): { value: Date | null; hasValue: bool
     return { value: null, hasValue: true };
   }
 
-  const nativeParsed = new Date(trimmed);
-  if (!Number.isNaN(nativeParsed.getTime())) {
-    return { value: nativeParsed, hasValue: true };
-  }
-
   const ddmmyyyy = trimmed.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
   if (ddmmyyyy) {
     const [, day, month, year] = ddmmyyyy;
@@ -304,6 +299,11 @@ function parseOptionalDate(value: unknown): { value: Date | null; hasValue: bool
     if (!Number.isNaN(date.getTime())) {
       return { value: date, hasValue: true };
     }
+  }
+
+  const nativeParsed = new Date(trimmed);
+  if (!Number.isNaN(nativeParsed.getTime())) {
+    return { value: nativeParsed, hasValue: true };
   }
 
   throw new Error("invalid_date_format");

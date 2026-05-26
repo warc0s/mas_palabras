@@ -59,10 +59,15 @@ Restricción única:
 ## Reglas de dominio
 
 - los duplicados se detectan por idioma + palabra inglesa normalizada
-- `normalized_english_word` se calcula con NFD, eliminación de marcas y lowercase
+- `normalized_english_word` se calcula en `lib/text.ts` con `trim`, NFD, eliminación de marcas Unicode y `toLocaleLowerCase("es")`
 - `Language` y `Feature` hacen soft-delete si tienen palabras asociadas
 - cada respuesta de quiz actualiza `times_practiced`, `times_correct` y `last_practiced`
 - una palabra necesita práctica si nunca se practicó, tiene menos de 3 intentos o precisión menor al 70%
+
+## Campos JSON
+
+Prisma modela `quiz_session.word_ids` como `wordIdsJson` y `quiz_session.quiz_config` como `quizConfigJson`.
+Ambos se guardan como texto JSON en SQLite.
 
 ## Migraciones
 
@@ -77,5 +82,6 @@ npx prisma generate
 ## Ruta de la base
 
 - Para Prisma CLI, `.env` usa `DATABASE_URL="file:./dev.db"` y la resuelve desde `prisma/`.
-- Para `pnpm dev`, `pnpm build` y `pnpm start`, los scripts fijan una ruta absoluta a `prisma/dev.db`.
-- Si cambias esta estrategia, asegúrate de que `dev`, `build`, `start` y Prisma CLI sigan apuntando a la misma BD.
+- Para `pnpm dev`, `pnpm build` y `pnpm start:local`, los scripts fijan una ruta absoluta a `prisma/dev.db`.
+- Para `pnpm start`, exporta `DATABASE_URL` absoluta en el entorno.
+- Si cambias esta estrategia, asegúrate de que `dev`, `build`, `start:local`, `start` y Prisma CLI apunten a la BD esperada.
