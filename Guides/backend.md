@@ -2,7 +2,7 @@
 
 ## Filosofía
 
-Ya no existe un backend Flask separado. El backend vive dentro de Next.js y se reparte entre:
+El servidor vive dentro de Next.js y se reparte entre:
 
 - páginas server-side para lectura
 - server actions para mutación
@@ -72,10 +72,10 @@ La sesión activa se identifica con una cookie `httpOnly` y persiste además en 
 
 ## Redirects con feedback
 
-No hay flashes de servidor al estilo Flask. El patrón nuevo es:
+El feedback de operaciones viaja en query string. El patrón actual es:
 
 1. la action hace la mutación
-2. invalida caché con `revalidatePath`
+2. invalida caché con `revalidatePath` cuando afecta a listados, dashboard o settings
 3. redirige con `status` y `message`
 4. la página muestra `FlashBanner`
 

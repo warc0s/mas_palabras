@@ -1,6 +1,6 @@
 # API
 
-La app ya no expone una API REST pública tipo `/api/v1/*`.
+La superficie HTTP actual está pensada para la propia app.
 
 ## Qué existe ahora
 
@@ -23,4 +23,4 @@ La app ya no expone una API REST pública tipo `/api/v1/*`.
 
 ## Nota importante
 
-Si en el futuro se necesita una API pública, habrá que diseñarla como una capacidad nueva. Nada del contrato REST anterior debe darse por existente.
+Si en el futuro se necesita una API pública, habrá que diseñarla como una capacidad nueva.

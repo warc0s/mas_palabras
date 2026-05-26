@@ -221,7 +221,29 @@ export async function skipQuizAnswer() {
   }
 
   const wordIds = parseWordIds(session.wordIdsJson);
-  await advanceQuizSession(prisma, false, wordIds.length);
+  if (session.currentIndex >= wordIds.length) {
+    await finalizeQuizSession(session.id);
+  } else {
+    const wordId = wordIds[session.currentIndex];
+    await prisma.$transaction(async (tx) => {
+      const word = await tx.word.findUnique({
+        where: { id: wordId },
+        select: { id: true },
+      });
+
+      if (word) {
+        await tx.word.update({
+          where: { id: word.id },
+          data: {
+            timesPracticed: { increment: 1 },
+            lastPracticed: new Date(),
+          },
+        });
+      }
+
+      await advanceQuizSession(tx, false, wordIds.length, Boolean(word));
+    });
+  }
 
   const updated = await getActiveQuizSession();
   const finished = !updated || updated.isCompleted;

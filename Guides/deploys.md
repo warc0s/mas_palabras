@@ -5,7 +5,7 @@
 ```bash
 pnpm install
 cp .env.example .env
-npx prisma migrate dev --name init
+pnpm prisma:migrate:dev --name init
 ```
 
 ## Desarrollo
@@ -20,17 +20,17 @@ La app corre en `http://127.0.0.1:3000`.
 
 ```bash
 pnpm build
-pnpm start
+pnpm start:local
 ```
 
-`pnpm start` ejecuta el servidor standalone de Next y fija `DATABASE_URL` absoluta para usar `prisma/dev.db`.
+`pnpm start:local` ejecuta el servidor standalone de Next y fija `DATABASE_URL` absoluta para usar `prisma/dev.db`.
 
 ## Migraciones
 
 ```bash
-npx prisma migrate dev --name nombre_del_cambio
-npx prisma migrate deploy
-npx prisma generate
+pnpm prisma:migrate:dev --name nombre_del_cambio
+pnpm prisma:migrate:deploy
+pnpm prisma:generate
 ```
 
 ## Variables de entorno
@@ -41,15 +41,15 @@ Mínimo:
 DATABASE_URL="file:./dev.db"
 ```
 
-Para desarrollo y build del repo actual, los scripts ya convierten esa ruta a absoluta al arrancar Next.
+Para desarrollo, build y arranque local, los scripts `dev`, `build` y `start:local` convierten esa ruta a absoluta al arrancar Next.
 
 ## Despliegue self-host
 
 El flujo esperado es:
 
 1. `pnpm install`
-2. `npx prisma migrate deploy`
+2. `pnpm prisma:migrate:deploy`
 3. `pnpm build`
-4. `pnpm start`
+4. `DATABASE_URL="file:/ruta/absoluta/prod.db" pnpm start`
 
-Si usas otra ubicación para SQLite, exporta `DATABASE_URL` absoluta antes de arrancar el proceso Node.
+`pnpm start` respeta el `DATABASE_URL` del entorno. Usa `pnpm start:local` solo para arrancar contra `prisma/dev.db`.

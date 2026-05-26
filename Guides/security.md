@@ -2,7 +2,8 @@
 
 ## Validación
 
-- Toda mutación pasa por server actions.
+- Las mutaciones de formularios pasan por server actions.
+- `GET /end_quiz` es un route handler que termina la sesión activa y limpia la cookie.
 - La validación de entrada usa Zod en `lib/validators.ts`.
 - La detección de duplicados y reglas de dominio se valida además en servidor contra BD.
 
@@ -33,5 +34,11 @@ No hay login ni sesiones de usuario completas.
 - sin CSP personalizada
 - sin auditoría de acciones
 - sin API pública autenticada
+
+## Riesgos si se expone fuera de uso personal
+
+- `GET /export_words` descarga todo el vocabulario disponible.
+- `GET /end_quiz` muta estado mediante GET.
+- Font Awesome se carga desde CDN sin CSP personalizada ni SRI.
 
 Si la app va a exponerse fuera de un entorno personal, estos puntos siguen pendientes.

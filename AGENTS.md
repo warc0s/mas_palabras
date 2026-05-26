@@ -2,6 +2,14 @@
 
 App Next.js para gestionar vocabulario personal y practicarlo con quizzes adaptativos.
 
+## Estado actual del repo
+
+- Runtime: Next.js App Router con TypeScript.
+- Persistencia: Prisma con SQLite.
+- Mutaciones: server actions en `lib/actions/`.
+- Lógica de dominio: servicios en `lib/`.
+- HTTP directo: route handlers mínimos en `app/export_words/route.ts` y `app/end_quiz/route.ts`.
+
 ## Qué leer antes de tocar código
 
 Lectura obligatoria antes de cada sesión de trabajo:
@@ -14,7 +22,7 @@ Lectura obligatoria antes de cada sesión de trabajo:
 
 - `Guides/architecture.md` — Stack, estructura de ficheros, flujo de arranque de la app
 - `Guides/backend.md` — Server actions, route handlers, lógica de negocio
-- `Guides/api.md` — Superficie HTTP actual y ausencia de API REST pública
+- `Guides/api.md` — Superficie HTTP actual: route handlers y server actions
 - `Guides/database.md` — Prisma, SQLite, esquema (4 tablas), migraciones
 - `Guides/frontend.md` — App Router, componentes, Tailwind, dónde tocar estilos
 - `Guides/security.md` — Validación server-side, cookie del quiz, gaps pendientes
@@ -66,7 +74,7 @@ El modelo gira en torno a 4 tablas: `word`, `language`, `feature`, `quiz_session
 
 Reglas que no se pueden romper:
 
-- Los duplicados se detectan por `(language_id, normalized_english_word)`. La normalización quita acentos y pasa a casefold.
+- Los duplicados se detectan por `(language_id, normalized_english_word)`. En código, la normalización está en `lib/text.ts`: `trim`, NFD, eliminación de marcas Unicode y `toLocaleLowerCase("es")`.
 - Language y Feature hacen soft-delete (active=False) si tienen palabras asociadas.
 - El tracking de progreso (`times_practiced`, `times_correct`, `last_practiced`) se actualiza en cada respuesta de quiz.
 - Una palabra "necesita práctica" si: nunca practicada, menos de 3 intentos, o precisión menor al 70%.
@@ -91,7 +99,7 @@ Antes de cambiar el esquema: documenta el motivo, revisa impacto en datos existe
 
 - Las guías son la base de verdad del proyecto. Siempre deben reflejar el estado actual del código.
 - Cada cambio en el código que afecte a una guía debe ir acompañado de la actualización de esa guía.
-- Si añades una ruta, un modelo, un helper, un template o cambias un comportamiento: actualiza la guía correspondiente.
+- Si añades una ruta, server action, route handler, modelo, helper, componente o cambias un comportamiento: actualiza la guía correspondiente.
 - Cada tema tiene una guía fuente. No repitas contenido que ya está en su guía.
 - Si detectas duplicidad entre guías, corrígela.
 - Si falta una guía necesaria, créala mínima o deja un TODO.
@@ -117,4 +125,5 @@ Ejemplos: `feat: add quiz result summary`, `fix: prevent duplicate vocabulary en
   - `pnpm dev`
   - `pnpm build`
   - `pnpm start`
+  - `pnpm start:local`
   - `pnpm test`
