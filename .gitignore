@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 .codex
+.commandcode
 *.sqlite3
 *.log
 node_modules/
