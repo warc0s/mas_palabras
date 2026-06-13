@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
+import { PageHeader } from "@/components/page-header";
 import { createWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
@@ -22,13 +23,13 @@ export default async function CreateWordPage({
     <>
       <FlashBanner searchParams={params} />
 
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-3xl">
+        <PageHeader
+          eyebrow="Nueva entrada"
+          subtitle="Registra una palabra nueva en tu diccionario personal."
+          title="Añadir palabra"
+        />
         <div className="page-card p-8">
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-neutral-800">Añadir Palabra</h1>
-            <p className="text-neutral-600">Registra una nueva entrada en tu vocabulario</p>
-          </div>
-
           <form action={createWordAction} className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div>

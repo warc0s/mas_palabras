@@ -5,6 +5,7 @@
 .commandcode
 *.sqlite3
 *.log
+*.tsbuildinfo
 node_modules/
 .next/
 .vercel/

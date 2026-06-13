@@ -15,239 +15,250 @@ export default async function HomePage({
     <>
       <FlashBanner searchParams={params} />
 
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary-100/50 via-secondary-100/30 to-neutral-50" />
-        <div className="absolute left-10 top-10 h-32 w-32 rounded-full bg-primary-200/20 blur-3xl" />
-        <div className="absolute bottom-20 right-20 h-40 w-40 rounded-full bg-secondary-200/20 blur-3xl" />
+      {/* Headword hero — the app name treated as a dictionary entry */}
+      <section className="relative animate-rise pb-4 pt-6">
+        <div className="mb-7 flex items-center gap-4">
+          <span className="eyebrow">№ 001</span>
+          <span className="h-px w-12 origin-left animate-draw-rule bg-primary-400" />
+          <span className="eyebrow-muted">Diccionario personal vivo</span>
+        </div>
 
-        <div className="px-4 py-20 text-center">
-          <div className="mb-8">
-            <div className="mb-6 inline-flex items-center rounded-full border border-primary-200/50 bg-white/70 px-4 py-2 text-sm font-medium text-primary-700 shadow-sm backdrop-blur-sm">
-              <div className="mr-2 h-2 w-2 rounded-full bg-primary-500" />
-              Tu plataforma de aprendizaje de idiomas
+        <div className="flex flex-col gap-x-6 gap-y-3 md:flex-row md:items-baseline md:flex-wrap">
+          <h1 className="font-display text-6xl font-semibold leading-none tracking-tight text-neutral-900 md:text-8xl">
+            Más Palabras
+          </h1>
+          <div className="flex items-baseline gap-4">
+            <span className="font-mono text-base text-primary-700 md:text-lg">
+              /ˈmas pa·ˈla·bras/
+            </span>
+            <span className="font-display text-base italic text-neutral-500 md:text-lg">
+              loc. nom.
+            </span>
+          </div>
+        </div>
+
+        <p className="mt-7 max-w-2xl text-balance text-lg leading-relaxed text-neutral-700">
+          <span className="font-mono text-sm text-primary-600">1.</span>{" "}
+          Sistema personal para <em className="font-display not-italic text-neutral-900">coleccionar</em>,{" "}
+          <em className="font-display not-italic text-neutral-900">definir</em> y{" "}
+          <em className="font-display not-italic text-neutral-900">memorizar</em> el vocabulario que de
+          verdad importa, en cualquier idioma.
+        </p>
+
+        {/* Masthead stat ledger */}
+        <div className="mt-10 flex flex-wrap items-stretch gap-y-4 border-y border-neutral-300">
+          <MastheadStat icon="fa-book" label="Palabras" value={stats.wordCount} />
+          <MastheadStat icon="fa-earth-americas" label="Idiomas" value={stats.languageCount} />
+          <MastheadStat icon="fa-tags" label="Etiquetas" value={stats.tagCount} />
+          {stats.totalPracticed > 0 ? (
+            <MastheadStat
+              icon="fa-bullseye"
+              label="Precisión"
+              value={`${stats.avgAccuracy}%`}
+            />
+          ) : null}
+        </div>
+
+        <div className="mt-10 flex flex-wrap gap-3">
+          <Link className="primary-button" href="/maspalabras">
+            <i className="fa-solid fa-plus" />
+            <span>Añadir palabra</span>
+          </Link>
+          <Link className="outline-button" href="/verpalabras">
+            <i className="fa-solid fa-book" />
+            <span>Explorar léxico</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* Index cards */}
+      <section className="mt-20 animate-rise animation-delay-200">
+        <div className="mb-8 flex items-center gap-4">
+          <span className="eyebrow-muted">Índice</span>
+          <span className="rule" />
+        </div>
+        <div className="grid gap-px overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-200 shadow-paper md:grid-cols-3">
+          <IndexCard
+            href="/maspalabras"
+            icon="fa-feather-pointed"
+            number="I"
+            text="Registra entradas nuevas con su traducción, una explicación propia y las etiquetas que tú decidas."
+            title="Añadir palabras"
+          />
+          <IndexCard
+            href="/verpalabras"
+            icon="fa-book-open"
+            number="II"
+            text="Recorre tu colección completa con búsqueda, filtros por idioma y etiqueta, y orden a tu gusto."
+            title="Explorar el léxico"
+          />
+          <IndexCard
+            href="/quiz"
+            icon="fa-brain"
+            number="III"
+            text="Repasa con ejercicios adaptativos que insisten en las palabras que más se te resisten."
+            title="Entrenar memoria"
+          />
+        </div>
+      </section>
+
+      {stats.wordCount > 0 ? (
+        <section className="page-card mt-20 animate-rise animation-delay-300 p-8 md:p-12">
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="eyebrow">Apéndice · Progreso</span>
+              <h2 className="mt-3 font-display text-3xl font-semibold text-neutral-900 md:text-4xl">
+                Tu cuaderno de avance
+              </h2>
             </div>
-            <div className="mb-6 text-6xl font-bold leading-tight md:text-7xl">
-              <span className="bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-800 bg-clip-text text-transparent">
-                Domina Nuevas
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-700 bg-clip-text text-transparent">
-                Palabras
-              </span>
-            </div>
-            <p className="mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-neutral-600">
-              Transforma tu vocabulario con una experiencia de aprendizaje inteligente,
-              organizada y completamente personalizable para múltiples idiomas.
+            <p className="max-w-xs text-sm leading-relaxed text-neutral-600">
+              Una lectura rápida de cuánto has construido y qué te espera por repasar.
             </p>
           </div>
 
-          <div className="mb-10 flex flex-wrap justify-center gap-3">
-            <StatPill color="primary" icon="fa-book" label="Palabras" value={stats.wordCount} />
-            <StatPill color="green" icon="fa-globe" label="Idiomas" value={stats.languageCount} />
-            <StatPill color="secondary" icon="fa-tags" label="Etiquetas" value={stats.tagCount} />
-            {stats.totalPracticed > 0 ? (
-              <StatPill
-                color="orange"
-                icon="fa-chart-line"
-                label="Precisión"
-                value={`${stats.avgAccuracy}%`}
-              />
-            ) : null}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-20 grid gap-8 md:grid-cols-3">
-        <ShortcutCard
-          href="/maspalabras"
-          icon="fa-plus"
-          text="Expande tu vocabulario añadiendo palabras nuevas con traducciones, explicaciones y etiquetas personalizadas."
-          title="Añadir Palabras"
-          tone="primary"
-        />
-        <ShortcutCard
-          href="/verpalabras"
-          icon="fa-list"
-          text="Navega tu colección completa con búsqueda inteligente, filtros avanzados y organización por etiquetas."
-          title="Explorar Vocabulario"
-          tone="green"
-        />
-        <ShortcutCard
-          href="/quiz"
-          icon="fa-brain"
-          text="Fortalece tu memoria con ejercicios adaptativos que priorizan las palabras que más necesitas practicar."
-          title="Entrenar Mente"
-          tone="secondary"
-        />
-      </div>
-
-      {stats.wordCount > 0 ? (
-        <div className="page-card mt-24 p-10">
-          <div className="mb-10 text-center">
-            <h2 className="mb-3 text-3xl font-bold text-neutral-900">Tu Progreso de Aprendizaje</h2>
-            <p className="text-neutral-600">Visualiza tu evolución y dominio del vocabulario</p>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-4">
-            <ProgressCard
-              color="primary"
-              icon="fa-book"
-              label="Palabras Total"
+          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            <LedgerStat
+              label="Palabras en total"
+              tone="primary"
               value={stats.wordCount}
               width={100}
             />
-            <ProgressCard
-              color="green"
-              icon="fa-chart-line"
-              label="Sesiones Práctica"
+            <LedgerStat
+              label="Sesiones de práctica"
+              tone="secondary"
               value={stats.totalPracticed}
-              width={Math.min(Math.round((stats.totalPracticed / Math.max(stats.wordCount * 3, 1)) * 100), 100)}
+              width={Math.min(
+                Math.round((stats.totalPracticed / Math.max(stats.wordCount * 3, 1)) * 100),
+                100,
+              )}
             />
-            <ProgressCard
-              color="secondary"
-              icon="fa-bullseye"
-              label="Precisión Media"
+            <LedgerStat
+              label="Precisión media"
+              tone="accent"
               value={`${stats.avgAccuracy}%`}
               width={stats.avgAccuracy}
             />
-            <ProgressCard
-              color="orange"
-              icon="fa-triangle-exclamation"
-              label="Pendientes"
+            <LedgerStat
+              label="Necesitan repaso"
+              tone="warning"
               value={stats.wordsNeedPractice}
               width={Math.round((stats.wordsNeedPractice / stats.wordCount) * 100)}
             />
           </div>
 
           {stats.wordsNeedPractice > 0 ? (
-            <div className="mt-10 text-center">
-              <Link
-                className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 px-8 py-4 text-white shadow-lg hover:from-orange-700 hover:to-red-700"
-                href="/quiz"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
+            <Link
+              className="group mt-10 flex flex-col gap-3 rounded-2xl border border-primary-200 bg-primary-50 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-paper sm:flex-row sm:items-center sm:justify-between"
+              href="/quiz"
+            >
+              <div className="flex items-center gap-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-600 text-neutral-25 shadow-glow transition-transform group-hover:scale-105">
                   <i className="fa-solid fa-fire" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold">Practicar Palabras Difíciles</div>
-                  <div className="text-sm text-orange-100">
-                    {stats.wordsNeedPractice} palabras esperando
+                </span>
+                <div>
+                  <div className="font-display text-lg font-semibold text-neutral-900">
+                    Practicar las palabras difíciles
+                  </div>
+                  <div className="eyebrow-muted mt-1">
+                    {stats.wordsNeedPractice} entradas esperando turno
                   </div>
                 </div>
-              </Link>
-            </div>
+              </div>
+              <span className="font-mono text-sm font-medium uppercase tracking-wide text-primary-700">
+                Empezar{" "}
+                <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
           ) : null}
-        </div>
+        </section>
       ) : null}
     </>
   );
 }
 
-function StatPill({
+function MastheadStat({
   icon,
   label,
   value,
-  color,
 }: {
   icon: string;
   label: string;
   value: number | string;
-  color: "primary" | "green" | "secondary" | "orange";
 }) {
-  const map = {
-    primary: "border-primary-200/50 bg-white/80 text-primary-600",
-    green: "border-green-200/50 bg-white/80 text-green-600",
-    secondary: "border-secondary-200/50 bg-white/80 text-secondary-600",
-    orange: "border-orange-200/50 bg-white/80 text-orange-600",
-  } as const;
-
   return (
-    <div className={`rounded-2xl border px-6 py-4 shadow-sm backdrop-blur-sm ${map[color]}`}>
-      <div className="flex items-center">
-        <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/70">
-          <i className={`fa-solid ${icon}`} />
+    <div className="flex min-w-[8rem] flex-1 items-center gap-3 border-r border-neutral-300 px-5 py-5 last:border-r-0">
+      <i className={`fa-solid ${icon} text-neutral-400`} />
+      <div>
+        <div className="font-display text-3xl font-semibold leading-none text-neutral-900">
+          {value}
         </div>
-        <div>
-          <div className="text-2xl font-bold text-neutral-900">{value}</div>
-          <div className="text-sm text-neutral-600">{label}</div>
-        </div>
+        <div className="eyebrow-muted mt-1.5">{label}</div>
       </div>
     </div>
   );
 }
 
-function ShortcutCard({
+function IndexCard({
   href,
   title,
   text,
   icon,
-  tone,
+  number,
 }: {
   href: string;
   title: string;
   text: string;
   icon: string;
-  tone: "primary" | "green" | "secondary";
+  number: string;
 }) {
-  const map = {
-    primary: "border-primary-200/50 text-primary-600 hover:border-primary-300/50",
-    green: "border-green-200/50 text-green-600 hover:border-green-300/50",
-    secondary: "border-secondary-200/50 text-secondary-600 hover:border-secondary-300/50",
-  } as const;
-
   return (
-    <div className={`page-card p-8 ${map[tone]}`}>
-      <div className="text-center">
-        <div className="mb-6 flex justify-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/70 text-3xl">
-            <i className={`fa-solid ${icon}`} />
-          </div>
-        </div>
-        <h3 className="mb-4 text-2xl font-bold text-neutral-900">{title}</h3>
-        <p className="mb-8 leading-relaxed text-neutral-600">{text}</p>
-        <Link className="primary-button" href={href}>
-          <i className={`fa-solid ${icon} w-4`} />
-          <span>{title}</span>
-        </Link>
+    <Link
+      className="group relative flex flex-col bg-neutral-25 p-8 transition-colors hover:bg-primary-50"
+      href={href}
+    >
+      <div className="flex items-center justify-between">
+        <span className="font-display text-2xl italic text-neutral-300 transition-colors group-hover:text-primary-400">
+          {number}
+        </span>
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-50 text-lg text-primary-600 transition-all group-hover:-translate-y-0.5 group-hover:border-primary-200 group-hover:bg-neutral-25 group-hover:shadow-paper">
+          <i className={`fa-solid ${icon}`} />
+        </span>
       </div>
-    </div>
+      <h3 className="mt-6 font-display text-2xl font-semibold text-neutral-900">{title}</h3>
+      <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-600">{text}</p>
+      <span className="mt-6 inline-flex items-center gap-2 font-mono text-[0.72rem] font-medium uppercase tracking-widest text-primary-700">
+        Abrir
+        <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1" />
+      </span>
+    </Link>
   );
 }
 
-function ProgressCard({
-  icon,
+function LedgerStat({
   label,
   value,
   width,
-  color,
+  tone,
 }: {
-  icon: string;
   label: string;
   value: number | string;
   width: number;
-  color: "primary" | "green" | "secondary" | "orange";
+  tone: "primary" | "secondary" | "accent" | "warning";
 }) {
-  const tones = {
-    primary: "bg-primary-100 text-primary-600 from-primary-500 to-primary-600",
-    green: "bg-green-100 text-green-600 from-green-500 to-green-600",
-    secondary: "bg-secondary-100 text-secondary-600 from-secondary-500 to-secondary-600",
-    orange: "bg-orange-100 text-orange-600 from-orange-500 to-orange-600",
+  const bars = {
+    primary: "bg-primary-600",
+    secondary: "bg-secondary-600",
+    accent: "bg-accent",
+    warning: "bg-primary-400",
   } as const;
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${tones[color].split(" ")[0]} ${tones[color].split(" ")[1]}`}>
-          <i className={`fa-solid ${icon} text-xl`} />
-        </div>
-        <div className="text-right">
-          <div className={`mb-1 text-3xl font-bold ${tones[color].split(" ")[1]}`}>{value}</div>
-          <div className="text-sm text-neutral-600">{label}</div>
-        </div>
-      </div>
-      <div className="h-3 overflow-hidden rounded-full bg-neutral-100">
+      <div className="font-display text-4xl font-semibold leading-none text-neutral-900">{value}</div>
+      <div className="eyebrow-muted mt-2">{label}</div>
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-neutral-200">
         <div
-          className={`h-full rounded-full bg-gradient-to-r ${tones[color].split(" ").slice(2).join(" ")}`}
+          className={`h-full rounded-full ${bars[tone]}`}
           style={{ width: `${Math.min(width, 100)}%` }}
         />
       </div>

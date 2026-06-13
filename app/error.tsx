@@ -3,26 +3,29 @@
 import Link from "next/link";
 
 export default function GlobalError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="page-card p-12 text-center">
-        <div className="mb-6 text-6xl text-red-500">
-          <i className="fa-solid fa-triangle-exclamation" />
-        </div>
-        <h1 className="mb-4 text-3xl font-bold text-neutral-900">Error interno del servidor</h1>
-        <p className="mb-8 text-neutral-600">{error.message || "Ha ocurrido un error inesperado."}</p>
-        <div className="flex justify-center gap-4">
+    <div className="mx-auto max-w-2xl py-12">
+      <div className="page-card p-10 text-center md:p-14">
+        <span className="eyebrow">Error · 500</span>
+        <p className="mt-6 font-display text-6xl font-semibold leading-none text-neutral-900 md:text-7xl">
+          Algo se torció
+        </p>
+        <p className="mx-auto mt-6 max-w-md rounded-xl rounded-l-sm border-l-[3px] border-primary-500 bg-primary-50 px-4 py-3 text-left font-mono text-sm text-primary-800">
+          Ha ocurrido un error inesperado. Puedes reintentarlo o volver al inicio.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <button className="primary-button" onClick={() => reset()} type="button">
-            Reintentar
+            <i className="fa-solid fa-rotate-right" />
+            <span>Reintentar</span>
           </button>
-          <Link className="secondary-button" href="/">
-            Volver al inicio
+          <Link className="outline-button" href="/">
+            <i className="fa-solid fa-arrow-left" />
+            <span>Volver al inicio</span>
           </Link>
         </div>
       </div>

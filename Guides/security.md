@@ -7,6 +7,10 @@
 - La validación de entrada usa Zod en `lib/validators.ts`.
 - La detección de duplicados y reglas de dominio se valida además en servidor contra BD.
 
+## Errores
+
+- `app/error.tsx` muestra un mensaje genérico al usuario y no expone `error.message`.
+
 ## Sesiones
 
 - El quiz usa una cookie `httpOnly` llamada `mas-palabras-quiz`.

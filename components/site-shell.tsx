@@ -1,65 +1,71 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { DesktopNav } from "@/components/desktop-nav";
 import { MobileNav } from "@/components/mobile-nav";
-
-const links = [
-  { href: "/", label: "Inicio", icon: "fa-home" },
-  { href: "/maspalabras", label: "Añadir", icon: "fa-plus" },
-  { href: "/verpalabras", label: "Ver Palabras", icon: "fa-list" },
-  { href: "/quiz", label: "Practicar", icon: "fa-brain" },
-  { href: "/settings", label: "Ajustes", icon: "fa-cog" },
-];
+import { navLinks } from "@/components/nav-data";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
     <>
-      <nav className="sticky top-0 z-50 border-b border-neutral-200/50 bg-white/80 backdrop-blur-md">
+      <div className="h-1 w-full bg-gradient-to-r from-primary-600 via-accent to-secondary-600" />
+
+      <header className="sticky top-0 z-50 border-b border-neutral-300 bg-neutral-50/85 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative flex h-16 items-center justify-between">
-            <Link
-              className="group flex items-center text-2xl font-semibold text-neutral-900 hover:text-primary-600"
-              href="/"
-            >
-              <span className="mr-3 text-primary-500">
-                <i className="fa-solid fa-book-open" />
+          <div className="flex h-16 items-center justify-between">
+            <Link className="group flex items-center gap-3" href="/">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-900 font-display text-lg font-semibold text-neutral-25 shadow-paper transition-all group-hover:-rotate-3 group-hover:bg-primary-700">
+                Mp
               </span>
-              <span className="bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">
-                Registro de Palabras
+              <span className="flex flex-col leading-none">
+                <span className="font-display text-xl font-semibold tracking-tight text-neutral-900">
+                  Más Palabras
+                </span>
+                <span className="eyebrow-muted mt-1">Léxico personal</span>
               </span>
             </Link>
 
-            <div className="hidden items-center space-x-1 md:flex">
-              {links.map((link) => (
-                <Link className="nav-link" href={link.href} key={link.href}>
-                  <i className={`fa-solid ${link.icon} w-4`} />
-                  <span>{link.label}</span>
-                </Link>
-              ))}
-            </div>
-
+            <DesktopNav />
             <MobileNav />
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">{children}</main>
 
-      <footer className="mt-20 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 py-12 text-neutral-300">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="mb-6">
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600/10">
-                <i className="fa-solid fa-book-open text-xl text-primary-400" />
+      <footer className="mt-24 border-t border-neutral-300 bg-neutral-100">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-sm">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 font-display text-base font-semibold text-neutral-25">
+                  Mp
+                </span>
+                <span className="font-display text-2xl font-semibold text-neutral-900">
+                  Más Palabras
+                </span>
               </div>
-              <h3 className="text-lg font-medium text-white">Registro de Palabras</h3>
-              <p className="mt-2 text-sm text-neutral-400">Mejora tu vocabulario día a día</p>
-            </div>
-            <div className="border-t border-neutral-700 pt-6">
-              <p className="text-sm text-neutral-500">
-                &copy; 2026 Registro de Palabras. Diseñado para el aprendizaje personal.
+              <p className="mt-4 font-display text-lg italic leading-relaxed text-neutral-600">
+                «Los límites de mi lenguaje son los límites de mi mundo.»
               </p>
             </div>
+
+            <nav className="flex flex-wrap gap-x-8 gap-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  className="font-mono text-[0.78rem] uppercase tracking-wide text-neutral-600 hover:text-primary-700"
+                  href={link.href}
+                  key={link.href}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="mt-10 flex flex-col gap-2 border-t border-neutral-300 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="eyebrow-muted">© 2026 · Registro de Palabras</p>
+            <p className="eyebrow-muted">Hecho para aprender, una palabra a la vez</p>
           </div>
         </div>
       </footer>

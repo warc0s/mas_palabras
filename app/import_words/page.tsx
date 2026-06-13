@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
+import { PageHeader } from "@/components/page-header";
 import { importWordsAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
 
@@ -15,16 +16,19 @@ export default async function ImportWordsPage({
     <>
       <FlashBanner searchParams={params} />
 
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-3xl">
+        <PageHeader
+          eyebrow="Importar · JSON"
+          subtitle="Carga un lote de palabras desde un archivo JSON."
+          title="Importar palabras"
+        />
         <div className="page-card p-8">
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-gray-800">Importar Palabras</h1>
-            <p className="text-gray-600">Sube un archivo JSON con tus palabras</p>
-          </div>
-
-          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-6">
-            <h2 className="mb-3 font-medium text-blue-900">Formato del archivo JSON</h2>
-            <pre className="overflow-x-auto rounded bg-blue-100 p-3 text-sm text-blue-900">
+          <div className="mb-8 overflow-hidden rounded-2xl bg-neutral-900 text-neutral-25 shadow-paper">
+            <div className="flex items-center justify-between border-b border-neutral-700 px-5 py-3">
+              <span className="eyebrow text-neutral-400">Formato esperado</span>
+              <span className="font-mono text-xs text-neutral-500">palabras.json</span>
+            </div>
+            <pre className="overflow-x-auto px-5 py-4 font-mono text-sm leading-relaxed text-neutral-100">
               <code>{`[
   {
     "english_word": "house",
@@ -35,9 +39,15 @@ export default async function ImportWordsPage({
   }
 ]`}</code>
             </pre>
-            <div className="mt-3 text-sm text-blue-700">
-              <p>Campos requeridos: english_word, translation, language, tag (etiqueta)</p>
-              <p>Campos opcionales: explanation, times_practiced, times_correct, last_practiced</p>
+            <div className="space-y-1 border-t border-neutral-700 px-5 py-3 text-sm text-neutral-400">
+              <p>
+                <span className="text-primary-300">Requeridos:</span> english_word, translation,
+                language, tag
+              </p>
+              <p>
+                <span className="text-secondary-300">Opcionales:</span> explanation, times_practiced,
+                times_correct, last_practiced
+              </p>
             </div>
           </div>
 
@@ -47,7 +57,9 @@ export default async function ImportWordsPage({
                 Archivo JSON
               </label>
               <input accept=".json" className="text-input" id="file" name="file" required type="file" />
-              <p className="mt-1 text-sm text-gray-500">Solo archivos .json (máximo 10MB)</p>
+              <p className="mt-2 font-mono text-xs uppercase tracking-wide text-neutral-500">
+                Solo .json · máximo 10&nbsp;MB
+              </p>
             </div>
 
             <div>

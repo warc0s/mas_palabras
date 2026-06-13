@@ -61,54 +61,53 @@ export function WordsTable({ words }: { words: WordRow[] }) {
   return (
     <>
       {selectedIds.length > 0 ? (
-        <div className="mb-6 rounded-2xl border border-orange-200 bg-orange-50 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="font-medium text-neutral-700">
-              {selectedIds.length} palabra{selectedIds.length === 1 ? "" : "s"} seleccionada
-              {selectedIds.length === 1 ? "" : "s"}
-            </div>
-            <div className="flex gap-2">
-              <button
-                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-                disabled={isPending}
-                onClick={handleBulkDelete}
-                type="button"
-              >
-                <i className="fa-solid fa-trash w-4" />
-                <span>{isPending ? "Eliminando..." : "Eliminar"}</span>
-              </button>
-              <button
-                className="inline-flex items-center gap-2 rounded-xl bg-neutral-600 px-4 py-2 font-medium text-white hover:bg-neutral-700"
-                onClick={() => setSelectedIds([])}
-                type="button"
-              >
-                <i className="fa-solid fa-times w-4" />
-                <span>Limpiar</span>
-              </button>
-            </div>
+        <div className="flex flex-col gap-3 border-b border-primary-200 bg-primary-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="font-mono text-sm uppercase tracking-wide text-primary-800">
+            {selectedIds.length} palabra{selectedIds.length === 1 ? "" : "s"} seleccionada
+            {selectedIds.length === 1 ? "" : "s"}
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-700 px-4 py-2 text-sm font-medium text-neutral-25 shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isPending}
+              onClick={handleBulkDelete}
+              type="button"
+            >
+              <i className="fa-solid fa-trash" />
+              <span>{isPending ? "Eliminando…" : "Eliminar"}</span>
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-neutral-25 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100"
+              onClick={() => setSelectedIds([])}
+              type="button"
+            >
+              <i className="fa-solid fa-xmark" />
+              <span>Limpiar</span>
+            </button>
           </div>
         </div>
       ) : null}
 
       <div className="overflow-x-auto">
-        <table className="w-full border-separate border-spacing-0">
+        <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="bg-gradient-to-r from-neutral-50 to-primary-50/30">
-              <th className="rounded-tl-3xl border-b border-neutral-200/50 px-6 py-5 text-center">
+            <tr className="border-b border-neutral-300 bg-neutral-50">
+              <th className="w-12 px-6 py-4 text-center">
                 <input
+                  aria-label="Seleccionar todo"
                   checked={allSelected}
-                  className="h-5 w-5 rounded-lg border-2 border-neutral-300 text-primary-600"
+                  className="h-4 w-4 rounded-sm border-neutral-400 text-primary-600 accent-primary-600"
                   onChange={toggleAll}
                   type="checkbox"
                 />
               </th>
-              {["Palabra", "Traducción", "Explicación", "Idioma", "Etiqueta", "Progreso", "Acciones"].map(
+              {["Palabra", "Traducción", "Explicación", "Idioma", "Etiqueta", "Dominio", ""].map(
                 (label, index) => (
                   <th
-                    className={`border-b border-neutral-200/50 px-6 py-5 text-left text-sm font-semibold text-neutral-700 ${
-                      index === 6 ? "rounded-tr-3xl text-center" : ""
+                    className={`px-6 py-4 font-mono text-[0.7rem] font-medium uppercase tracking-widest text-neutral-500 ${
+                      index === 6 ? "text-right" : ""
                     }`}
-                    key={label}
+                    key={label || "actions"}
                   >
                     {label}
                   </th>
@@ -117,90 +116,107 @@ export function WordsTable({ words }: { words: WordRow[] }) {
             </tr>
           </thead>
           <tbody>
-            {words.map((word) => (
-              <tr className="hover:bg-neutral-50/50" key={word.id}>
-                <td className="px-6 py-6 text-center">
+            {words.map((word, index) => (
+              <tr
+                className="group border-b border-neutral-200 last:border-b-0 hover:bg-primary-50/40"
+                key={word.id}
+              >
+                <td className="px-6 py-5 text-center align-top">
                   <input
+                    aria-label={`Seleccionar ${word.englishWord}`}
                     checked={selectedIds.includes(word.id)}
-                    className="h-5 w-5 rounded-lg border-2 border-neutral-300 text-primary-600"
+                    className="h-4 w-4 rounded-sm border-neutral-400 text-primary-600 accent-primary-600"
                     onChange={() => toggleOne(word.id)}
                     type="checkbox"
                   />
                 </td>
-                <td className="px-6 py-6 align-top">
-                  <div className="text-lg font-semibold text-neutral-900">{word.englishWord}</div>
-                  <div className="text-xs text-neutral-500">{word.language}</div>
+                <td className="px-6 py-5 align-top">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-mono text-[0.7rem] text-neutral-300">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="font-display text-lg font-semibold text-neutral-900">
+                      {word.englishWord}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-6 py-6 align-top text-neutral-800">{word.translation}</td>
-                <td className="px-6 py-6 align-top">
+                <td className="px-6 py-5 align-top">
+                  <span className="font-display text-base italic text-neutral-700">
+                    {word.translation}
+                  </span>
+                </td>
+                <td className="px-6 py-5 align-top">
                   {word.explanation ? (
-                    <div className="max-w-xs text-sm leading-relaxed text-neutral-700">
+                    <p className="max-w-xs text-sm leading-relaxed text-neutral-600">
                       {word.explanation.length > 60
-                        ? `${word.explanation.slice(0, 60)}...`
+                        ? `${word.explanation.slice(0, 60)}…`
                         : word.explanation}
-                    </div>
+                    </p>
                   ) : (
-                    <span className="text-sm italic text-neutral-400">Sin explicación</span>
+                    <span className="font-mono text-xs uppercase tracking-wide text-neutral-300">
+                      sin nota
+                    </span>
                   )}
                 </td>
-                <td className="px-6 py-6 align-top">
-                  <div className="inline-flex items-center gap-2 rounded-xl border border-primary-200/50 bg-primary-100 px-3 py-2 text-sm font-medium text-primary-700">
-                    <i className="fa-solid fa-globe w-3" />
-                    <span>{word.language}</span>
-                  </div>
+                <td className="px-6 py-5 align-top">
+                  <span className="meta-chip border-secondary-200 bg-secondary-50 text-secondary-700">
+                    <i className="fa-solid fa-earth-americas" />
+                    {word.language}
+                  </span>
                 </td>
-                <td className="px-6 py-6 align-top">
-                  <div className="inline-flex items-center gap-2 rounded-xl border border-secondary-200/50 bg-secondary-100 px-3 py-2 text-sm font-medium text-secondary-700">
-                    <i className="fa-solid fa-tag w-3" />
-                    <span>{word.tag}</span>
-                  </div>
+                <td className="px-6 py-5 align-top">
+                  <span className="meta-chip border-neutral-300 bg-neutral-50 text-neutral-600">
+                    <i className="fa-solid fa-tag" />
+                    {word.tag}
+                  </span>
                 </td>
-                <td className="px-6 py-6 align-top">
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm text-neutral-600">
-                      <div className="font-medium">{word.timesPracticed} sesiones</div>
-                      {word.timesPracticed > 0 ? (
-                        <div className="text-xs text-neutral-500">{word.accuracy}% precisión</div>
-                      ) : null}
-                    </div>
-                    {word.timesPracticed > 0 ? (
-                      <div
-                        className={`rounded-lg border px-2 py-1 text-xs font-medium ${
+                <td className="px-6 py-5 align-top">
+                  {word.timesPracticed > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex h-7 min-w-[3rem] items-center justify-center rounded-full px-2.5 font-mono text-xs font-semibold ${
                           word.accuracy >= 80
-                            ? "border-green-200 bg-green-100 text-green-700"
+                            ? "bg-secondary-100 text-secondary-800"
                             : word.accuracy >= 60
-                              ? "border-yellow-200 bg-yellow-100 text-yellow-700"
-                              : "border-red-200 bg-red-100 text-red-700"
+                              ? "bg-accent/15 text-[#8a6418]"
+                              : "bg-primary-100 text-primary-800"
                         }`}
                       >
                         {word.accuracy}%
-                      </div>
-                    ) : null}
-                  </div>
+                      </span>
+                      <span className="font-mono text-[0.7rem] text-neutral-400">
+                        ×{word.timesPracticed}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-xs uppercase tracking-wide text-neutral-300">
+                      nuevo
+                    </span>
+                  )}
                   {word.needsPractice ? (
-                    <div className="mt-2 inline-flex items-center gap-1 rounded-lg border border-orange-200 bg-orange-100 px-2 py-1 text-xs font-medium text-orange-700">
-                      <i className="fa-solid fa-triangle-exclamation w-3" />
-                      <span>Necesita práctica</span>
+                    <div className="mt-2 inline-flex items-center gap-1.5 font-mono text-[0.65rem] uppercase tracking-wide text-primary-600">
+                      <i className="fa-solid fa-circle-exclamation" />
+                      Repasar
                     </div>
                   ) : null}
                 </td>
-                <td className="px-6 py-6 align-top">
-                  <div className="flex flex-col gap-2">
+                <td className="px-6 py-5 align-top">
+                  <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
                     <Link
-                      className="inline-flex items-center gap-2 rounded-xl border border-yellow-200 bg-yellow-100 px-3 py-2 text-sm font-medium text-yellow-700 hover:bg-yellow-200"
+                      aria-label={`Editar ${word.englishWord}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-300 text-neutral-600 transition-all hover:-translate-y-0.5 hover:border-secondary-400 hover:bg-secondary-50 hover:text-secondary-700"
                       href={`/edit/${word.id}`}
                     >
-                      <i className="fa-solid fa-pen w-4" />
-                      <span>Editar</span>
+                      <i className="fa-solid fa-pen text-sm" />
                     </Link>
                     <button
-                      className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-100 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-200"
+                      aria-label={`Eliminar ${word.englishWord}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-300 text-neutral-600 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={isPending}
                       onClick={() => handleDelete(word.id, word.englishWord)}
                       type="button"
                     >
-                      <i className="fa-solid fa-trash w-4" />
-                      <span>Eliminar</span>
+                      <i className="fa-solid fa-trash text-sm" />
                     </button>
                   </div>
                 </td>

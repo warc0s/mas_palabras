@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { FlashBanner } from "@/components/flash-banner";
+import { PageHeader } from "@/components/page-header";
 import { updateWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
@@ -34,13 +35,13 @@ export default async function EditWordPage({
     <>
       <FlashBanner searchParams={pageParams} />
 
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-3xl">
+        <PageHeader
+          eyebrow={`Entrada · ${word.englishWord}`}
+          subtitle="Afina la definición, la traducción o las etiquetas de esta palabra."
+          title="Editar palabra"
+        />
         <div className="page-card p-8">
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-neutral-800">Editar Palabra</h1>
-            <p className="text-neutral-600">Actualiza los datos de tu vocabulario</p>
-          </div>
-
           <form action={updateWordAction} className="space-y-6">
             <input name="wordId" type="hidden" value={word.id} />
 

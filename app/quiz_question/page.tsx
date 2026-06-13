@@ -21,166 +21,141 @@ export default async function QuizQuestionPage({
     quiz.stats.totalAvailable > 0
       ? Math.round(((quiz.stats.answered + 1) / quiz.stats.totalAvailable) * 100)
       : 0;
+  const incorrect = quiz.stats.answered - quiz.stats.correctAnswers;
+  const promptWord = quiz.quizType === "to_spanish" ? quiz.word.englishWord : quiz.word.translation;
+  const promptLang =
+    quiz.quizType === "to_spanish" ? quiz.word.language.language : "Español";
 
   return (
     <>
       <FlashBanner searchParams={params} />
 
-      <div className="mx-auto max-w-4xl">
-        <div className="page-card mb-8 p-8">
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto max-w-3xl">
+        {/* Session masthead */}
+        <div className="mb-6 flex flex-col gap-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="mb-2 text-2xl font-bold text-secondary-700">Sesión de Práctica</h1>
-              <p className="text-neutral-600">Fortalece tu vocabulario con ejercicios adaptativos</p>
+              <span className="eyebrow">Sesión de práctica</span>
+              <h1 className="mt-2 font-display text-2xl font-semibold text-neutral-900">
+                Pregunta {quiz.stats.answered + 1}
+                <span className="text-neutral-400"> / {quiz.stats.totalAvailable}</span>
+              </h1>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="inline-flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2 font-medium text-green-700">
-                <i className="fa-solid fa-check w-4" />
-                <span>{quiz.stats.correctAnswers} correctas</span>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 font-medium text-red-700">
-                <i className="fa-solid fa-times w-4" />
-                <span>{quiz.stats.answered - quiz.stats.correctAnswers} incorrectas</span>
-              </div>
-              {quiz.stats.answered > 0 ? (
-                <div className="inline-flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-4 py-2 font-medium text-primary-700">
-                  <i className="fa-solid fa-percent w-4" />
-                  <span>
-                    {getAccuracy(quiz.stats.answered, quiz.stats.correctAnswers).toFixed(1)}% precisión
-                  </span>
-                </div>
-              ) : null}
-              <form action={endQuizAction}>
-                <button
-                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-100 px-4 py-2 font-medium text-red-700 hover:bg-red-200"
-                  type="submit"
-                >
-                  <i className="fa-solid fa-stop w-4" />
-                  <span>Terminar</span>
-                </button>
-              </form>
-            </div>
+            <form action={endQuizAction}>
+              <button className="outline-button px-4 py-2.5 text-sm" type="submit">
+                <i className="fa-solid fa-flag-checkered" />
+                <span>Terminar</span>
+              </button>
+            </form>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="h-3 flex-1 overflow-hidden rounded-full bg-neutral-200">
+            <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-secondary-500 to-primary-500"
+                className="h-full rounded-full bg-primary-600 transition-all"
                 style={{ width: `${progressWidth}%` }}
               />
             </div>
-            <div className="text-sm font-medium text-neutral-600">
-              Pregunta {quiz.stats.answered + 1} de {quiz.stats.totalAvailable}
+            <div className="flex items-center gap-4 font-mono text-xs">
+              <span className="flex items-center gap-1.5 text-secondary-700">
+                <i className="fa-solid fa-check" />
+                {quiz.stats.correctAnswers}
+              </span>
+              <span className="flex items-center gap-1.5 text-primary-700">
+                <i className="fa-solid fa-xmark" />
+                {incorrect}
+              </span>
+              {quiz.stats.answered > 0 ? (
+                <span className="text-neutral-500">
+                  {getAccuracy(quiz.stats.answered, quiz.stats.correctAnswers).toFixed(0)}%
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
 
-        <div className="page-card p-10">
-          <div className="mb-10 text-center">
-            <div className="mb-8 inline-flex items-center gap-3 rounded-2xl border border-secondary-200/50 bg-gradient-to-r from-secondary-50 to-primary-50 px-6 py-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary-100">
-                <i className="fa-solid fa-brain text-secondary-600" />
-              </div>
-              <span className="text-lg font-semibold text-neutral-800">
-                {quiz.quizType === "to_spanish"
-                  ? "Traduce al Español"
-                  : `Traduce al ${quiz.word.language.language}`}
+        {/* Entry card */}
+        <div className="page-card overflow-hidden">
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-6 py-3 sm:px-10">
+            <span className="eyebrow-muted">
+              {quiz.quizType === "to_spanish"
+                ? "Traduce al Español"
+                : `Traduce al ${quiz.word.language.language}`}
+            </span>
+            <span className="font-mono text-[0.7rem] uppercase tracking-widest text-neutral-400">
+              {promptLang}
+            </span>
+          </div>
+
+          <div className="px-6 py-12 text-center sm:px-10">
+            <p className="font-display text-5xl font-semibold leading-tight text-neutral-900 md:text-7xl">
+              {promptWord}
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-2">
+              <span className="meta-chip border-secondary-200 bg-secondary-50 text-secondary-700">
+                <i className="fa-solid fa-earth-americas" />
+                {quiz.word.language.language}
               </span>
-            </div>
-          </div>
-
-          <div className="mb-10 rounded-3xl border-2 border-dashed border-primary-300/50 bg-gradient-to-br from-neutral-50 to-primary-50/30 p-12">
-            <div className="text-center">
-              <p className="mb-4 text-sm font-medium uppercase tracking-wider text-neutral-600">
-                {quiz.quizType === "to_spanish"
-                  ? `Palabra en ${quiz.word.language.language}:`
-                  : "Palabra en Español:"}
-              </p>
-              <div className="mb-6 text-5xl font-bold text-neutral-900 md:text-6xl">
-                {quiz.quizType === "to_spanish" ? quiz.word.englishWord : quiz.word.translation}
-              </div>
-
-              {quiz.word.explanation ? (
-                <div className="mx-auto mb-6 max-w-2xl rounded-2xl border border-yellow-200/50 bg-white/80 p-6">
-                  <div className="flex items-start gap-3 text-left">
-                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-yellow-100">
-                      <i className="fa-solid fa-lightbulb text-sm text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="mb-1 font-semibold text-neutral-800">Pista</p>
-                      <p className="text-neutral-700">{quiz.word.explanation}</p>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="flex flex-wrap justify-center gap-3 text-sm">
-                <div className="rounded-xl border border-primary-200 bg-primary-100 px-3 py-1.5 font-medium text-primary-700">
-                  <i className="fa-solid fa-globe mr-2 w-4" />
-                  {quiz.word.language.language}
-                </div>
-                <div className="rounded-xl border border-green-200 bg-green-100 px-3 py-1.5 font-medium text-green-700">
-                  <i className="fa-solid fa-tag mr-2 w-4" />
-                  {quiz.word.tag.tag}
-                </div>
-                {quiz.word.timesPracticed > 0 ? (
-                  <div className="rounded-xl border border-purple-200 bg-purple-100 px-3 py-1.5 font-medium text-purple-700">
-                    <i className="fa-solid fa-chart-line mr-2 w-4" />
-                    {getAccuracy(quiz.word.timesPracticed, quiz.word.timesCorrect)}% precisión
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <form action={submitQuizAnswerAction} className="space-y-8">
-            <input name="wordId" type="hidden" value={quiz.word.id} />
-            <input name="sessionId" type="hidden" value={quiz.session.sessionId} />
-            <input name="quizType" type="hidden" value={quiz.quizType} />
-
-            <div>
-              <label className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-800" htmlFor="answer">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-green-100">
-                  <i className="fa-solid fa-keyboard text-sm text-green-600" />
+              <span className="meta-chip border-neutral-300 bg-neutral-50 text-neutral-600">
+                <i className="fa-solid fa-tag" />
+                {quiz.word.tag.tag}
+              </span>
+              {quiz.word.timesPracticed > 0 ? (
+                <span className="meta-chip border-accent/40 bg-accent/10 text-[#8a6418]">
+                  <i className="fa-solid fa-chart-line" />
+                  {getAccuracy(quiz.word.timesPracticed, quiz.word.timesCorrect)}%
                 </span>
-                Tu Respuesta
+              ) : null}
+            </div>
+
+            {quiz.word.explanation ? (
+              <div className="mx-auto mt-8 max-w-xl rounded-xl rounded-l-sm border-l-[3px] border-accent bg-neutral-50 px-5 py-4 text-left">
+                <div className="eyebrow-muted mb-1">Pista</div>
+                <p className="font-display text-lg italic leading-relaxed text-neutral-700">
+                  {quiz.word.explanation}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-8 sm:px-10">
+            <form action={submitQuizAnswerAction} className="space-y-5">
+              <input name="wordId" type="hidden" value={quiz.word.id} />
+              <input name="sessionId" type="hidden" value={quiz.session.sessionId} />
+              <input name="quizType" type="hidden" value={quiz.quizType} />
+
+              <label className="input-label text-center" htmlFor="answer">
+                Tu respuesta
               </label>
               <input
                 autoComplete="off"
                 autoFocus
-                className="w-full rounded-2xl border-2 border-neutral-300 px-6 py-4 text-center text-2xl font-medium text-neutral-900 placeholder-neutral-400 focus:border-secondary-500 focus:outline-none focus:ring-4 focus:ring-secondary-200"
+                className="w-full rounded-2xl border border-neutral-300 bg-neutral-25 px-6 py-4 text-center font-display text-2xl font-medium text-neutral-900 transition-all duration-200 placeholder:font-sans placeholder:text-base placeholder:italic placeholder:text-neutral-400 focus:border-primary-400 focus:outline-none focus:ring-4 focus:ring-primary-200/50"
                 id="answer"
                 name="answer"
-                placeholder="Escribe la traducción aquí..."
+                placeholder="escribe la traducción…"
                 required
               />
-            </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <button
-                className="flex-1 rounded-2xl bg-gradient-to-r from-secondary-600 to-secondary-700 px-8 py-4 text-lg font-bold text-white hover:from-secondary-700 hover:to-secondary-800"
-                type="submit"
-              >
-                Verificar
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row">
-            <form action={skipQuizAnswerAction} className="flex-1">
-              <button
-                className="w-full rounded-2xl border-2 border-neutral-300 bg-white px-8 py-4 font-semibold text-neutral-700 hover:bg-neutral-50"
-                type="submit"
-              >
-                Saltar Pregunta
+              <button className="primary-button w-full py-4 text-base" type="submit">
+                <i className="fa-solid fa-check" />
+                <span>Verificar</span>
               </button>
             </form>
-            <Link
-              className="flex flex-1 items-center justify-center rounded-2xl border border-neutral-300 bg-white px-8 py-4 font-medium text-neutral-700 hover:bg-neutral-50"
-              href="/verpalabras"
-            >
-              Ver todas las palabras
-            </Link>
+
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <form action={skipQuizAnswerAction} className="flex-1">
+                <button className="outline-button w-full" type="submit">
+                  <i className="fa-solid fa-forward" />
+                  <span>Saltar</span>
+                </button>
+              </form>
+              <Link className="outline-button flex-1" href="/verpalabras">
+                <i className="fa-solid fa-book" />
+                <span>Ver léxico</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
