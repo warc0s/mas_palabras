@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
+import { PageHeader } from "@/components/page-header";
 import { startQuizAction } from "@/lib/actions/quiz-actions";
 import { resolveSearchParams } from "@/lib/flash";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
@@ -20,13 +21,13 @@ export default async function QuizConfigPage({
     <>
       <FlashBanner searchParams={params} />
 
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-2xl">
+        <PageHeader
+          eyebrow="Sesión de práctica"
+          subtitle="Ajusta el alcance de tu repaso antes de empezar."
+          title="Configurar quiz"
+        />
         <div className="page-card p-8">
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-gray-800">Configurar Quiz</h1>
-            <p className="text-gray-600">Personaliza tu sesión de práctica</p>
-          </div>
-
           <form action={startQuizAction} className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div>
@@ -79,23 +80,39 @@ export default async function QuizConfigPage({
               </select>
             </div>
 
-            <div className="flex gap-4">
-              <button className="primary-button flex-1 bg-secondary-600 hover:bg-secondary-700" type="submit">
-                Iniciar Quiz
+            <div className="flex gap-3">
+              <button
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-secondary-600 px-5 py-3 font-medium text-neutral-25 shadow-[0_8px_20px_-10px_rgba(31,90,79,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-500 hover:shadow-[0_16px_30px_-12px_rgba(31,90,79,0.7)] active:translate-y-0"
+                type="submit"
+              >
+                <i className="fa-solid fa-play" />
+                <span>Iniciar quiz</span>
               </button>
-              <Link className="secondary-button flex-1" href="/">
+              <Link className="outline-button flex-1" href="/">
                 Cancelar
               </Link>
             </div>
           </form>
 
-          <div className="mt-8 rounded-lg bg-purple-50 p-6">
-            <h2 className="mb-2 font-medium text-purple-900">Consejos para el Quiz</h2>
-            <ul className="space-y-1 text-sm text-purple-700">
-              <li>Las respuestas no distinguen entre mayúsculas y minúsculas.</li>
-              <li>Los acentos y tildes no afectan la corrección.</li>
-              <li>Cada palabra aparecerá solo una vez por sesión.</li>
-              <li>Puedes terminar el quiz en cualquier momento.</li>
+          <div className="mt-8 rounded-xl rounded-l-sm border-l-[3px] border-secondary-400 bg-secondary-50 px-5 py-4">
+            <div className="eyebrow mb-3 text-secondary-700">Reglas de la casa</div>
+            <ul className="space-y-2 text-sm leading-relaxed text-neutral-700">
+              <li className="flex gap-2.5">
+                <i className="fa-solid fa-check mt-1 text-xs text-secondary-600" />
+                Las respuestas no distinguen mayúsculas de minúsculas.
+              </li>
+              <li className="flex gap-2.5">
+                <i className="fa-solid fa-check mt-1 text-xs text-secondary-600" />
+                Los acentos y tildes no afectan la corrección.
+              </li>
+              <li className="flex gap-2.5">
+                <i className="fa-solid fa-check mt-1 text-xs text-secondary-600" />
+                Cada palabra aparece una sola vez por sesión.
+              </li>
+              <li className="flex gap-2.5">
+                <i className="fa-solid fa-check mt-1 text-xs text-secondary-600" />
+                Puedes terminar el quiz cuando quieras.
+              </li>
             </ul>
           </div>
         </div>

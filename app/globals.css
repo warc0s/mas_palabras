@@ -5,10 +5,31 @@
 @layer base {
   html {
     color-scheme: light;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply min-h-screen bg-gradient-to-br from-neutral-25 via-primary-50/30 to-secondary-50/20 font-sans text-neutral-900 antialiased;
+    @apply min-h-screen bg-neutral-50 font-sans text-neutral-900 antialiased;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(33, 28, 22, 0.045) 1px, transparent 0),
+      radial-gradient(120% 80% at 50% -10%, rgba(168, 58, 38, 0.06), transparent 60%);
+    background-size:
+      22px 22px,
+      100% 100%;
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: #e0967e;
+    color: #211c16;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    font-feature-settings: "liga" 1, "dlig" 1;
   }
 
   a,
@@ -20,55 +41,116 @@
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 11px;
+    height: 11px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: #ece5d6;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #c2b8a0;
+    border: 3px solid #ece5d6;
     border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a0937b;
   }
 }
 
 @layer components {
+  /* Small-caps typographic label — the "dictionary notation" voice */
+  .eyebrow {
+    @apply font-mono text-[0.7rem] font-medium uppercase tracking-widest text-primary-700;
+  }
+
+  .eyebrow-muted {
+    @apply font-mono text-[0.7rem] font-medium uppercase tracking-widest text-neutral-500;
+  }
+
+  /* Hairline rule that grows from the left, like an underlined headword */
+  .rule {
+    @apply h-px w-full origin-left bg-neutral-300;
+  }
+
   .nav-link {
-    @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-primary-50/50 hover:text-primary-600;
+    @apply relative inline-flex items-center gap-2 rounded-full px-3.5 py-2 font-mono text-[0.78rem] font-medium uppercase tracking-wide text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-primary-700;
+  }
+
+  .nav-link[data-active="true"] {
+    @apply bg-primary-50 text-primary-700;
   }
 
   .mobile-nav-link {
-    @apply flex items-center gap-3 rounded-lg px-4 py-3 text-neutral-700 hover:bg-primary-50/50 hover:text-primary-600;
+    @apply mx-2 flex items-center gap-3 rounded-xl px-4 py-3 font-mono text-sm uppercase tracking-wide text-neutral-700 transition-colors hover:bg-primary-50 hover:text-primary-700;
   }
 
+  .mobile-nav-link[data-active="true"] {
+    @apply bg-primary-50 text-primary-700;
+  }
+
+  /* Card stock — soft rounded, diffuse shadow, faint paper warmth */
   .page-card {
-    @apply rounded-3xl border border-neutral-200/50 bg-white/80 shadow-xl backdrop-blur-sm;
+    @apply rounded-2xl border border-neutral-200/80 bg-neutral-25 shadow-paper;
   }
 
+  /* Buttons — rounded, ink-forward, soft elevation that lifts on hover */
   .primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-3 font-medium text-white hover:bg-primary-700;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-3 font-medium text-neutral-25 shadow-[0_8px_20px_-10px_rgba(168,58,38,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-500 hover:shadow-[0_16px_30px_-12px_rgba(168,58,38,0.7)] active:translate-y-0 active:shadow-[0_4px_12px_-8px_rgba(168,58,38,0.5)];
   }
 
   .secondary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-700 px-4 py-3 font-medium text-white hover:bg-neutral-800;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-900 px-5 py-3 font-medium text-neutral-25 shadow-[0_8px_20px_-10px_rgba(33,28,22,0.55)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-neutral-800 hover:shadow-[0_16px_30px_-12px_rgba(33,28,22,0.6)] active:translate-y-0;
   }
 
   .outline-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 py-3 font-medium text-neutral-800 hover:bg-neutral-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-neutral-25/50 px-5 py-3 font-medium text-neutral-800 backdrop-blur-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-neutral-400 hover:bg-neutral-50 hover:shadow-paper;
   }
 
   .input-label {
-    @apply mb-2 block text-sm font-medium text-neutral-700;
+    @apply mb-2 block font-mono text-[0.72rem] font-medium uppercase tracking-widest text-neutral-600;
   }
 
   .text-input,
   .select-input,
   .textarea-input {
-    @apply w-full rounded-2xl border border-neutral-300 bg-white px-4 py-3 text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100;
+    @apply w-full rounded-xl border border-neutral-300 bg-neutral-25 px-4 py-3 text-neutral-900 placeholder:text-neutral-400 transition-all duration-200 focus:border-primary-400 focus:outline-none focus:ring-4 focus:ring-primary-200/50;
+  }
+
+  .select-input {
+    @apply appearance-none bg-no-repeat pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23615746' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 1rem center;
+    background-size: 14px;
   }
 
   .textarea-input {
     @apply min-h-[120px];
+  }
+
+  /* Pill chip used for language / tag metadata */
+  .meta-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[0.7rem] font-medium uppercase tracking-wide;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-100 {
+    animation-delay: 0.1s;
+  }
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  .animation-delay-300 {
+    animation-delay: 0.3s;
+  }
+  .animation-delay-500 {
+    animation-delay: 0.5s;
   }
 }

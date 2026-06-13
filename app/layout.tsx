@@ -1,24 +1,42 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { SiteShell } from "@/components/site-shell";
 
 import "./globals.css";
 
-const inter = Inter({
+const display = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
+
+const sans = Hanken_Grotesk({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-sans",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "Más Palabras",
-  description: "Gestiona vocabulario personal y practícalo con quizzes adaptativos.",
+  title: "Más Palabras — Léxico personal",
+  description: "Un diccionario personal vivo: registra vocabulario y afínalo con quizzes adaptativos.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es">
+    <html
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+      data-scroll-behavior="smooth"
+      lang="es"
+    >
       <head>
         <link
           crossOrigin="anonymous"
@@ -27,7 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
       </head>
-      <body className={inter.className}>
+      <body className="font-sans">
         <SiteShell>{children}</SiteShell>
       </body>
     </html>

@@ -29,13 +29,23 @@
 
 ## Línea visual
 
-La UI actual usa:
+Identidad **editorial / diccionario impreso, pero con superficies modernas**. Alma de léxico tipográfico cruzada con la suavidad de una app actual: nada de dashboard genérico ni glass-morphism.
 
-- fondos con gradiente suave
-- tarjetas blancas translúcidas
-- colores `primary`, `secondary`, `neutral`
+- Fondo de papel cálido (`neutral-50`) con una trama de puntos muy sutil y una pizca de calor del acento.
+- Escala de radios redefinida en `tailwind.config.ts` (`borderRadius`): todo es más redondeado. `rounded-sm` ya vale 0.5rem; superficies grandes usan `rounded-2xl`, botones/inputs `rounded-xl`, chips y paginación `rounded-full` (píldoras).
+- Sombras suaves y difusas (`shadow-paper`, `shadow-lift`, `shadow-glow`) en vez de offsets duros. Botones y tiles se elevan ligeramente al hover (`-translate-y-0.5` + sombra mayor) para que la página invite a usarse.
+- Tarjetas tipo cartulina: borde fino `neutral-200`, esquinas `rounded-2xl`, sombra `shadow-paper`. Clase `.page-card`.
+- Navegación tipo píldora: `.nav-link` y `.mobile-nav-link` usan fondo tintado redondeado en hover/activo (`bg-primary-50`), sin subrayado.
+- Tipografía con jerarquía clara:
+  - `font-display` (**Fraunces**) para titulares, palabras y lemas. Las palabras del léxico se tratan como entradas de diccionario (serif, a veces en cursiva).
+  - `font-sans` (**Hanken Grotesk**) para cuerpo y controles.
+  - `font-mono` (**JetBrains Mono**) para etiquetas, metadatos y notación. Helpers `.eyebrow` / `.eyebrow-muted` (mayúsculas, `tracking-widest`).
+- Paleta acotada: `primary` = rojo-óxido (acento principal/marca), `secondary` = verde pino (idiomas, aciertos), `accent` = ocre (avisos/pistas), `neutral` = escala piedra cálida.
+- Detalles de carácter: reglas finas (`.rule`), numeración de entradas, fonética del nombre, citas en cursiva serif, chips `.meta-chip` para idioma/etiqueta.
 
-No conviertas esta UI en otro dashboard genérico. Si hay que tocar diseño, respeta primero el lenguaje visual ya existente.
+Botones (`.primary-button`, `.secondary-button`, `.outline-button`), inputs y selects ya viven en `app/globals.css`. Reutiliza esas clases y `components/page-header.tsx` antes de inventar estilos nuevos.
+
+Cuidado con `@apply` y valores arbitrarios que lleven `<` o comillas (p. ej. un SVG inline en `bg-[url(...)]`): rompen el build de Tailwind. Escribe esas propiedades como CSS plano dentro de la regla.
 
 ## Dónde tocar qué
 
