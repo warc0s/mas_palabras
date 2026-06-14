@@ -1,5 +1,6 @@
 import { FlashBanner } from "@/components/flash-banner";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import {
   createTagAction,
   createLanguageAction,
@@ -52,13 +53,13 @@ export default async function SettingsPage({
                 placeholder="p. ej. Inglés"
                 required
               />
-              <button
+              <SubmitButton
                 className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-secondary-600 px-4 py-3 font-medium text-neutral-25 shadow-[0_8px_20px_-10px_rgba(31,90,79,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-500"
-                type="submit"
+                pendingLabel={<i className="fa-solid fa-spinner fa-spin" />}
               >
                 <i className="fa-solid fa-plus" />
                 <span className="hidden sm:inline">Añadir</span>
-              </button>
+              </SubmitButton>
             </form>
 
             <div className="p-6">
@@ -73,13 +74,12 @@ export default async function SettingsPage({
                         </span>
                       </span>
                       <form action={deleteLanguageAction.bind(null, language.id)}>
-                        <button
+                        <SubmitButton
                           aria-label={`Eliminar ${language.language}`}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-primary-50 hover:text-primary-700"
-                          type="submit"
                         >
                           <i className="fa-solid fa-trash text-sm" />
-                        </button>
+                        </SubmitButton>
                       </form>
                     </li>
                   ))}
@@ -110,13 +110,13 @@ export default async function SettingsPage({
                 placeholder="p. ej. A1, Verbos…"
                 required
               />
-              <button
+              <SubmitButton
                 className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary-600 px-4 py-3 font-medium text-neutral-25 shadow-glow transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-500"
-                type="submit"
+                pendingLabel={<i className="fa-solid fa-spinner fa-spin" />}
               >
                 <i className="fa-solid fa-plus" />
                 <span className="hidden sm:inline">Añadir</span>
-              </button>
+              </SubmitButton>
             </form>
 
             <div className="p-6">
@@ -129,13 +129,12 @@ export default async function SettingsPage({
                     >
                       {tag.tag}
                       <form action={deleteTagAction.bind(null, tag.id)}>
-                        <button
+                        <SubmitButton
                           aria-label={`Eliminar ${tag.tag}`}
                           className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-primary-100 hover:text-primary-700"
-                          type="submit"
                         >
                           <i className="fa-solid fa-xmark text-xs" />
-                        </button>
+                        </SubmitButton>
                       </form>
                     </span>
                   ))}

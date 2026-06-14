@@ -18,6 +18,7 @@ La superficie HTTP actual está pensada para la propia app.
 ### `GET /end_quiz`
 
 - termina la sesión activa si existe
+- rechaza con 403 si `sec-fetch-site` indica `cross-site` o `same-site` (mitigación CSRF sobre GET)
 - limpia la cookie del quiz
 - redirige a `/quiz` con mensaje informativo
 

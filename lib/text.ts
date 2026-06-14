@@ -2,7 +2,7 @@ export function normalizeText(value: string): string {
   return value
     .trim()
     .normalize("NFD")
-    .replace(/\p{Mark}/gu, "")
+    .replace(/[\p{Mark}\p{Cf}]/gu, "")
     .toLocaleLowerCase("es");
 }
 

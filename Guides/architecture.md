@@ -35,9 +35,13 @@ app/
 
 components/
   site-shell.tsx        # nav, footer y estructura común
+  desktop-nav.tsx       # navegación de escritorio
+  mobile-nav.tsx        # navegación móvil (accesible)
+  footer-nav.tsx        # navegación del footer (client, aria-current)
   flash-banner.tsx      # mensajes por query string
-  mobile-nav.tsx        # navegación móvil
   words-table.tsx       # tabla interactiva y borrado masivo
+  submit-button.tsx     # botón de envío con anti-doble-submit
+  page-header.tsx       # cabecera editorial de página
 
 lib/
   prisma.ts             # singleton Prisma Client

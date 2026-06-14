@@ -1,8 +1,20 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { redirectWithFlash } from "@/lib/flash";
-import { endActiveQuiz, skipQuizAnswer, startQuizSession, submitQuizAnswer } from "@/lib/quiz";
-import { quizAnswerSchema, quizConfigSchema } from "@/lib/validators";
+import {
+  endActiveQuiz,
+  getActiveQuizSession,
+  skipQuizAnswer,
+  startQuizSession,
+  submitQuizAnswer,
+} from "@/lib/quiz";
+import { quizAnswerSchema, quizConfigSchema, quizSkipSchema } from "@/lib/validators";
+
+function isErrorCode(error: unknown, code: string): boolean {
+  return error instanceof Error && error.message === code;
+}
 
 export async function startQuizAction(formData: FormData) {
   const parsed = quizConfigSchema.safeParse({
@@ -33,28 +45,63 @@ export async function submitQuizAnswerAction(formData: FormData) {
     answer: formData.get("answer"),
     wordId: formData.get("wordId"),
     sessionId: formData.get("sessionId"),
-    quizType: formData.get("quizType"),
   });
 
   if (!parsed.success) {
     redirectWithFlash("/quiz_question", "error", "Debes escribir una respuesta.");
   }
 
+  let result: Awaited<ReturnType<typeof submitQuizAnswer>>;
   try {
-    const result = await submitQuizAnswer(parsed.data);
-    redirectWithFlash(result.finished ? "/quiz" : "/quiz_question", result.finished ? "success" : result.message.startsWith("¡Correcto") ? "success" : "error", result.message);
-  } catch {
-    redirectWithFlash("/quiz", "warning", "Sesión de quiz expirada. Inicia un nuevo quiz.");
+    result = await submitQuizAnswer(parsed.data);
+  } catch (error) {
+    await redirectToQuizOnError(error);
+    return;
   }
+
+  revalidatePath("/");
+  revalidatePath("/verpalabras");
+  redirectWithFlash(result.finished ? "/quiz" : "/quiz_question", result.finished ? "success" : result.message.startsWith("¡Correcto") ? "success" : "error", result.message);
 }
 
-export async function skipQuizAnswerAction() {
-  try {
-    const result = await skipQuizAnswer();
-    redirectWithFlash(result.finished ? "/quiz" : "/quiz_question", result.finished ? "success" : "info", result.message);
-  } catch {
-    redirectWithFlash("/quiz", "warning", "No hay sesión de quiz activa.");
+export async function skipQuizAnswerAction(formData: FormData) {
+  const parsed = quizSkipSchema.safeParse({
+    wordId: formData.get("wordId"),
+    sessionId: formData.get("sessionId"),
+  });
+
+  if (!parsed.success) {
+    redirectWithFlash("/quiz_question", "error", "No se pudo saltar la pregunta.");
   }
+
+  let result: Awaited<ReturnType<typeof skipQuizAnswer>>;
+  try {
+    result = await skipQuizAnswer(parsed.data);
+  } catch (error) {
+    await redirectToQuizOnError(error);
+    return;
+  }
+
+  revalidatePath("/");
+  revalidatePath("/verpalabras");
+  redirectWithFlash(result.finished ? "/quiz" : "/quiz_question", result.finished ? "success" : "info", result.message);
+}
+
+async function redirectToQuizOnError(error: unknown): Promise<void> {
+  if (isErrorCode(error, "quiz_question_invalid")) {
+    const active = await getActiveQuizSession();
+    if (active && !active.isCompleted) {
+      redirectWithFlash("/quiz_question", "info", "Esa pregunta ya fue respondida.");
+    }
+    redirectWithFlash("/quiz", "warning", "La sesión del quiz ya terminó.");
+  }
+
+  if (isErrorCode(error, "quiz_session_invalid")) {
+    redirectWithFlash("/quiz", "warning", "Sesión de quiz expirada. Inicia un nuevo quiz.");
+  }
+
+  console.error("quiz action failed", { error });
+  redirectWithFlash("/quiz", "error", "No se pudo procesar la respuesta. Inténtalo de nuevo.");
 }
 
 export async function endQuizAction() {

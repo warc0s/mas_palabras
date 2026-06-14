@@ -41,6 +41,14 @@ Mínimo:
 DATABASE_URL="file:./dev.db"
 ```
 
+Opcionales:
+
+```env
+NEXT_PUBLIC_SITE_URL="https://tu-dominio.example"
+```
+
+`NEXT_PUBLIC_SITE_URL` fija la base de URLs absolutas para metadata OG/canonical (`metadataBase` en `app/layout.tsx`). Si no se define, el fallback es `http://localhost:3000`.
+
 Para desarrollo, build y arranque local, los scripts `dev`, `build` y `start:local` convierten esa ruta a absoluta al arrancar Next.
 
 ## Despliegue self-host

@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
 import { redirectWithFlash } from "@/lib/flash";
 import { processImport } from "@/lib/import-export";
+import type { ImportResult } from "@/lib/types";
 import { createWord, updateWord, deleteWord, bulkDeleteWords } from "@/lib/words";
 import { wordSchema } from "@/lib/validators";
 
@@ -70,12 +72,20 @@ export async function deleteWordAction(wordId: number) {
   redirectWithFlash("/verpalabras", "success", "Palabra eliminada exitosamente.");
 }
 
+const bulkDeleteSchema = z.array(z.number().int().positive());
+
 export async function bulkDeleteWordsAction(wordIds: number[]) {
-  if (!wordIds.length) {
+  const parsed = bulkDeleteSchema.safeParse(wordIds);
+  if (!parsed.success) {
+    redirectWithFlash("/verpalabras", "error", "La selección de palabras no es válida.");
+  }
+
+  const validIds = parsed.data;
+  if (validIds.length === 0) {
     redirectWithFlash("/verpalabras", "warning", "No se seleccionaron palabras.");
   }
 
-  const deleted = await bulkDeleteWords(wordIds);
+  const deleted = await bulkDeleteWords(validIds);
   revalidatePath("/");
   revalidatePath("/verpalabras");
   redirectWithFlash(
@@ -105,24 +115,25 @@ export async function importWordsAction(formData: FormData) {
     redirectWithFlash("/import_words", "error", "El archivo no contiene JSON válido.");
   }
 
+  let result: ImportResult;
   try {
-    const result = await processImport(
+    result = await processImport(
       data,
       overwriteDuplicates === "update" ? "update" : "skip",
       createMissing === "skip" ? "skip" : "create",
     );
-
-    revalidatePath("/");
-    revalidatePath("/verpalabras");
-    revalidatePath("/settings");
-    redirectWithFlash(
-      "/verpalabras",
-      "success",
-      `Importación completada: ${result.success} ok, ${result.skipped} omitidas, ${result.errors} con error.`,
-    );
   } catch {
     redirectWithFlash("/import_words", "error", "No se pudo procesar el archivo.");
   }
+
+  revalidatePath("/");
+  revalidatePath("/verpalabras");
+  revalidatePath("/settings");
+  redirectWithFlash(
+    "/verpalabras",
+    "success",
+    `Importación completada: ${result.success} ok, ${result.skipped} omitidas, ${result.errors} con error.`,
+  );
 }
 
 function mapWordError(error: unknown): string {

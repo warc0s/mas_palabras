@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { startQuizAction } from "@/lib/actions/quiz-actions";
 import { resolveSearchParams } from "@/lib/flash";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
@@ -81,13 +82,13 @@ export default async function QuizConfigPage({
             </div>
 
             <div className="flex gap-3">
-              <button
+              <SubmitButton
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-secondary-600 px-5 py-3 font-medium text-neutral-25 shadow-[0_8px_20px_-10px_rgba(31,90,79,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-secondary-500 hover:shadow-[0_16px_30px_-12px_rgba(31,90,79,0.7)] active:translate-y-0"
-                type="submit"
+                pendingLabel="Iniciando…"
               >
                 <i className="fa-solid fa-play" />
                 <span>Iniciar quiz</span>
-              </button>
+              </SubmitButton>
               <Link className="outline-button flex-1" href="/">
                 Cancelar
               </Link>

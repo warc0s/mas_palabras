@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { createWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
@@ -106,10 +107,10 @@ export default async function CreateWordPage({
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <button className="primary-button flex-1" type="submit">
+              <SubmitButton className="primary-button flex-1" pendingLabel="Guardando…">
                 <i className="fa-solid fa-floppy-disk w-4" />
                 <span>Guardar</span>
-              </button>
+              </SubmitButton>
               <Link className="secondary-button flex-1" href="/verpalabras">
                 Cancelar
               </Link>

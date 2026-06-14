@@ -1,0 +1,210 @@
+[
+  {
+    "english_word": "house",
+    "translation": "casa",
+    "explanation": "Lugar donde vive una persona o familia.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "dog",
+    "translation": "perro",
+    "explanation": "Animal doméstico, el mejor amigo del hombre.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "cat",
+    "translation": "gato",
+    "explanation": "Felino doméstico.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "water",
+    "translation": "agua",
+    "explanation": "Líquido transparente e incoloro.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "bread",
+    "translation": "pan",
+    "explanation": "Alimento hecho con harina y horneado.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "friend",
+    "translation": "amigo",
+    "explanation": "Persona con la que hay confianza y afecto.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "book",
+    "translation": "libro",
+    "explanation": "Conjunto de hojas impresas encuadernadas.",
+    "language": "Inglés",
+    "tag": "A1"
+  },
+  {
+    "english_word": "city",
+    "translation": "ciudad",
+    "explanation": "Conjunto grande de edificios y habitantes.",
+    "language": "Inglés",
+    "tag": "A2",
+    "times_practiced": 1,
+    "times_correct": 0,
+    "last_practiced": "2026-06-10T18:00:00Z"
+  },
+  {
+    "english_word": "teacher",
+    "translation": "profesor",
+    "explanation": "Persona que enseña.",
+    "language": "Inglés",
+    "tag": "A2",
+    "times_practiced": 1,
+    "times_correct": 0,
+    "last_practiced": "2026-06-09T18:00:00Z"
+  },
+  {
+    "english_word": "kitchen",
+    "translation": "cocina",
+    "explanation": "Estancia donde se prepara la comida.",
+    "language": "Inglés",
+    "tag": "A2",
+    "times_practiced": 2,
+    "times_correct": 1,
+    "last_practiced": "2026-06-08T18:00:00Z"
+  },
+  {
+    "english_word": "weather",
+    "translation": "clima",
+    "explanation": "Estado atmosférico de un lugar.",
+    "language": "Inglés",
+    "tag": "A2",
+    "times_practiced": 2,
+    "times_correct": 1,
+    "last_practiced": "2026-06-07T18:00:00Z"
+  },
+  {
+    "english_word": "neighbor",
+    "translation": "vecino",
+    "explanation": "Persona que vive cerca.",
+    "language": "Inglés",
+    "tag": "A2",
+    "times_practiced": 5,
+    "times_correct": 2,
+    "last_practiced": "2026-06-06T18:00:00Z"
+  },
+  {
+    "english_word": "hospital",
+    "translation": "hospital",
+    "explanation": "Centro donde se atiende a enfermos.",
+    "language": "Inglés",
+    "tag": "A2",
+    "times_practiced": 4,
+    "times_correct": 2,
+    "last_practiced": "2026-06-05T18:00:00Z"
+  },
+  {
+    "english_word": "although",
+    "translation": "aunque",
+    "explanation": "Conjunción concesiva.",
+    "language": "Inglés",
+    "tag": "B1",
+    "times_practiced": 10,
+    "times_correct": 6,
+    "last_practiced": "2026-06-04T18:00:00Z"
+  },
+  {
+    "english_word": "achieve",
+    "translation": "lograr",
+    "explanation": "Conseguir un objetivo.",
+    "language": "Inglés",
+    "tag": "B1",
+    "times_practiced": 5,
+    "times_correct": 4,
+    "last_practiced": "2026-06-03T18:00:00Z"
+  },
+  {
+    "english_word": "remind",
+    "translation": "recordar",
+    "explanation": "Hacer que alguien recuerde algo.",
+    "language": "Inglés",
+    "tag": "B1",
+    "times_practiced": 4,
+    "times_correct": 3,
+    "last_practiced": "2026-06-02T18:00:00Z"
+  },
+  {
+    "english_word": "overcome",
+    "translation": "superar",
+    "explanation": "Vencer una dificultad.",
+    "language": "Inglés",
+    "tag": "B1",
+    "times_practiced": 10,
+    "times_correct": 8,
+    "last_practiced": "2026-06-01T18:00:00Z"
+  },
+  {
+    "english_word": "forecast",
+    "translation": "pronóstico",
+    "explanation": "Predicción, normalmente del tiempo.",
+    "language": "Inglés",
+    "tag": "B1",
+    "times_practiced": 10,
+    "times_correct": 7,
+    "last_practiced": "2026-05-31T18:00:00Z"
+  },
+  {
+    "english_word": "bargain",
+    "translation": "ganga",
+    "explanation": "Buen precio por algo.",
+    "language": "Inglés",
+    "tag": "B1"
+  },
+  {
+    "english_word": "outcome",
+    "translation": "resultado",
+    "explanation": "Consecuencia final de un proceso.",
+    "language": "Inglés",
+    "tag": "B2"
+  },
+  {
+    "english_word": "awareness",
+    "translation": "conciencia",
+    "explanation": "Conocimiento o percepción de algo.",
+    "language": "Inglés",
+    "tag": "B2"
+  },
+  {
+    "english_word": "drawback",
+    "translation": "inconveniente",
+    "explanation": "Desventaja de algo.",
+    "language": "Inglés",
+    "tag": "B2"
+  },
+  {
+    "english_word": "thoroughly",
+    "translation": "minuciosamente",
+    "explanation": "De forma completa y detallada.",
+    "language": "Inglés",
+    "tag": "B2"
+  },
+  {
+    "english_word": "settle down",
+    "translation": "sentar la cabeza",
+    "explanation": "Empezar una vida estable.",
+    "language": "Inglés",
+    "tag": "B2"
+  },
+  {
+    "english_word": "get along with",
+    "translation": "llevarse bien con",
+    "explanation": "Tener buena relación con alguien.",
+    "language": "Inglés",
+    "tag": "B2"
+  }
+]

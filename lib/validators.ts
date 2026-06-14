@@ -23,5 +23,9 @@ export const quizAnswerSchema = z.object({
   answer: z.string().trim().min(1),
   wordId: z.coerce.number().int().positive(),
   sessionId: z.string().trim().min(1),
-  quizType: z.enum(["to_spanish", "to_original", "mixed"]),
+});
+
+export const quizSkipSchema = z.object({
+  wordId: z.coerce.number().int().positive(),
+  sessionId: z.string().trim().min(1),
 });
