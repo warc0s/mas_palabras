@@ -5,6 +5,10 @@ import { useMemo, useState, useTransition } from "react";
 
 import { bulkDeleteWordsAction, deleteWordAction } from "@/lib/actions/word-actions";
 
+const CONFIRM_BULK_DELETE = (count: number): string => `¿Eliminar ${count} palabra(s)?`;
+const CONFIRM_SINGLE_DELETE = (word: string): string =>
+  `¿Eliminar "${word}"? Esta acción no se puede deshacer.`;
+
 type WordRow = {
   id: number;
   englishWord: string;
@@ -39,7 +43,8 @@ export function WordsTable({ words }: { words: WordRow[] }) {
     if (!selectedIds.length) {
       return;
     }
-    if (!window.confirm(`¿Eliminar ${selectedIds.length} palabra(s)?`)) {
+    // TODO: replace window.confirm with an accessible <ConfirmDialog> component
+    if (!window.confirm(CONFIRM_BULK_DELETE(selectedIds.length))) {
       return;
     }
 
@@ -49,7 +54,8 @@ export function WordsTable({ words }: { words: WordRow[] }) {
   }
 
   function handleDelete(wordId: number, wordText: string) {
-    if (!window.confirm(`¿Eliminar "${wordText}"? Esta acción no se puede deshacer.`)) {
+    // TODO: replace window.confirm with an accessible <ConfirmDialog> component
+    if (!window.confirm(CONFIRM_SINGLE_DELETE(wordText))) {
       return;
     }
 

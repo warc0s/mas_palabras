@@ -44,25 +44,29 @@ export async function createTagAction(formData: FormData) {
 }
 
 export async function deleteLanguageAction(languageId: number) {
+  let message: string;
   try {
-    const message = await deleteLanguage(languageId);
-    revalidatePath("/settings");
-    redirectWithFlash("/settings", message.includes("desactivado") ? "info" : "success", message);
+    message = await deleteLanguage(languageId);
   } catch {
     redirectWithFlash("/settings", "error", "No se pudo eliminar el idioma.");
   }
+
+  revalidatePath("/settings");
+  redirectWithFlash("/settings", message.includes("desactivado") ? "info" : "success", message);
 }
 
 export async function deleteTagAction(tagId: number) {
+  let message: string;
   try {
-    const message = await deleteTag(tagId);
-    revalidatePath("/settings");
-    redirectWithFlash(
-      "/settings",
-      message.includes("desactivada") ? "info" : "success",
-      message,
-    );
+    message = await deleteTag(tagId);
   } catch {
     redirectWithFlash("/settings", "error", "No se pudo eliminar la etiqueta.");
   }
+
+  revalidatePath("/settings");
+  redirectWithFlash(
+    "/settings",
+    message.includes("desactivada") ? "info" : "success",
+    message,
+  );
 }

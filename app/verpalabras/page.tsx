@@ -105,12 +105,16 @@ export default async function ViewWordsPage({
       {/* Filters */}
       <form className="page-card mb-6 p-6" method="GET">
         <div className="relative mb-5">
+          <label className="sr-only" htmlFor="search-input">
+            Buscar
+          </label>
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400">
             <i className="fa-solid fa-magnifying-glass" />
           </div>
           <input
             className="text-input pl-11"
             defaultValue={rawSearch ?? ""}
+            id="search-input"
             name="search"
             placeholder="Buscar en tu vocabulario…"
           />

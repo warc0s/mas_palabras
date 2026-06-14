@@ -74,7 +74,7 @@ El modelo gira en torno a 4 tablas: `word`, `language`, `tag`, `quiz_session`.
 
 Reglas que no se pueden romper:
 
-- Los duplicados se detectan por `(language_id, normalized_english_word)`. En código, la normalización está en `lib/text.ts`: `trim`, NFD, eliminación de marcas Unicode y `toLocaleLowerCase("es")`.
+- Los duplicados se detectan por `(language_id, normalized_english_word)`. En código, la normalización está en `lib/text.ts`: `trim`, NFD, eliminación de marcas Unicode (`\p{Mark}`) y caracteres de formato (`\p{Cf}`) y `toLocaleLowerCase("es")`.
 - Language y Tag hacen soft-delete (active=False) si tienen palabras asociadas.
 - El tracking de progreso (`times_practiced`, `times_correct`, `last_practiced`) se actualiza en cada respuesta de quiz.
 - Una palabra "necesita práctica" si: nunca practicada, menos de 3 intentos, o precisión menor al 70%.

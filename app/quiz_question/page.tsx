@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FlashBanner } from "@/components/flash-banner";
+import { SubmitButton } from "@/components/submit-button";
 import { endQuizAction, skipQuizAnswerAction, submitQuizAnswerAction } from "@/lib/actions/quiz-actions";
 import { buildFlashUrl, resolveSearchParams } from "@/lib/flash";
 import { getQuizQuestionData } from "@/lib/quiz";
@@ -33,21 +34,20 @@ export default async function QuizQuestionPage({
       <div className="mx-auto max-w-3xl">
         {/* Session masthead */}
         <div className="mb-6 flex flex-col gap-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <span className="eyebrow">Sesión de práctica</span>
-              <h1 className="mt-2 font-display text-2xl font-semibold text-neutral-900">
-                Pregunta {quiz.stats.answered + 1}
-                <span className="text-neutral-400"> / {quiz.stats.totalAvailable}</span>
-              </h1>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <span className="eyebrow">Sesión de práctica</span>
+                <h1 className="mt-2 font-display text-2xl font-semibold text-neutral-900">
+                  Pregunta {quiz.stats.answered + 1}
+                  <span className="text-neutral-400"> / {quiz.stats.totalAvailable}</span>
+                </h1>
+              </div>
+              <form action={endQuizAction}>
+                <SubmitButton className="outline-button px-4 py-2.5 text-sm" icon="fa-solid fa-flag-checkered" pendingLabel="Terminando…">
+                  Terminar
+                </SubmitButton>
+              </form>
             </div>
-            <form action={endQuizAction}>
-              <button className="outline-button px-4 py-2.5 text-sm" type="submit">
-                <i className="fa-solid fa-flag-checkered" />
-                <span>Terminar</span>
-              </button>
-            </form>
-          </div>
 
           <div className="flex items-center gap-4">
             <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200">
@@ -123,7 +123,6 @@ export default async function QuizQuestionPage({
             <form action={submitQuizAnswerAction} className="space-y-5">
               <input name="wordId" type="hidden" value={quiz.word.id} />
               <input name="sessionId" type="hidden" value={quiz.session.sessionId} />
-              <input name="quizType" type="hidden" value={quiz.quizType} />
 
               <label className="input-label text-center" htmlFor="answer">
                 Tu respuesta
@@ -138,18 +137,18 @@ export default async function QuizQuestionPage({
                 required
               />
 
-              <button className="primary-button w-full py-4 text-base" type="submit">
-                <i className="fa-solid fa-check" />
-                <span>Verificar</span>
-              </button>
+              <SubmitButton className="primary-button w-full py-4 text-base" icon="fa-solid fa-check" pendingLabel="Comprobando…">
+                Verificar
+              </SubmitButton>
             </form>
 
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
               <form action={skipQuizAnswerAction} className="flex-1">
-                <button className="outline-button w-full" type="submit">
-                  <i className="fa-solid fa-forward" />
-                  <span>Saltar</span>
-                </button>
+                <input name="wordId" type="hidden" value={quiz.word.id} />
+                <input name="sessionId" type="hidden" value={quiz.session.sessionId} />
+                <SubmitButton className="outline-button w-full" icon="fa-solid fa-forward" pendingLabel="Saltando…">
+                  Saltar
+                </SubmitButton>
               </form>
               <Link className="outline-button flex-1" href="/verpalabras">
                 <i className="fa-solid fa-book" />

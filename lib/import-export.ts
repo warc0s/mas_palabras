@@ -3,7 +3,6 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeText } from "@/lib/text";
 import type { ImportIssue, ImportResult } from "@/lib/types";
-
 type OverwriteMode = "skip" | "update";
 type CreateMissingMode = "create" | "skip";
 
@@ -14,16 +13,17 @@ type SanitizedImportItem = {
   explanation: string;
   language: string;
   tag: string;
-  languageId?: number;
-  tagId?: number;
   timesPracticed: number;
   timesCorrect: number;
-  hasStats: boolean;
+  hasTimesPracticed: boolean;
+  hasTimesCorrect: boolean;
   lastPracticed: Date | null;
   hasLastPracticed: boolean;
 };
 
 const EMPTY_DATE_VALUES = new Set(["", "nunca", "never"]);
+const MIN_ACCEPTED_YEAR = 2000;
+const MAX_ACCEPTED_YEAR = 2100;
 
 export async function processImport(
   data: unknown,
@@ -47,110 +47,162 @@ export async function processImport(
   const createdTags = new Set<string>();
   const pendingNewRecords = new Map<string, number>();
 
-  await prisma.$transaction(async (tx) => {
-    for (const [index, item] of data.entries()) {
-      const line = index + 1;
-      let sanitized: SanitizedImportItem;
+  for (const [index, item] of data.entries()) {
+    const line = index + 1;
+    let sanitized: SanitizedImportItem;
 
-      try {
-        sanitized = sanitizeImportItem(item);
-      } catch (error) {
-        registerImportIssue(result, line, getErrorCode(error), "error");
-        continue;
-      }
+    try {
+      sanitized = sanitizeImportItem(item);
+    } catch (error) {
+      registerImportIssue(result, line, getErrorCode(error), "error");
+      continue;
+    }
 
-      try {
+    try {
+      const outcome = await prisma.$transaction(async (tx) => {
         const relations = await ensureRelations(
           tx,
           sanitized,
           createMissingMode,
-          createdLanguages,
-          createdTags,
         );
-        sanitized.languageId = relations.languageId;
-        sanitized.tagId = relations.tagId;
-      } catch (error) {
-        registerImportIssue(result, line, getErrorCode(error), "skipped");
-        continue;
-      }
 
-      const key = `${sanitized.languageId}:${sanitized.normalizedEnglish}`;
-      const existing = await tx.word.findFirst({
-        where: {
-          languageId: sanitized.languageId,
-          normalizedEnglishWord: sanitized.normalizedEnglish,
-        },
-      });
+        const key = `${relations.languageId}:${sanitized.normalizedEnglish}`;
+        const existing = await tx.word.findFirst({
+          where: {
+            languageId: relations.languageId,
+            normalizedEnglishWord: sanitized.normalizedEnglish,
+          },
+        });
 
-      if (existing || pendingNewRecords.has(key)) {
-        if (overwriteMode === "skip") {
-          registerImportIssue(result, line, "duplicate", "skipped");
-          continue;
+        const isDuplicate = existing != null || pendingNewRecords.has(key);
+
+        if (isDuplicate && overwriteMode === "skip") {
+          return {
+            kind: "skipped_duplicate" as const,
+            createdLanguage: relations.createdLanguage,
+            createdTag: relations.createdTag,
+          };
         }
 
         if (existing) {
+          const effectivePracticed = sanitized.hasTimesPracticed
+            ? sanitized.timesPracticed
+            : existing.timesPracticed;
+          const effectiveCorrect = sanitized.hasTimesCorrect
+            ? sanitized.timesCorrect
+            : existing.timesCorrect;
+          if (effectiveCorrect > effectivePracticed) {
+            throw new Error("invalid_stats");
+          }
           await tx.word.update({
             where: { id: existing.id },
             data: {
               translation: sanitized.translation,
               explanation: sanitized.explanation,
-              tagId: sanitized.tagId,
-              ...(sanitized.hasStats
-                ? {
-                    timesPracticed: sanitized.timesPracticed,
-                    timesCorrect: sanitized.timesCorrect,
-                  }
+              tagId: relations.tagId,
+              ...(sanitized.hasTimesPracticed
+                ? { timesPracticed: sanitized.timesPracticed }
+                : {}),
+              ...(sanitized.hasTimesCorrect
+                ? { timesCorrect: sanitized.timesCorrect }
                 : {}),
               ...(sanitized.hasLastPracticed
-                ? {
-                    lastPracticed: sanitized.lastPracticed,
-                  }
+                ? { lastPracticed: sanitized.lastPracticed }
                 : {}),
             },
           });
+          return {
+            kind: "success" as const,
+            createdLanguage: relations.createdLanguage,
+            createdTag: relations.createdTag,
+          };
         }
 
-        result.success += 1;
-        continue;
-      }
+        if (pendingNewRecords.has(key)) {
+          return {
+            kind: "skipped_duplicate" as const,
+            createdLanguage: relations.createdLanguage,
+            createdTag: relations.createdTag,
+          };
+        }
 
-      const created = await tx.word.create({
-        data: {
-          englishWord: sanitized.englishWord,
-          normalizedEnglishWord: sanitized.normalizedEnglish,
-          translation: sanitized.translation,
-          explanation: sanitized.explanation,
-          languageId: sanitized.languageId!,
-          tagId: sanitized.tagId!,
-          timesPracticed: sanitized.timesPracticed,
-          timesCorrect: sanitized.timesCorrect,
-          lastPracticed: sanitized.lastPracticed,
-        },
+        if (sanitized.timesCorrect > sanitized.timesPracticed) {
+          throw new Error("invalid_stats");
+        }
+
+        const created = await tx.word.create({
+          data: {
+            englishWord: sanitized.englishWord,
+            normalizedEnglishWord: sanitized.normalizedEnglish,
+            translation: sanitized.translation,
+            explanation: sanitized.explanation,
+            languageId: relations.languageId,
+            tagId: relations.tagId,
+            timesPracticed: sanitized.timesPracticed,
+            timesCorrect: sanitized.timesCorrect,
+            lastPracticed: sanitized.lastPracticed,
+          },
+        });
+
+        pendingNewRecords.set(key, created.id);
+        return {
+          kind: "success" as const,
+          createdLanguage: relations.createdLanguage,
+          createdTag: relations.createdTag,
+        };
       });
 
-      pendingNewRecords.set(key, created.id);
-      result.success += 1;
+      if (outcome.createdLanguage) {
+        createdLanguages.add(outcome.createdLanguage);
+      }
+      if (outcome.createdTag) {
+        createdTags.add(outcome.createdTag);
+      }
+
+      if (outcome.kind === "success") {
+        result.success += 1;
+      } else {
+        registerImportIssue(result, line, "duplicate", "skipped");
+      }
+    } catch (error) {
+      const code = classifyProcessError(error);
+      const action: ImportIssue["action"] = SKIP_ISSUE_CODES.has(code)
+        ? "skipped"
+        : "error";
+      registerImportIssue(result, line, code, action);
     }
-  });
+  }
 
   result.createdLanguages = [...createdLanguages].sort();
   result.createdTags = [...createdTags].sort();
   return result;
 }
 
+const SKIP_ISSUE_CODES = new Set([
+  "duplicate",
+  "language_missing",
+  "tag_missing",
+]);
+
 async function ensureRelations(
   tx: Prisma.TransactionClient,
   sanitized: SanitizedImportItem,
   createMissingMode: CreateMissingMode,
-  createdLanguages: Set<string>,
-  createdTags: Set<string>,
-) {
+): Promise<{
+  languageId: number;
+  tagId: number;
+  createdLanguage: string | null;
+  createdTag: string | null;
+}> {
   let language = await tx.language.findUnique({
     where: { language: sanitized.language },
   });
   let tag = await tx.tag.findUnique({
     where: { tag: sanitized.tag },
   });
+
+  let createdLanguage: string | null = null;
+  let createdTag: string | null = null;
 
   if (!language) {
     if (createMissingMode !== "create") {
@@ -159,7 +211,7 @@ async function ensureRelations(
     language = await tx.language.create({
       data: { language: sanitized.language, active: true },
     });
-    createdLanguages.add(language.language);
+    createdLanguage = language.language;
   }
 
   if (!tag) {
@@ -169,10 +221,41 @@ async function ensureRelations(
     tag = await tx.tag.create({
       data: { tag: sanitized.tag, active: true },
     });
-    createdTags.add(tag.tag);
+    createdTag = tag.tag;
   }
 
-  return { languageId: language.id, tagId: tag.id };
+  return { languageId: language.id, tagId: tag.id, createdLanguage, createdTag };
+}
+
+function classifyProcessError(error: unknown): string {
+  const code = getErrorCode(error);
+  if (DOMAIN_ERROR_CODES.has(code)) {
+    return code;
+  }
+  if (isPrismaUniqueViolation(error)) {
+    return "duplicate";
+  }
+  return "unknown_error";
+}
+
+const DOMAIN_ERROR_CODES = new Set([
+  "language_missing",
+  "tag_missing",
+  "invalid_stats",
+  "invalid_record",
+  "missing_fields",
+  "empty_fields",
+  "invalid_fields",
+  "invalid_integer",
+  "invalid_date_format",
+  "negative_stats",
+]);
+
+function isPrismaUniqueViolation(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
 }
 
 function sanitizeImportItem(item: unknown): SanitizedImportItem {
@@ -210,7 +293,8 @@ function sanitizeImportItem(item: unknown): SanitizedImportItem {
     tag,
     timesPracticed: parsedStats.timesPracticed,
     timesCorrect: parsedStats.timesCorrect,
-    hasStats: parsedStats.hasStats,
+    hasTimesPracticed: parsedStats.hasTimesPracticed,
+    hasTimesCorrect: parsedStats.hasTimesCorrect,
     lastPracticed: parsedLastPracticed.value,
     hasLastPracticed: parsedLastPracticed.hasValue,
   };
@@ -237,23 +321,46 @@ function parseOptionalIntegerPair(timesPracticedRaw: unknown, timesCorrectRaw: u
   const hasTimesPracticed = timesPracticedRaw != null;
   const hasTimesCorrect = timesCorrectRaw != null;
   if (!hasTimesPracticed && !hasTimesCorrect) {
-    return { timesPracticed: 0, timesCorrect: 0, hasStats: false };
+    return {
+      timesPracticed: 0,
+      timesCorrect: 0,
+      hasTimesPracticed: false,
+      hasTimesCorrect: false,
+    };
   }
 
-  const timesPracticed = parseInteger(timesPracticedRaw);
-  const timesCorrect = parseInteger(timesCorrectRaw);
-  if (timesPracticed < 0 || timesCorrect < 0) {
+  const timesPracticed = hasTimesPracticed ? parseInteger(timesPracticedRaw) : 0;
+  const timesCorrect = hasTimesCorrect ? parseInteger(timesCorrectRaw) : 0;
+
+  if (hasTimesPracticed && timesPracticed < 0) {
     throw new Error("negative_stats");
   }
+  if (hasTimesCorrect && timesCorrect < 0) {
+    throw new Error("negative_stats");
+  }
+  if (hasTimesPracticed && hasTimesCorrect && timesCorrect > timesPracticed) {
+    throw new Error("invalid_stats");
+  }
 
-  return { timesPracticed, timesCorrect, hasStats: true };
+  return { timesPracticed, timesCorrect, hasTimesPracticed, hasTimesCorrect };
 }
 
 function parseInteger(value: unknown): number {
-  if (value == null || value === "") {
+  if (typeof value !== "number" && typeof value !== "string") {
+    throw new Error("invalid_integer");
+  }
+  if (value === "") {
     return 0;
   }
-
+  if (typeof value === "number") {
+    if (!Number.isInteger(value)) {
+      throw new Error("invalid_integer");
+    }
+    return value;
+  }
+  if (!/^-?\d+$/.test(value)) {
+    throw new Error("invalid_integer");
+  }
   const parsed = Number(value);
   if (!Number.isInteger(parsed)) {
     throw new Error("invalid_integer");
@@ -287,7 +394,7 @@ function parseOptionalDate(value: unknown): { value: Date | null; hasValue: bool
   if (ddmmyyyy) {
     const [, day, month, year] = ddmmyyyy;
     const date = new Date(`${year}-${month}-${day}T00:00:00Z`);
-    if (!Number.isNaN(date.getTime())) {
+    if (!Number.isNaN(date.getTime()) && isReasonableDateYear(date)) {
       return { value: date, hasValue: true };
     }
   }
@@ -296,17 +403,29 @@ function parseOptionalDate(value: unknown): { value: Date | null; hasValue: bool
   if (yyyymmdd) {
     const [, year, month, day] = yyyymmdd;
     const date = new Date(`${year}-${month}-${day}T00:00:00Z`);
-    if (!Number.isNaN(date.getTime())) {
+    if (!Number.isNaN(date.getTime()) && isReasonableDateYear(date)) {
       return { value: date, hasValue: true };
     }
   }
 
+  if (/^\d+$/.test(trimmed)) {
+    throw new Error("invalid_date_format");
+  }
+
   const nativeParsed = new Date(trimmed);
-  if (!Number.isNaN(nativeParsed.getTime())) {
+  if (
+    !Number.isNaN(nativeParsed.getTime()) &&
+    isReasonableDateYear(nativeParsed)
+  ) {
     return { value: nativeParsed, hasValue: true };
   }
 
   throw new Error("invalid_date_format");
+}
+
+function isReasonableDateYear(date: Date): boolean {
+  const year = date.getUTCFullYear();
+  return year >= MIN_ACCEPTED_YEAR && year <= MAX_ACCEPTED_YEAR;
 }
 
 function registerImportIssue(

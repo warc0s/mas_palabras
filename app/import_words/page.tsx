@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { importWordsAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
 
@@ -83,9 +84,9 @@ export default async function ImportWordsPage({
             </div>
 
             <div className="flex gap-4">
-              <button className="primary-button flex-1" type="submit">
+              <SubmitButton className="primary-button flex-1" pendingLabel="Importando…">
                 Importar Palabras
-              </button>
+              </SubmitButton>
               <Link className="secondary-button flex-1" href="/verpalabras">
                 Cancelar
               </Link>

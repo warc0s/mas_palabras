@@ -12,9 +12,13 @@
 ## Componentes principales
 
 - `components/site-shell.tsx` — nav, footer y contenedor general
-- `components/mobile-nav.tsx` — menú responsive
+- `components/desktop-nav.tsx` — navegación de escritorio
+- `components/mobile-nav.tsx` — menú responsive (Esc/backdrop/focus-restore)
+- `components/footer-nav.tsx` — navegación del footer (client para `aria-current`)
 - `components/flash-banner.tsx` — mensajes de estado
 - `components/words-table.tsx` — tabla con selección múltiple y borrados
+- `components/submit-button.tsx` — botón de envío reutilizable que se deshabilita en pending (`useFormStatus`)
+- `components/page-header.tsx` — cabecera editorial de página
 
 ## Rutas UI
 
@@ -59,3 +63,13 @@ Cuidado con `@apply` y valores arbitrarios que lleven `<` o comillas (p. ej. un 
 - páginas y fetch de datos: server component
 - selección múltiple y confirmaciones de borrado: client component
 - formularios: server actions
+- los botones de envío usan `<SubmitButton>` (`components/submit-button.tsx`) para evitar doble submit; se deshabilita durante el pending vía `useFormStatus` y acepta `pendingLabel` para mostrar feedback
+
+## Accesibilidad
+
+- `SubmitButton` es la forma estándar de enviar forms con server actions. Reemplaza a `<button type="submit">` en cualquier form que dispare una action.
+- El menú móvil (`components/mobile-nav.tsx`) cierra con Escape y con click en el backdrop, expone `aria-controls`/`aria-expanded` y devuelve el foco al botón al cerrar.
+- La navegación (desktop, móvil y footer) marca el enlace activo con `aria-current="page"` (mantiene `data-active` para estilos).
+- Los inputs de filtrado en `/verpalabras` llevan `<label>` accesible (el de búsqueda es `sr-only` con `id`).
+- `app/error.tsx` loguea el error con `console.error` vía `useEffect` y muestra `error.digest` si existe, para depuración.
+- `components/words-table.tsx` todavía usa `window.confirm` para borrados (mensajes extraídos a constantes `CONFIRM_*`). Pendiente sustituir por un `<ConfirmDialog>` accesible.

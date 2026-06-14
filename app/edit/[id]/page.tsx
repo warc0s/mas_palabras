@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { FlashBanner } from "@/components/flash-banner";
 import { PageHeader } from "@/components/page-header";
+import { SubmitButton } from "@/components/submit-button";
 import { updateWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
@@ -124,9 +125,9 @@ export default async function EditWordPage({
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <button className="primary-button flex-1" type="submit">
+              <SubmitButton className="primary-button flex-1" pendingLabel="Guardando…">
                 Guardar cambios
-              </button>
+              </SubmitButton>
               <Link className="secondary-button flex-1" href="/verpalabras">
                 Cancelar
               </Link>

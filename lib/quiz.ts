@@ -10,6 +10,13 @@ import type { DifficultyFilter, QuizType } from "@/lib/types";
 
 const QUIZ_COOKIE_NAME = "mas-palabras-quiz";
 
+const QUIZ_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+};
+
 type QuizConfig = {
   quizType: QuizType;
   languageId: number;
@@ -17,6 +24,36 @@ type QuizConfig = {
   onlyDifficult: DifficultyFilter;
   poolSize: number;
 };
+
+type ResolvedDirection = "to_spanish" | "to_original";
+
+export function shuffle<T>(arr: readonly T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+export function deriveMixedDirection(sessionId: string, index: number): ResolvedDirection {
+  let hash = 0;
+  const seed = `${sessionId}:${index}`;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (Math.imul(hash, 31) + seed.charCodeAt(i)) | 0;
+  }
+  return (hash & 1) === 0 ? "to_spanish" : "to_original";
+}
+
+function resolveDirection(
+  session: { sessionId: string; currentIndex: number },
+  config: QuizConfig,
+): ResolvedDirection {
+  if (config.quizType === "mixed") {
+    return deriveMixedDirection(session.sessionId, session.currentIndex);
+  }
+  return config.quizType;
+}
 
 export async function startQuizSession(input: {
   languageId: number;
@@ -34,6 +71,8 @@ export async function startQuizSession(input: {
 
   const words = await prisma.word.findMany({
     where: {
+      language: { active: true },
+      tag: { active: true },
       ...(input.languageId ? { languageId: input.languageId } : {}),
       ...(input.tagId ? { tagId: input.tagId } : {}),
     },
@@ -58,7 +97,7 @@ export async function startQuizSession(input: {
     return null;
   }
 
-  const shuffledIds = filtered.map((word) => word.id).sort(() => Math.random() - 0.5);
+  const shuffledIds = shuffle(filtered.map((word) => word.id));
   const sessionId = crypto.randomUUID();
   const quizConfig: QuizConfig = {
     quizType: input.quizType,
@@ -82,10 +121,7 @@ export async function startQuizSession(input: {
 
   const cookieStore = await cookies();
   cookieStore.set(QUIZ_COOKIE_NAME, sessionId, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
+    ...QUIZ_COOKIE_OPTIONS,
     maxAge: 60 * 60 * 24,
   });
 
@@ -131,23 +167,21 @@ export async function getQuizQuestionData() {
   });
 
   if (!word) {
-    await advanceQuizSession(prisma, false, wordIds.length, false);
+    await prisma.quizSession.update({
+      where: { id: session.id },
+      data: { currentIndex: { increment: 1 } },
+    });
     return getQuizQuestionData();
   }
 
   const config = parseQuizConfig(session.quizConfigJson);
-  const quizType =
-    config.quizType === "mixed"
-      ? session.totalQuestions % 2 === 0
-        ? "to_spanish"
-        : "to_original"
-      : config.quizType;
+  const direction = resolveDirection(session, config);
 
   return {
     session,
     word,
     wordIds,
-    quizType,
+    quizType: direction,
     stats: {
       answered: session.totalQuestions,
       correctAnswers: session.correctAnswers,
@@ -160,30 +194,42 @@ export async function submitQuizAnswer(input: {
   answer: string;
   wordId: number;
   sessionId: string;
-  quizType: QuizType;
 }) {
-  const session = await getActiveQuizSession();
-  if (!session || session.isCompleted || session.sessionId !== input.sessionId) {
-    throw new Error("quiz_session_invalid");
-  }
+  const cookieStore = await cookies();
+  const cookieSessionId = cookieStore.get(QUIZ_COOKIE_NAME)?.value;
 
-  const wordIds = parseWordIds(session.wordIdsJson);
-  if (session.currentIndex >= wordIds.length || wordIds[session.currentIndex] !== input.wordId) {
-    throw new Error("quiz_question_invalid");
-  }
+  const outcome = await prisma.$transaction(async (tx) => {
+    if (!cookieSessionId) {
+      throw new Error("quiz_session_invalid");
+    }
 
-  const word = await prisma.word.findUnique({
-    where: { id: input.wordId },
-  });
+    const session = await tx.quizSession.findUnique({
+      where: { sessionId: cookieSessionId },
+    });
+    if (!session || session.isCompleted || session.sessionId !== input.sessionId) {
+      throw new Error("quiz_session_invalid");
+    }
 
-  if (!word) {
-    throw new Error("word_not_found");
-  }
+    const wordIds = parseWordIds(session.wordIdsJson);
+    if (
+      session.currentIndex >= wordIds.length ||
+      wordIds[session.currentIndex] !== input.wordId
+    ) {
+      throw new Error("quiz_question_invalid");
+    }
 
-  const correctAnswer = input.quizType === "to_spanish" ? word.translation : word.englishWord;
-  const isCorrect = normalizeText(input.answer) === normalizeText(correctAnswer);
+    const word = await tx.word.findUnique({
+      where: { id: input.wordId },
+    });
+    if (!word) {
+      throw new Error("word_not_found");
+    }
 
-  await prisma.$transaction(async (tx) => {
+    const config = parseQuizConfig(session.quizConfigJson);
+    const direction = resolveDirection(session, config);
+    const correctAnswer = direction === "to_spanish" ? word.translation : word.englishWord;
+    const isCorrect = normalizeText(input.answer) === normalizeText(correctAnswer);
+
     await tx.word.update({
       where: { id: word.id },
       data: {
@@ -193,13 +239,17 @@ export async function submitQuizAnswer(input: {
       },
     });
 
-    await advanceQuizSession(tx, isCorrect, wordIds.length);
+    await advanceSessionTx(tx, session.id, session.currentIndex, wordIds.length, isCorrect, true);
+
+    return { isCorrect, correctAnswer, sessionId: session.id };
   });
 
-  const updated = await getActiveQuizSession();
+  const updated = await prisma.quizSession.findUnique({
+    where: { id: outcome.sessionId },
+  });
   const finished = !updated || updated.isCompleted;
   if (finished) {
-    const summary = await finalizeQuizSummary(session.id);
+    const summary = await finalizeQuizSummary(outcome.sessionId);
     return {
       finished: true,
       message: summary,
@@ -208,47 +258,64 @@ export async function submitQuizAnswer(input: {
 
   return {
     finished: false,
-    message: isCorrect
+    message: outcome.isCorrect
       ? "¡Correcto! Excelente trabajo."
-      : `Incorrecto. La respuesta correcta era: "${correctAnswer}"`,
+      : `Incorrecto. La respuesta correcta era: "${outcome.correctAnswer}"`,
   };
 }
 
-export async function skipQuizAnswer() {
-  const session = await getActiveQuizSession();
-  if (!session || session.isCompleted) {
-    throw new Error("quiz_session_invalid");
-  }
+// Design decision (Bug 21): skip counts as a failed attempt and degrades accuracy.
+// Documented in Guides/backend.md. Do not change without updating the guide.
+export async function skipQuizAnswer(input: { wordId: number; sessionId: string }) {
+  const cookieStore = await cookies();
+  const cookieSessionId = cookieStore.get(QUIZ_COOKIE_NAME)?.value;
 
-  const wordIds = parseWordIds(session.wordIdsJson);
-  if (session.currentIndex >= wordIds.length) {
-    await finalizeQuizSession(session.id);
-  } else {
-    const wordId = wordIds[session.currentIndex];
-    await prisma.$transaction(async (tx) => {
-      const word = await tx.word.findUnique({
-        where: { id: wordId },
-        select: { id: true },
-      });
+  const outcome = await prisma.$transaction(async (tx) => {
+    if (!cookieSessionId) {
+      throw new Error("quiz_session_invalid");
+    }
 
-      if (word) {
-        await tx.word.update({
-          where: { id: word.id },
-          data: {
-            timesPracticed: { increment: 1 },
-            lastPracticed: new Date(),
-          },
-        });
-      }
-
-      await advanceQuizSession(tx, false, wordIds.length, Boolean(word));
+    const session = await tx.quizSession.findUnique({
+      where: { sessionId: cookieSessionId },
     });
-  }
+    if (!session || session.isCompleted || session.sessionId !== input.sessionId) {
+      throw new Error("quiz_session_invalid");
+    }
 
-  const updated = await getActiveQuizSession();
+    const wordIds = parseWordIds(session.wordIdsJson);
+    if (
+      session.currentIndex >= wordIds.length ||
+      wordIds[session.currentIndex] !== input.wordId
+    ) {
+      throw new Error("quiz_question_invalid");
+    }
+
+    const word = await tx.word.findUnique({
+      where: { id: input.wordId },
+      select: { id: true },
+    });
+
+    if (word) {
+      await tx.word.update({
+        where: { id: word.id },
+        data: {
+          timesPracticed: { increment: 1 },
+          lastPracticed: new Date(),
+        },
+      });
+    }
+
+    await advanceSessionTx(tx, session.id, session.currentIndex, wordIds.length, false, true);
+
+    return { sessionId: session.id };
+  });
+
+  const updated = await prisma.quizSession.findUnique({
+    where: { id: outcome.sessionId },
+  });
   const finished = !updated || updated.isCompleted;
   if (finished) {
-    const summary = await finalizeQuizSummary(session.id);
+    const summary = await finalizeQuizSummary(outcome.sessionId);
     return {
       finished: true,
       message: summary,
@@ -279,27 +346,31 @@ export async function endActiveQuiz() {
   return "Quiz terminado.";
 }
 
-async function advanceQuizSession(
-  client: Prisma.TransactionClient | typeof prisma,
-  correct: boolean,
+export async function advanceSessionTx(
+  tx: Prisma.TransactionClient,
+  sessionId: number,
+  currentIndex: number,
   totalPool: number,
-  countAttempt = true,
+  isCorrect: boolean,
+  countAttempt: boolean,
 ) {
-  const session = await getActiveQuizSession();
-  if (!session) {
-    return;
-  }
-
-  const nextIndex = session.currentIndex + 1;
-  await client.quizSession.update({
-    where: { id: session.id },
+  const nextIndex = currentIndex + 1;
+  // Compare-and-swap on currentIndex. If another concurrent submit/skip
+  // already advanced the session between the validation read and this write,
+  // the WHERE clause does not match and count === 0 — the caller treats that
+  // as quiz_question_invalid.
+  const result = await tx.quizSession.updateMany({
+    where: { id: sessionId, currentIndex },
     data: {
-      currentIndex: nextIndex,
+      currentIndex: { increment: 1 },
       totalQuestions: countAttempt ? { increment: 1 } : undefined,
-      correctAnswers: countAttempt && correct ? { increment: 1 } : undefined,
+      correctAnswers: countAttempt && isCorrect ? { increment: 1 } : undefined,
       isCompleted: nextIndex >= totalPool,
     },
   });
+  if (result.count === 0) {
+    throw new Error("quiz_question_invalid");
+  }
 }
 
 async function finalizeQuizSession(sessionId: number) {
@@ -363,5 +434,8 @@ function parseQuizConfig(raw: string | null): QuizConfig {
 
 async function clearQuizCookie() {
   const cookieStore = await cookies();
-  cookieStore.delete(QUIZ_COOKIE_NAME);
+  cookieStore.set(QUIZ_COOKIE_NAME, "", {
+    ...QUIZ_COOKIE_OPTIONS,
+    maxAge: 0,
+  });
 }

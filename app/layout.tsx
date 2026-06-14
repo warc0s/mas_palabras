@@ -25,7 +25,10 @@ const mono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Más Palabras — Léxico personal",
   description: "Un diccionario personal vivo: registra vocabulario y afínalo con quizzes adaptativos.",
 };
@@ -34,10 +37,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       className={`${display.variable} ${sans.variable} ${mono.variable}`}
-      data-scroll-behavior="smooth"
       lang="es"
     >
       <head>
+        <link crossOrigin="" href="https://cdnjs.cloudflare.com" rel="preconnect" />
         <link
           crossOrigin="anonymous"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"

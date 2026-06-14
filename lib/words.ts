@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { getAccuracy, needsPractice, practicePriority } from "@/lib/word-metrics";
 import { normalizeText } from "@/lib/text";
@@ -21,11 +23,17 @@ type WordFilters = {
 };
 
 export async function getDashboardStats() {
+  const activeWordsWhere = {
+    language: { active: true },
+    tag: { active: true },
+  };
+
   const [wordCount, languageCount, tagCount, words] = await Promise.all([
-    prisma.word.count(),
+    prisma.word.count({ where: activeWordsWhere }),
     prisma.language.count({ where: { active: true } }),
     prisma.tag.count({ where: { active: true } }),
     prisma.word.findMany({
+      where: activeWordsWhere,
       select: {
         timesPracticed: true,
         timesCorrect: true,
@@ -61,7 +69,8 @@ export async function getDashboardStats() {
 }
 
 export async function listWords(filters: WordFilters) {
-  const search = filters.search?.trim() ?? "";
+  const rawSearch = filters.search?.trim() ?? "";
+  const normalizedSearch = rawSearch ? normalizeText(rawSearch) : "";
   const page = Math.max(filters.page ?? 1, 1);
   const perPage = Math.min(Math.max(filters.perPage ?? 25, 1), 100);
   const sortBy = filters.sortBy ?? "english_word";
@@ -70,15 +79,6 @@ export async function listWords(filters: WordFilters) {
     where: {
       ...(filters.languageId ? { languageId: filters.languageId } : {}),
       ...(filters.tagId ? { tagId: filters.tagId } : {}),
-      ...(search
-        ? {
-            OR: [
-              { englishWord: { contains: search } },
-              { translation: { contains: search } },
-              { explanation: { contains: search } },
-            ],
-          }
-        : {}),
     },
     include: {
       language: true,
@@ -86,7 +86,16 @@ export async function listWords(filters: WordFilters) {
     },
   })) as WordWithRelations[];
 
-  const sortedWords = [...words].sort((left, right) => {
+  const filteredWords = normalizedSearch
+    ? words.filter((word) => {
+        const haystack = normalizeText(
+          `${word.englishWord}\n${word.translation}\n${word.explanation ?? ""}`,
+        );
+        return haystack.includes(normalizedSearch);
+      })
+    : words;
+
+  const sortedWords = [...filteredWords].sort((left, right) => {
     switch (sortBy) {
       case "translation":
         return left.translation.localeCompare(right.translation, "es");
@@ -125,12 +134,6 @@ export async function listWords(filters: WordFilters) {
 }
 
 function compareAccuracy(first: WordWithRelations, second: WordWithRelations) {
-  const firstUnpracticed = first.timesPracticed === 0 ? 1 : 0;
-  const secondUnpracticed = second.timesPracticed === 0 ? 1 : 0;
-  if (firstUnpracticed !== secondUnpracticed) {
-    return firstUnpracticed - secondUnpracticed;
-  }
-
   const firstAccuracy = getAccuracy(first.timesPracticed, first.timesCorrect);
   const secondAccuracy = getAccuracy(second.timesPracticed, second.timesCorrect);
   return firstAccuracy - secondAccuracy || first.englishWord.localeCompare(second.englishWord, "es");
@@ -151,16 +154,26 @@ export async function createWord(input: WordInput) {
   await ensureWordRelations(input.languageId, input.tagId);
   await ensureWordNotDuplicated(input.languageId, normalized);
 
-  return prisma.word.create({
-    data: {
-      englishWord: input.englishWord.trim(),
-      normalizedEnglishWord: normalized,
-      translation: input.translation.trim(),
-      explanation: input.explanation?.trim() ?? "",
-      languageId: input.languageId,
-      tagId: input.tagId,
-    },
-  });
+  try {
+    return await prisma.word.create({
+      data: {
+        englishWord: input.englishWord.trim(),
+        normalizedEnglishWord: normalized,
+        translation: input.translation.trim(),
+        explanation: input.explanation?.trim() ?? "",
+        languageId: input.languageId,
+        tagId: input.tagId,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new Error("duplicate_word");
+    }
+    throw error;
+  }
 }
 
 export async function updateWord(wordId: number, input: WordInput) {
@@ -173,17 +186,27 @@ export async function updateWord(wordId: number, input: WordInput) {
   await ensureWordRelations(input.languageId, input.tagId);
   await ensureWordNotDuplicated(input.languageId, normalized, wordId);
 
-  return prisma.word.update({
-    where: { id: wordId },
-    data: {
-      englishWord: input.englishWord.trim(),
-      normalizedEnglishWord: normalized,
-      translation: input.translation.trim(),
-      explanation: input.explanation?.trim() ?? "",
-      languageId: input.languageId,
-      tagId: input.tagId,
-    },
-  });
+  try {
+    return await prisma.word.update({
+      where: { id: wordId },
+      data: {
+        englishWord: input.englishWord.trim(),
+        normalizedEnglishWord: normalized,
+        translation: input.translation.trim(),
+        explanation: input.explanation?.trim() ?? "",
+        languageId: input.languageId,
+        tagId: input.tagId,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new Error("duplicate_word");
+    }
+    throw error;
+  }
 }
 
 export async function deleteWord(wordId: number) {

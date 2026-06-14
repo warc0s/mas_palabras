@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { DesktopNav } from "@/components/desktop-nav";
+import { FooterNav } from "@/components/footer-nav";
 import { MobileNav } from "@/components/mobile-nav";
-import { navLinks } from "@/components/nav-data";
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
@@ -50,17 +50,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               </p>
             </div>
 
-            <nav className="flex flex-wrap gap-x-8 gap-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  className="font-mono text-[0.78rem] uppercase tracking-wide text-neutral-600 hover:text-primary-700"
-                  href={link.href}
-                  key={link.href}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
+            <FooterNav />
           </div>
 
           <div className="mt-10 flex flex-col gap-2 border-t border-neutral-300 pt-6 sm:flex-row sm:items-center sm:justify-between">
