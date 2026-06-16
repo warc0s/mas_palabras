@@ -1,6 +1,6 @@
-# Desarrollo y Despliegue
+# Development and Deployment
 
-## Setup local
+## Local Setup
 
 ```bash
 pnpm install
@@ -8,56 +8,60 @@ cp .env.example .env
 pnpm prisma:migrate:dev --name init
 ```
 
-## Desarrollo
+## Development
 
 ```bash
 pnpm dev
 ```
 
-La app corre en `http://127.0.0.1:3000`.
+The app runs at `http://127.0.0.1:3000`.
 
-## Build de producción
+## Production Build
 
 ```bash
 pnpm build
 pnpm start:local
 ```
 
-`pnpm start:local` ejecuta el servidor standalone de Next y fija `DATABASE_URL` absoluta para usar `prisma/dev.db`.
+`pnpm start:local` runs the standalone Next server and sets an absolute `DATABASE_URL` for `prisma/dev.db`.
 
-## Migraciones
+## Migrations
 
 ```bash
-pnpm prisma:migrate:dev --name nombre_del_cambio
+pnpm prisma:migrate:dev --name change_name
 pnpm prisma:migrate:deploy
 pnpm prisma:generate
 ```
 
-## Variables de entorno
+## Environment Variables
 
-Mínimo:
+Minimum:
 
 ```env
 DATABASE_URL="file:./dev.db"
 ```
 
-Opcionales:
+Optional:
 
 ```env
-NEXT_PUBLIC_SITE_URL="https://tu-dominio.example"
+NEXT_PUBLIC_SITE_URL="https://your-domain.example"
 ```
 
-`NEXT_PUBLIC_SITE_URL` fija la base de URLs absolutas para metadata OG/canonical (`metadataBase` en `app/layout.tsx`). Si no se define, el fallback es `http://localhost:3000`.
+`NEXT_PUBLIC_SITE_URL` sets the absolute URL base for metadata. If it is not defined, the fallback is `http://localhost:3000`.
 
-Para desarrollo, build y arranque local, los scripts `dev`, `build` y `start:local` convierten esa ruta a absoluta al arrancar Next.
+For development, build, and local standalone startup, the scripts convert the database path to an absolute path when starting Next.
 
-## Despliegue self-host
+## Self-Hosted Deployment
 
-El flujo esperado es:
+Expected flow:
 
 1. `pnpm install`
 2. `pnpm prisma:migrate:deploy`
 3. `pnpm build`
-4. `DATABASE_URL="file:/ruta/absoluta/prod.db" pnpm start`
+4. `DATABASE_URL="file:/absolute/path/prod.db" pnpm start`
 
-`pnpm start` respeta el `DATABASE_URL` del entorno. Usa `pnpm start:local` solo para arrancar contra `prisma/dev.db`.
+`pnpm start` respects the environment `DATABASE_URL`. Use `pnpm start:local` only when running against `prisma/dev.db`.
+
+## Public Hosting Warning
+
+The source repository can be public, but a deployed public instance is still personal-app grade until user accounts, authorization, data isolation, rate limiting, and stronger headers are implemented.

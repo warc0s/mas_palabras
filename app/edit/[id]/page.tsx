@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { updateWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
+import { getDictionary } from "@/lib/i18n";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 import { getWordById } from "@/lib/words";
 
@@ -22,10 +23,11 @@ export default async function EditWordPage({
     notFound();
   }
 
-  const [word, languages, tags] = await Promise.all([
+  const [word, languages, tags, dictionary] = await Promise.all([
     getWordById(wordId),
     getActiveLanguages(),
     getActiveTags(),
+    getDictionary(),
   ]);
 
   if (!word) {
@@ -38,9 +40,9 @@ export default async function EditWordPage({
 
       <div className="mx-auto max-w-3xl">
         <PageHeader
-          eyebrow={`Entrada · ${word.englishWord}`}
-          subtitle="Afina la definición, la traducción o las etiquetas de esta palabra."
-          title="Editar palabra"
+          eyebrow={dictionary.form.entryEyebrow(word.englishWord)}
+          subtitle={dictionary.form.editSubtitle}
+          title={dictionary.form.editTitle}
         />
         <div className="page-card p-8">
           <form action={updateWordAction} className="space-y-6">
@@ -48,7 +50,7 @@ export default async function EditWordPage({
 
             <div>
               <label className="input-label" htmlFor="englishWord">
-                Palabra
+                {dictionary.common.word}
               </label>
               <input
                 className="text-input"
@@ -61,7 +63,7 @@ export default async function EditWordPage({
 
             <div>
               <label className="input-label" htmlFor="translation">
-                Traducción
+                {dictionary.common.translation}
               </label>
               <input
                 className="text-input"
@@ -74,7 +76,7 @@ export default async function EditWordPage({
 
             <div>
               <label className="input-label" htmlFor="explanation">
-                Explicación
+                {dictionary.common.explanation}
               </label>
               <textarea
                 className="textarea-input"
@@ -88,7 +90,7 @@ export default async function EditWordPage({
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <label className="input-label" htmlFor="languageId">
-                  Idioma
+                  {dictionary.common.language}
                 </label>
                 <select
                   className="select-input"
@@ -106,7 +108,7 @@ export default async function EditWordPage({
               </div>
               <div>
                 <label className="input-label" htmlFor="tagId">
-                  Etiqueta
+                  {dictionary.common.tag}
                 </label>
                 <select
                   className="select-input"
@@ -125,11 +127,11 @@ export default async function EditWordPage({
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <SubmitButton className="primary-button flex-1" pendingLabel="Guardando…">
-                Guardar cambios
+              <SubmitButton className="primary-button flex-1" pendingLabel={dictionary.common.saving}>
+                {dictionary.common.saveChanges}
               </SubmitButton>
               <Link className="secondary-button flex-1" href="/verpalabras">
-                Cancelar
+                {dictionary.common.cancel}
               </Link>
             </div>
           </form>

@@ -8,6 +8,7 @@ import {
   deleteLanguageAction,
 } from "@/lib/actions/settings-actions";
 import { resolveSearchParams } from "@/lib/flash";
+import { getDictionary } from "@/lib/i18n";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 
 export default async function SettingsPage({
@@ -15,10 +16,11 @@ export default async function SettingsPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [languages, tags, params] = await Promise.all([
+  const [languages, tags, params, dictionary] = await Promise.all([
     getActiveLanguages(),
     getActiveTags(),
     resolveSearchParams(searchParams),
+    getDictionary(),
   ]);
 
   return (
@@ -27,9 +29,9 @@ export default async function SettingsPage({
 
       <div className="mx-auto max-w-5xl">
         <PageHeader
-          eyebrow="Taller"
-          subtitle="Define los idiomas y las etiquetas con los que clasificas tu vocabulario."
-          title="Ajustes"
+          eyebrow={dictionary.settings.eyebrow}
+          subtitle={dictionary.settings.subtitle}
+          title={dictionary.settings.title}
         />
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -40,17 +42,17 @@ export default async function SettingsPage({
                 <i className="fa-solid fa-earth-americas text-sm" />
               </span>
               <div>
-                <h2 className="font-display text-lg font-semibold text-neutral-900">Idiomas</h2>
-                <p className="eyebrow-muted mt-0.5">{languages.length} en uso</p>
+                <h2 className="font-display text-lg font-semibold text-neutral-900">{dictionary.settings.languages}</h2>
+                <p className="eyebrow-muted mt-0.5">{dictionary.settings.inUse(languages.length)}</p>
               </div>
             </div>
 
             <form action={createLanguageAction} className="flex gap-2 border-b border-neutral-200 p-6">
               <input
-                aria-label="Nombre del idioma"
+                aria-label={dictionary.settings.languageName}
                 className="text-input"
                 name="name"
-                placeholder="p. ej. Inglés"
+                placeholder={dictionary.settings.languagePlaceholder}
                 required
               />
               <SubmitButton
@@ -58,7 +60,7 @@ export default async function SettingsPage({
                 pendingLabel={<i className="fa-solid fa-spinner fa-spin" />}
               >
                 <i className="fa-solid fa-plus" />
-                <span className="hidden sm:inline">Añadir</span>
+                <span className="hidden sm:inline">{dictionary.common.add}</span>
               </SubmitButton>
             </form>
 
@@ -75,7 +77,7 @@ export default async function SettingsPage({
                       </span>
                       <form action={deleteLanguageAction.bind(null, language.id)}>
                         <SubmitButton
-                          aria-label={`Eliminar ${language.language}`}
+                          aria-label={dictionary.settings.deleteLanguage(language.language)}
                           className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-primary-50 hover:text-primary-700"
                         >
                           <i className="fa-solid fa-trash text-sm" />
@@ -85,7 +87,7 @@ export default async function SettingsPage({
                   ))}
                 </ul>
               ) : (
-                <EmptyHint icon="fa-earth-americas" text="Aún no hay idiomas configurados." />
+                <EmptyHint icon="fa-earth-americas" text={dictionary.settings.noLanguages} />
               )}
             </div>
           </section>
@@ -97,17 +99,17 @@ export default async function SettingsPage({
                 <i className="fa-solid fa-tag text-sm" />
               </span>
               <div>
-                <h2 className="font-display text-lg font-semibold text-neutral-900">Etiquetas</h2>
-                <p className="eyebrow-muted mt-0.5">{tags.length} en uso</p>
+                <h2 className="font-display text-lg font-semibold text-neutral-900">{dictionary.settings.tags}</h2>
+                <p className="eyebrow-muted mt-0.5">{dictionary.settings.inUse(tags.length)}</p>
               </div>
             </div>
 
             <form action={createTagAction} className="flex gap-2 border-b border-neutral-200 p-6">
               <input
-                aria-label="Nombre de la etiqueta"
+                aria-label={dictionary.settings.tagName}
                 className="text-input"
                 name="name"
-                placeholder="p. ej. A1, Verbos…"
+                placeholder={dictionary.settings.tagPlaceholder}
                 required
               />
               <SubmitButton
@@ -115,7 +117,7 @@ export default async function SettingsPage({
                 pendingLabel={<i className="fa-solid fa-spinner fa-spin" />}
               >
                 <i className="fa-solid fa-plus" />
-                <span className="hidden sm:inline">Añadir</span>
+                <span className="hidden sm:inline">{dictionary.common.add}</span>
               </SubmitButton>
             </form>
 
@@ -130,7 +132,7 @@ export default async function SettingsPage({
                       {tag.tag}
                       <form action={deleteTagAction.bind(null, tag.id)}>
                         <SubmitButton
-                          aria-label={`Eliminar ${tag.tag}`}
+                          aria-label={dictionary.settings.deleteTag(tag.tag)}
                           className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-primary-100 hover:text-primary-700"
                         >
                           <i className="fa-solid fa-xmark text-xs" />
@@ -140,7 +142,7 @@ export default async function SettingsPage({
                   ))}
                 </div>
               ) : (
-                <EmptyHint icon="fa-tag" text="Aún no hay etiquetas configuradas." />
+                <EmptyHint icon="fa-tag" text={dictionary.settings.noTags} />
               )}
             </div>
           </section>

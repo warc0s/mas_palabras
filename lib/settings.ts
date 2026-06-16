@@ -25,15 +25,15 @@ export async function createOrReactivateLanguage(name: string): Promise<string> 
         where: { id: existing.id },
         data: { active: true },
       });
-      return `Idioma "${name}" reactivado exitosamente.`;
+      return `Language "${name}" reactivated successfully.`;
     }
-    return `El idioma "${name}" ya existe.`;
+    return `Language "${name}" already exists.`;
   }
 
   await prisma.language.create({
     data: { language: name, active: true },
   });
-  return `Idioma "${name}" agregado exitosamente.`;
+  return `Language "${name}" added successfully.`;
 }
 
 export async function createOrReactivateTag(name: string): Promise<string> {
@@ -47,15 +47,15 @@ export async function createOrReactivateTag(name: string): Promise<string> {
         where: { id: existing.id },
         data: { active: true },
       });
-      return `Etiqueta "${name}" reactivada exitosamente.`;
+      return `Tag "${name}" reactivated successfully.`;
     }
-    return `La etiqueta "${name}" ya existe.`;
+    return `Tag "${name}" already exists.`;
   }
 
   await prisma.tag.create({
     data: { tag: name, active: true },
   });
-  return `Etiqueta "${name}" agregada exitosamente.`;
+  return `Tag "${name}" added successfully.`;
 }
 
 export async function deleteLanguage(languageId: number): Promise<string> {
@@ -76,13 +76,13 @@ export async function deleteLanguage(languageId: number): Promise<string> {
       where: { id: languageId },
       data: { active: false },
     });
-    return `Idioma "${language.language}" desactivado. Las ${wordCount} palabras asociadas se mantienen.`;
+    return `Language "${language.language}" deactivated. The ${wordCount} associated words are kept.`;
   }
 
   await prisma.language.delete({
     where: { id: languageId },
   });
-  return `Idioma "${language.language}" eliminado completamente.`;
+  return `Language "${language.language}" deleted completely.`;
 }
 
 export async function deleteTag(tagId: number): Promise<string> {
@@ -103,11 +103,11 @@ export async function deleteTag(tagId: number): Promise<string> {
       where: { id: tagId },
       data: { active: false },
     });
-    return `Etiqueta "${tag.tag}" desactivada. Las ${wordCount} palabras asociadas se mantienen.`;
+    return `Tag "${tag.tag}" deactivated. The ${wordCount} associated words are kept.`;
   }
 
   await prisma.tag.delete({
     where: { id: tagId },
   });
-  return `Etiqueta "${tag.tag}" eliminada completamente.`;
+  return `Tag "${tag.tag}" deleted completely.`;
 }

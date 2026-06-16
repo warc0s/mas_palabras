@@ -1,52 +1,58 @@
-# Seguridad
+# Security
 
-## Validación
+## Validation
 
-- Las mutaciones de formularios pasan por server actions.
-- `GET /end_quiz` es un route handler que termina la sesión activa y limpia la cookie.
-- El handler de `/end_quiz` rechaza peticiones cross-site comprobando `sec-fetch-site`: si el valor es `cross-site` o `same-site` responde 403 sin mutar. Mitiga CSRF sobre GET.
-- La validación de entrada usa Zod en `lib/validators.ts`.
-- La detección de duplicados y reglas de dominio se valida además en servidor contra BD.
+- Form mutations go through server actions.
+- Input validation uses Zod in `lib/validators.ts`.
+- Duplicate detection and domain rules are also enforced on the server against the database.
+- `GET /end_quiz` rejects requests when `sec-fetch-site` is `cross-site` or `same-site`.
 
-## Errores
+## Secrets and Local Files
 
-- `app/error.tsx` muestra un mensaje genérico al usuario y no expone `error.message`.
-- El error se loguea en consola (`console.error`) vía `useEffect`; no se envía a servicios externos.
-- Si `error.digest` existe, se muestra al usuario como identificador de referencia para depuración.
+- `.env`, `.env.*`, `.next/`, `prisma/dev.db`, local logs, and local tool folders are ignored.
+- `.env.example` is tracked and must only contain safe placeholder values.
+- Do not commit real database files, tokens, keys, or generated build output.
 
-## Sesiones
+## Errors
 
-- El quiz usa una cookie `httpOnly` llamada `mas-palabras-quiz`.
-- `sameSite` es `lax`.
-- `secure` se activa en producción.
-- El borrado de la cookie reespecifica `httpOnly`, `sameSite`, `secure`, `path` y `maxAge: 0` para que navegadores modernos acepten el `Set-Cookie` en HTTPS.
+- `app/error.tsx` shows a generic error message and does not expose `error.message`.
+- The error is logged with `console.error` in `useEffect`.
+- If `error.digest` exists, it is shown as a debugging reference.
 
-No hay login ni sesiones de usuario completas.
+## Sessions
+
+- The quiz uses an `httpOnly` cookie named `mas-palabras-quiz`.
+- `sameSite` is `lax`.
+- `secure` is enabled in production.
+- Cookie clearing repeats `httpOnly`, `sameSite`, `secure`, `path`, and `maxAge: 0`.
+
+There is no user login or full user-session system yet.
 
 ## Uploads
 
-- El import acepta solo JSON.
-- Hay límite explícito de 10MB en la action de import.
-- El parseo y la sanitización se hacen en servidor.
+- Import accepts JSON only.
+- The import action enforces a 10 MB limit.
+- Parsing and sanitization happen server-side.
 
-## Base de datos
+## Database
 
-- Prisma usa consultas tipadas.
-- No hay SQL manual en la app.
-- El acceso a SQLite depende de que `DATABASE_URL` apunte a la ruta correcta.
+- Prisma uses typed queries.
+- The app does not use manual SQL at runtime.
+- SQLite access depends on `DATABASE_URL` pointing to the expected path.
 
-## Lo que NO hay
+## Missing Controls
 
-- sin autenticación/autorización
-- sin rate limiting
-- sin CSP personalizada
-- sin auditoría de acciones
-- sin API pública autenticada
+- no authentication or authorization
+- no rate limiting
+- no custom CSP
+- no action audit log
+- no authenticated public API
 
-## Riesgos si se expone fuera de uso personal
+## Risks Before Public Deployment
 
-- `GET /export_words` descarga todo el vocabulario disponible.
-- `GET /end_quiz` muta estado mediante GET; mitigado parcialmente con chequeo de `sec-fetch-site`, pero sigue siendo una mutación vía GET.
-- Font Awesome se carga desde CDN sin CSP personalizada ni SRI.
+- `GET /export_words` downloads all vocabulary because there are no users yet.
+- `GET /end_quiz` mutates state through GET, even with partial CSRF mitigation.
+- Font Awesome is loaded from a CDN without a custom CSP or SRI.
+- Data is global and not isolated by user.
 
-Si la app va a exponerse fuera de un entorno personal, estos puntos siguen pendientes.
+The repository can be public as source code after secret cleanup, but the running app should not be exposed as a multi-user service until authentication, authorization, rate limiting, and per-user data isolation exist.

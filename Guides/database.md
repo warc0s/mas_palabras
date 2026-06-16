@@ -1,14 +1,14 @@
-# Base de Datos
+# Database
 
 ## ORM
 
-Prisma con SQLite.
+The app uses Prisma with SQLite.
 
-- esquema fuente: `prisma/schema.prisma`
-- cliente singleton: `lib/prisma.ts`
-- migraciones: `prisma/migrations/`
+- source schema: `prisma/schema.prisma`
+- client singleton: `lib/prisma.ts`
+- migrations: `prisma/migrations/`
 
-## Tablas
+## Tables
 
 ### `word`
 
@@ -24,7 +24,7 @@ Prisma con SQLite.
 - `last_practiced`
 - `created_at`
 
-Restricción única:
+Unique constraint:
 
 `(language_id, normalized_english_word)`
 
@@ -56,32 +56,32 @@ Restricción única:
 - `quiz_config`
 - `created_at`
 
-## Reglas de dominio
+## Domain Rules
 
-- los duplicados se detectan por idioma + palabra inglesa normalizada
-- `normalized_english_word` se calcula en `lib/text.ts` con `trim`, NFD, eliminación de marcas Unicode (`\p{Mark}`) y caracteres de formato (`\p{Cf}`, incluye ZWSP, ZWJ, BOM y marks LTR/RTL) y `toLocaleLowerCase("es")`
-- `Language` y `Tag` hacen soft-delete si tienen palabras asociadas
-- cada respuesta de quiz actualiza `times_practiced`, `times_correct` y `last_practiced`
-- una palabra necesita práctica si nunca se practicó, tiene menos de 3 intentos o precisión menor al 70%
+- duplicates are detected by language plus normalized source word
+- `normalized_english_word` is computed in `lib/text.ts` with `trim`, NFD, Unicode mark removal (`\p{Mark}`), format character removal (`\p{Cf}`), and `toLocaleLowerCase("es")`
+- `Language` and `Tag` use soft-delete when associated words exist
+- each quiz answer updates `times_practiced`, `times_correct`, and `last_practiced`
+- a word needs practice when it has never been practiced, has fewer than 3 attempts, or has accuracy below 70%
 
-## Campos JSON
+## JSON Fields
 
-Prisma modela `quiz_session.word_ids` como `wordIdsJson` y `quiz_session.quiz_config` como `quizConfigJson`.
-Ambos se guardan como texto JSON en SQLite.
+Prisma models `quiz_session.word_ids` as `wordIdsJson` and `quiz_session.quiz_config` as `quizConfigJson`.
+Both are stored as JSON text in SQLite.
 
-## Migraciones
+## Migrations
 
-Comandos habituales:
+Common commands:
 
 ```bash
-npx prisma migrate dev --name nombre_del_cambio
-npx prisma migrate deploy
-npx prisma generate
+pnpm prisma:migrate:dev --name change_name
+pnpm prisma:migrate:deploy
+pnpm prisma:generate
 ```
 
-## Ruta de la base
+## Database Path
 
-- Para Prisma CLI, `.env` usa `DATABASE_URL="file:./dev.db"` y la resuelve desde `prisma/`.
-- Para `pnpm dev`, `pnpm build` y `pnpm start:local`, los scripts fijan una ruta absoluta a `prisma/dev.db`.
-- Para `pnpm start`, exporta `DATABASE_URL` absoluta en el entorno.
-- Si cambias esta estrategia, asegúrate de que `dev`, `build`, `start:local`, `start` y Prisma CLI apunten a la BD esperada.
+- For Prisma CLI, `.env` uses `DATABASE_URL="file:./dev.db"` and Prisma resolves it from `prisma/`.
+- For `pnpm dev`, `pnpm build`, and `pnpm start:local`, scripts set an absolute path to `prisma/dev.db`.
+- For `pnpm start`, export an absolute `DATABASE_URL` in the environment.
+- If this strategy changes, verify `dev`, `build`, `start:local`, `start`, and Prisma CLI point to the expected database.

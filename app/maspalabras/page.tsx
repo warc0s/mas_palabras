@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { createWordAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
+import { getDictionary } from "@/lib/i18n";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 
 export default async function CreateWordPage({
@@ -12,10 +13,11 @@ export default async function CreateWordPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [languages, tags, params] = await Promise.all([
+  const [languages, tags, params, dictionary] = await Promise.all([
     getActiveLanguages(),
     getActiveTags(),
     resolveSearchParams(searchParams),
+    getDictionary(),
   ]);
   const hasLanguages = languages.length > 0;
   const hasTags = tags.length > 0;
@@ -26,16 +28,16 @@ export default async function CreateWordPage({
 
       <div className="mx-auto max-w-3xl">
         <PageHeader
-          eyebrow="Nueva entrada"
-          subtitle="Registra una palabra nueva en tu diccionario personal."
-          title="Añadir palabra"
+          eyebrow={dictionary.form.createEyebrow}
+          subtitle={dictionary.form.createSubtitle}
+          title={dictionary.form.createTitle}
         />
         <div className="page-card p-8">
           <form action={createWordAction} className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <label className="input-label" htmlFor="languageId">
-                  Idioma
+                  {dictionary.common.language}
                 </label>
                 <select className="select-input" id="languageId" name="languageId" required>
                   {hasLanguages ? (
@@ -45,14 +47,14 @@ export default async function CreateWordPage({
                       </option>
                     ))
                   ) : (
-                    <option value="">Sin idiomas configurados</option>
+                    <option value="">{dictionary.form.noLanguages}</option>
                   )}
                 </select>
                 {!hasLanguages ? (
                   <p className="mt-2 text-sm text-neutral-500">
-                    Hey, añade tu primer idioma en{" "}
+                    {dictionary.form.addFirstLanguage}{" "}
                     <Link className="font-medium text-primary hover:underline" href="/settings">
-                      Ajustes
+                      {dictionary.nav.settings}
                     </Link>
                     .
                   </p>
@@ -60,7 +62,7 @@ export default async function CreateWordPage({
               </div>
               <div>
                 <label className="input-label" htmlFor="tagId">
-                  Etiqueta
+                  {dictionary.common.tag}
                 </label>
                 <select className="select-input" id="tagId" name="tagId" required>
                   {hasTags ? (
@@ -70,14 +72,14 @@ export default async function CreateWordPage({
                       </option>
                     ))
                   ) : (
-                    <option value="">Sin etiquetas configuradas</option>
+                    <option value="">{dictionary.form.noTags}</option>
                   )}
                 </select>
                 {!hasTags ? (
                   <p className="mt-2 text-sm text-neutral-500">
-                    Hey, añade tu primera etiqueta en{" "}
+                    {dictionary.form.addFirstTag}{" "}
                     <Link className="font-medium text-primary hover:underline" href="/settings">
-                      Ajustes
+                      {dictionary.nav.settings}
                     </Link>
                     .
                   </p>
@@ -87,32 +89,32 @@ export default async function CreateWordPage({
 
             <div>
               <label className="input-label" htmlFor="englishWord">
-                Palabra
+                {dictionary.common.word}
               </label>
               <input className="text-input" id="englishWord" name="englishWord" required />
             </div>
 
             <div>
               <label className="input-label" htmlFor="translation">
-                Traducción
+                {dictionary.common.translation}
               </label>
               <input className="text-input" id="translation" name="translation" required />
             </div>
 
             <div>
               <label className="input-label" htmlFor="explanation">
-                Explicación
+                {dictionary.common.explanation}
               </label>
               <textarea className="textarea-input" id="explanation" name="explanation" rows={4} />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
-              <SubmitButton className="primary-button flex-1" pendingLabel="Guardando…">
+              <SubmitButton className="primary-button flex-1" pendingLabel={dictionary.common.saving}>
                 <i className="fa-solid fa-floppy-disk w-4" />
-                <span>Guardar</span>
+                <span>{dictionary.common.save}</span>
               </SubmitButton>
               <Link className="secondary-button flex-1" href="/verpalabras">
-                Cancelar
+                {dictionary.common.cancel}
               </Link>
             </div>
           </form>

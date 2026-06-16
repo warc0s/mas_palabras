@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FlashBanner } from "@/components/flash-banner";
 import { resolveSearchParams } from "@/lib/flash";
+import { getDictionary } from "@/lib/i18n";
 import { getDashboardStats } from "@/lib/words";
 
 export default async function HomePage({
@@ -9,51 +10,52 @@ export default async function HomePage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [stats, params] = await Promise.all([getDashboardStats(), resolveSearchParams(searchParams)]);
+  const [stats, params, dictionary] = await Promise.all([
+    getDashboardStats(),
+    resolveSearchParams(searchParams),
+    getDictionary(),
+  ]);
 
   return (
     <>
       <FlashBanner searchParams={params} />
 
-      {/* Headword hero — the app name treated as a dictionary entry */}
+      {/* Headword hero: the app name treated as a dictionary entry. */}
       <section className="relative animate-rise pb-4 pt-6">
         <div className="mb-7 flex items-center gap-4">
-          <span className="eyebrow">№ 001</span>
+          <span className="eyebrow">{dictionary.home.eyebrow}</span>
           <span className="h-px w-12 origin-left animate-draw-rule bg-primary-400" />
-          <span className="eyebrow-muted">Diccionario personal vivo</span>
+          <span className="eyebrow-muted">{dictionary.home.descriptor}</span>
         </div>
 
         <div className="flex flex-col gap-x-6 gap-y-3 md:flex-row md:items-baseline md:flex-wrap">
           <h1 className="font-display text-6xl font-semibold leading-none tracking-tight text-neutral-900 md:text-8xl">
-            Más Palabras
+            {dictionary.productName}
           </h1>
           <div className="flex items-baseline gap-4">
             <span className="font-mono text-base text-primary-700 md:text-lg">
               /ˈmas pa·ˈla·bras/
             </span>
             <span className="font-display text-base italic text-neutral-500 md:text-lg">
-              loc. nom.
+              {dictionary.home.phoneticType}
             </span>
           </div>
         </div>
 
         <p className="mt-7 max-w-2xl text-balance text-lg leading-relaxed text-neutral-700">
           <span className="font-mono text-sm text-primary-600">1.</span>{" "}
-          Sistema personal para <em className="font-display not-italic text-neutral-900">coleccionar</em>,{" "}
-          <em className="font-display not-italic text-neutral-900">definir</em> y{" "}
-          <em className="font-display not-italic text-neutral-900">memorizar</em> el vocabulario que de
-          verdad importa, en cualquier idioma.
+          {dictionary.home.definition}
         </p>
 
         {/* Masthead stat ledger */}
         <div className="mt-10 flex flex-wrap items-stretch gap-y-4 border-y border-neutral-300">
-          <MastheadStat icon="fa-book" label="Palabras" value={stats.wordCount} />
-          <MastheadStat icon="fa-earth-americas" label="Idiomas" value={stats.languageCount} />
-          <MastheadStat icon="fa-tags" label="Etiquetas" value={stats.tagCount} />
+          <MastheadStat icon="fa-book" label={dictionary.home.stats.words} value={stats.wordCount} />
+          <MastheadStat icon="fa-earth-americas" label={dictionary.home.stats.languages} value={stats.languageCount} />
+          <MastheadStat icon="fa-tags" label={dictionary.home.stats.tags} value={stats.tagCount} />
           {stats.totalPracticed > 0 ? (
             <MastheadStat
               icon="fa-bullseye"
-              label="Precisión"
+              label={dictionary.home.stats.accuracy}
               value={`${stats.avgAccuracy}%`}
             />
           ) : null}
@@ -62,11 +64,11 @@ export default async function HomePage({
         <div className="mt-10 flex flex-wrap gap-3">
           <Link className="primary-button" href="/maspalabras">
             <i className="fa-solid fa-plus" />
-            <span>Añadir palabra</span>
+            <span>{dictionary.common.addWord}</span>
           </Link>
           <Link className="outline-button" href="/verpalabras">
             <i className="fa-solid fa-book" />
-            <span>Explorar léxico</span>
+            <span>{dictionary.home.exploreLexicon}</span>
           </Link>
         </div>
       </section>
@@ -74,7 +76,7 @@ export default async function HomePage({
       {/* Index cards */}
       <section className="mt-20 animate-rise animation-delay-200">
         <div className="mb-8 flex items-center gap-4">
-          <span className="eyebrow-muted">Índice</span>
+          <span className="eyebrow-muted">{dictionary.home.index}</span>
           <span className="rule" />
         </div>
         <div className="grid gap-px overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-200 shadow-paper md:grid-cols-3">
@@ -82,22 +84,25 @@ export default async function HomePage({
             href="/maspalabras"
             icon="fa-feather-pointed"
             number="I"
-            text="Registra entradas nuevas con su traducción, una explicación propia y las etiquetas que tú decidas."
-            title="Añadir palabras"
+            openLabel={dictionary.common.open}
+            text={dictionary.home.cards.addText}
+            title={dictionary.home.cards.addTitle}
           />
           <IndexCard
             href="/verpalabras"
             icon="fa-book-open"
             number="II"
-            text="Recorre tu colección completa con búsqueda, filtros por idioma y etiqueta, y orden a tu gusto."
-            title="Explorar el léxico"
+            openLabel={dictionary.common.open}
+            text={dictionary.home.cards.lexiconText}
+            title={dictionary.home.cards.lexiconTitle}
           />
           <IndexCard
             href="/quiz"
             icon="fa-brain"
             number="III"
-            text="Repasa con ejercicios adaptativos que insisten en las palabras que más se te resisten."
-            title="Entrenar memoria"
+            openLabel={dictionary.common.open}
+            text={dictionary.home.cards.memoryText}
+            title={dictionary.home.cards.memoryTitle}
           />
         </div>
       </section>
@@ -106,25 +111,25 @@ export default async function HomePage({
         <section className="page-card mt-20 animate-rise animation-delay-300 p-8 md:p-12">
           <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <span className="eyebrow">Apéndice · Progreso</span>
+              <span className="eyebrow">{dictionary.home.progressEyebrow}</span>
               <h2 className="mt-3 font-display text-3xl font-semibold text-neutral-900 md:text-4xl">
-                Tu cuaderno de avance
+                {dictionary.home.progressTitle}
               </h2>
             </div>
             <p className="max-w-xs text-sm leading-relaxed text-neutral-600">
-              Una lectura rápida de cuánto has construido y qué te espera por repasar.
+              {dictionary.home.progressText}
             </p>
           </div>
 
           <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             <LedgerStat
-              label="Palabras en total"
+              label={dictionary.home.totalWords}
               tone="primary"
               value={stats.wordCount}
               width={100}
             />
             <LedgerStat
-              label="Sesiones de práctica"
+              label={dictionary.home.practiceSessions}
               tone="secondary"
               value={stats.totalPracticed}
               width={Math.min(
@@ -133,13 +138,13 @@ export default async function HomePage({
               )}
             />
             <LedgerStat
-              label="Precisión media"
+              label={dictionary.home.averageAccuracy}
               tone="accent"
               value={`${stats.avgAccuracy}%`}
               width={stats.avgAccuracy}
             />
             <LedgerStat
-              label="Necesitan repaso"
+              label={dictionary.home.needReview}
               tone="warning"
               value={stats.wordsNeedPractice}
               width={Math.round((stats.wordsNeedPractice / stats.wordCount) * 100)}
@@ -157,15 +162,15 @@ export default async function HomePage({
                 </span>
                 <div>
                   <div className="font-display text-lg font-semibold text-neutral-900">
-                    Practicar las palabras difíciles
+                    {dictionary.home.practiceDifficult}
                   </div>
                   <div className="eyebrow-muted mt-1">
-                    {stats.wordsNeedPractice} entradas esperando turno
+                    {dictionary.home.waitingEntries(stats.wordsNeedPractice)}
                   </div>
                 </div>
               </div>
               <span className="font-mono text-sm font-medium uppercase tracking-wide text-primary-700">
-                Empezar{" "}
+                {dictionary.home.start}{" "}
                 <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1" />
               </span>
             </Link>
@@ -204,12 +209,14 @@ function IndexCard({
   text,
   icon,
   number,
+  openLabel,
 }: {
   href: string;
   title: string;
   text: string;
   icon: string;
   number: string;
+  openLabel: string;
 }) {
   return (
     <Link
@@ -227,7 +234,7 @@ function IndexCard({
       <h3 className="mt-6 font-display text-2xl font-semibold text-neutral-900">{title}</h3>
       <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-600">{text}</p>
       <span className="mt-6 inline-flex items-center gap-2 font-mono text-[0.72rem] font-medium uppercase tracking-widest text-primary-700">
-        Abrir
+        {openLabel}
         <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-1" />
       </span>
     </Link>

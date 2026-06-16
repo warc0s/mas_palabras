@@ -8,7 +8,7 @@ describe("word metrics", () => {
     expect(getAccuracy(3, 2)).toBe(66.7);
   });
 
-  it("marca palabras sin práctica o con poco uso como pendientes", () => {
+  it("marks unpracticed or underused words as pending", () => {
     expect(needsPractice(0, 0)).toBe(true);
     expect(needsPractice(2, 2)).toBe(true);
     expect(needsPractice(10, 6)).toBe(true);
