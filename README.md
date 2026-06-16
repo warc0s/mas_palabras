@@ -4,22 +4,54 @@
 
 # Mas Palabras
 
-Mas Palabras is a personal vocabulary manager built with Next.js, Prisma, SQLite, and TypeScript. It helps you collect words, classify them by language and tag, import or export JSON, and practice with adaptive quizzes.
+Mas Palabras is a local-first personal vocabulary app for people who collect words while studying, reading, working, or living in another language.
 
-The repository is ready to be public as source code. The deployed app is still personal-use grade until authentication, authorization, user data isolation, and rate limiting are implemented.
+It gives you a small private system to save vocabulary, organize it by language and tag, import or export it as JSON, and practice it with adaptive quizzes that focus on new and weak words.
+
+The app is intentionally simple: it is not a cloud SaaS, it does not require an account, and it stores data in a SQLite database that you control.
+
+## Why This Exists
+
+Language learners often keep vocabulary scattered across notebooks, notes apps, spreadsheets, screenshots, and chat messages. Mas Palabras turns that into one structured personal lexicon:
+
+- capture a word or expression with its translation and your own explanation
+- classify entries by language and tag
+- search and filter your vocabulary later
+- practice words that need more review
+- import existing lists from JSON
+- export your data whenever you want
+
+The current product is best suited for self-hosted personal use, local study, and experimentation with language-learning workflows.
+
+## Local-First Model
+
+Mas Palabras is local-first in the practical self-hosted sense:
+
+- your vocabulary lives in a SQLite file
+- there is no hosted account system
+- there is no required external database service
+- there is no telemetry or third-party analytics
+- import and export are plain JSON
+- the app can run on your machine or on a server you control
+
+This does not mean the browser app is offline-first yet. PWA and offline review are future roadmap items.
 
 ## Table of Contents
 
 - [Screenshots](#screenshots)
+- [Core Workflows](#core-workflows)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
+- [Quick Start](#quick-start)
 - [Environment Variables](#environment-variables)
-- [Development](#development)
+- [Common Scripts](#common-scripts)
+- [Import and Export](#import-and-export)
+- [Data Model](#data-model)
 - [Testing](#testing)
 - [Production Build](#production-build)
 - [Project Structure](#project-structure)
 - [Documentation](#documentation)
+- [Current Limits](#current-limits)
 - [Security Status](#security-status)
 - [Contributing](#contributing)
 - [License](#license)
@@ -38,17 +70,41 @@ The repository is ready to be public as source code. The deployed app is still p
 
 ![Mobile screenshot](docs/assets/screenshot-mobile.png)
 
+## Core Workflows
+
+### Build a personal lexicon
+
+Create entries with a source word, translation, optional explanation, language, and tag. The app normalizes source words to prevent duplicate entries within the same language.
+
+### Browse and maintain vocabulary
+
+Use the lexicon page to search, filter by language or tag, sort by creation date or accuracy, edit entries, and delete one or several words.
+
+### Practice with adaptive quizzes
+
+Quiz sessions can target all words, new words, or words that need practice. A word needs practice when it has never been practiced, has fewer than 3 attempts, or has accuracy below 70%.
+
+### Keep data portable
+
+Export all vocabulary as JSON. Import JSON lists with duplicate handling and optional creation of missing languages or tags.
+
+### Switch interface language
+
+The interface currently supports English, Spanish, and Catalan through a cookie-backed selector.
+
 ## Features
 
 - Personal vocabulary dashboard
 - Word creation, editing, deletion, filtering, sorting, and bulk deletion
 - Language and tag management
 - Adaptive quiz sessions
+- Progress counters per word
 - JSON import and export
 - Interface language selector
 - English, Spanish, and Catalan UI dictionaries
-- Prisma migrations for SQLite
-- Vitest domain tests
+- SQLite persistence through Prisma
+- Zod validation for server-side inputs
+- Vitest unit tests
 - GitHub Actions CI for test and build
 
 ## Tech Stack
@@ -62,12 +118,41 @@ The repository is ready to be public as source code. The deployed app is still p
 - Zod
 - Vitest
 
-## Getting Started
+## Quick Start
+
+### Requirements
+
+- Node.js 22 or newer
+- pnpm 9.15.4 or compatible
+
+### Install
 
 ```bash
 pnpm install
 cp .env.example .env
 pnpm prisma:migrate:dev --name init
+```
+
+### Run locally
+
+```bash
+pnpm dev
+```
+
+Open:
+
+```text
+http://127.0.0.1:3000
+```
+
+### Add data
+
+You can add entries manually from the app, or import a JSON file from `/import_words`.
+
+A small sample list exists at:
+
+```text
+prisma/sample-words.json
 ```
 
 ## Environment Variables
@@ -84,19 +169,85 @@ Optional:
 NEXT_PUBLIC_SITE_URL="https://your-domain.example"
 ```
 
+`NEXT_PUBLIC_SITE_URL` is used for metadata URL generation. If it is not defined, the app falls back to `http://localhost:3000`.
+
 Do not commit real `.env` files, local SQLite databases, generated builds, logs, tokens, or keys.
 
-## Development
+## Common Scripts
 
 ```bash
 pnpm dev
+pnpm build
+pnpm start
+pnpm start:local
+pnpm test
+pnpm test:watch
+pnpm prisma:generate
+pnpm prisma:migrate:dev --name change_name
+pnpm prisma:migrate:deploy
 ```
 
-The app runs at:
+Script notes:
+
+- `pnpm dev` starts the Next.js dev server against `prisma/dev.db`.
+- `pnpm build` creates a production build and runs TypeScript checks.
+- `pnpm start:local` runs the standalone server against `prisma/dev.db`.
+- `pnpm start` respects the `DATABASE_URL` from the environment.
+
+## Import and Export
+
+Export route:
 
 ```text
-http://127.0.0.1:3000
+GET /export_words
 ```
+
+Import route:
+
+```text
+/import_words
+```
+
+Expected JSON shape:
+
+```json
+[
+  {
+    "english_word": "house",
+    "translation": "home",
+    "explanation": "where people live",
+    "language": "English",
+    "tag": "A1"
+  }
+]
+```
+
+Optional import fields:
+
+- `times_practiced`
+- `times_correct`
+- `last_practiced`
+
+Import supports duplicate skipping or updating, and can create missing languages or tags when requested.
+
+See [Guides/import-export.md](Guides/import-export.md) for full details.
+
+## Data Model
+
+The current schema has four main tables:
+
+- `word`
+- `language`
+- `tag`
+- `quiz_session`
+
+Important domain rules:
+
+- duplicates are detected by `(language_id, normalized_english_word)`
+- source-word normalization lives in `lib/text.ts`
+- languages and tags are soft-deleted when they have associated words
+- quiz answers update `times_practiced`, `times_correct`, and `last_practiced`
+- weak/new words are prioritized by the quiz flow
 
 ## Testing
 
@@ -107,6 +258,15 @@ pnpm build
 
 `pnpm test` runs the Vitest unit suite. `pnpm build` runs the production build and Next.js TypeScript checks.
 
+Current tests cover:
+
+- text normalization
+- word metrics
+- flash-message helpers
+- word search and sorting
+- import/export behavior
+- quiz utility behavior
+
 ## Production Build
 
 ```bash
@@ -114,11 +274,18 @@ pnpm build
 pnpm start:local
 ```
 
-`pnpm start:local` runs the standalone server against `prisma/dev.db`.
-
-For real self-hosting, set an absolute database URL and run:
+For self-hosting, set an absolute database URL and run:
 
 ```bash
+DATABASE_URL="file:/absolute/path/prod.db" pnpm start
+```
+
+Recommended self-host flow:
+
+```bash
+pnpm install
+pnpm prisma:migrate:deploy
+pnpm build
 DATABASE_URL="file:/absolute/path/prod.db" pnpm start
 ```
 
@@ -146,11 +313,29 @@ Start with:
 - [Guides/TODO/public-product-checklist.md](Guides/TODO/public-product-checklist.md)
 - [Guides/TODO/product-vision.md](Guides/TODO/product-vision.md)
 
+## Current Limits
+
+Mas Palabras is currently a personal app, not a finished public multi-user service.
+
+Known product limits:
+
+- no user accounts
+- no per-user data isolation
+- global vocabulary storage
+- global JSON export
+- one state-changing quiz endpoint still uses GET
+- no rate limiting
+- no custom CSP
+- no automated E2E tests
+- no offline/PWA mode yet
+
+These limits are documented so the repository can be public without pretending the app is production SaaS-ready.
+
 ## Security Status
 
 This codebase has been cleaned for public repository publication, but the app should not be deployed as a public multi-user service yet.
 
-Known product security gaps:
+Known security gaps:
 
 - no authentication
 - no authorization
@@ -166,8 +351,14 @@ See [SECURITY.md](SECURITY.md) and [Guides/security.md](Guides/security.md).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-The expected workflow is branch, validate, commit, push, and open a pull request into `main`.
+The expected workflow is:
+
+1. create a branch from `main`
+2. make a focused change
+3. run validation
+4. commit with a Conventional Commit message
+5. open a pull request into `main`
 
 ## License
 
-No license has been selected yet. Until a license is added, all rights are reserved by the repository owner.
+Mas Palabras is released under the [MIT License](LICENSE).
