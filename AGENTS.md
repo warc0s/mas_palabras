@@ -1,129 +1,128 @@
-# AGENTS.md — Mas_Palabras
+# AGENTS.md - Mas Palabras
 
-App Next.js para gestionar vocabulario personal y practicarlo con quizzes adaptativos.
+Mas Palabras is a Next.js app for managing a personal vocabulary library and practicing it with adaptive quizzes.
 
-## Estado actual del repo
+## Current Repository State
 
-- Runtime: Next.js App Router con TypeScript.
-- Persistencia: Prisma con SQLite.
-- Mutaciones: server actions en `lib/actions/`.
-- Lógica de dominio: servicios en `lib/`.
-- HTTP directo: route handlers mínimos en `app/export_words/route.ts` y `app/end_quiz/route.ts`.
+- Runtime: Next.js App Router with TypeScript.
+- Persistence: Prisma with SQLite.
+- Mutations: server actions in `lib/actions/`.
+- Domain logic: services in `lib/`.
+- Direct HTTP: minimal route handlers in `app/export_words/route.ts` and `app/end_quiz/route.ts`.
+- Interface language: app UI is internationalized through `lib/i18n.ts` and the language selector in the shell.
 
-## Qué leer antes de tocar código
+## Mandatory Reading Before Code Changes
 
-Lectura obligatoria antes de cada sesión de trabajo:
+Read these files before every work session:
 
-1. Este fichero (`AGENTS.md`)
-2. Todas las guías de `Guides/` (son breves, léelas enteras)
-3. La guía específica del área que vayas a tocar, una segunda vez con atención
+1. This file (`AGENTS.md`)
+2. Every guide in `Guides/`
+3. The specific guide for the area you will touch, a second time with extra care
 
-### Mapa de guías
+## Guide Map
 
-- `Guides/architecture.md` — Stack, estructura de ficheros, flujo de arranque de la app
-- `Guides/backend.md` — Server actions, route handlers, lógica de negocio
-- `Guides/api.md` — Superficie HTTP actual: route handlers y server actions
-- `Guides/database.md` — Prisma, SQLite, esquema (4 tablas), migraciones
-- `Guides/frontend.md` — App Router, componentes, Tailwind, dónde tocar estilos
-- `Guides/security.md` — Validación server-side, cookie del quiz, gaps pendientes
-- `Guides/testing.md` — Cómo ejecutar tests, estructura, convenciones
-- `Guides/deploys.md` — Setup local, Prisma, build standalone y arranque Node
-- `Guides/import-export.md` — Formato JSON, opciones de import, códigos de error
+- `Guides/architecture.md` - stack, file structure, app startup flow
+- `Guides/backend.md` - server actions, route handlers, business logic
+- `Guides/api.md` - current HTTP surface: route handlers and server actions
+- `Guides/database.md` - Prisma, SQLite, schema, migrations
+- `Guides/frontend.md` - App Router, components, Tailwind, styling boundaries, i18n
+- `Guides/security.md` - validation, quiz cookie, public-release risks
+- `Guides/testing.md` - test commands, structure, conventions
+- `Guides/deploys.md` - local setup, Prisma, standalone build, Node startup
+- `Guides/import-export.md` - JSON format, import options, error codes
 
-### Lectura rápida por tipo de cambio
+## Project Structure
 
-- Tocar rutas, server actions o lógica -> `Guides/backend.md`
-- Tocar modelos o BD -> `Guides/database.md`
-- Tocar superficie HTTP -> `Guides/api.md`
-- Tocar componentes o estilos -> `Guides/frontend.md`
-- Tocar config, env vars, despliegue -> `Guides/deploys.md` + `Guides/security.md`
-- Tocar import/export -> `Guides/import-export.md`
-- Añadir tests -> `Guides/testing.md`
-
-## Estructura del proyecto
-
-```
-app/                # Rutas Next.js App Router
-components/         # Shell, banner, tabla y piezas reutilizables
-lib/                # Prisma, servicios de dominio, validación y server actions
-prisma/             # schema.prisma + migraciones
-tests/              # Vitest
-Guides/             # Documentación de referencia
+```text
+app/                # Next.js App Router routes
+components/         # Shell, banner, table, and reusable UI
+lib/                # Prisma, domain services, validation, i18n, and server actions
+prisma/             # schema.prisma and migrations
+tests/              # Vitest tests
+Guides/             # Reference documentation
 ```
 
-## Principios
+## Principles
 
-- Prioriza base sólida sobre funcionalidades rápidas. Si falta información, deja un TODO explícito antes que inventar.
-- Cambios pequeños y focalizados. Nada de refactors masivos no pedidos.
-- Si una decisión cambia el enfoque o el alcance, pausa y pide confirmación.
-- Ataca la causa raíz. No maquilles estados ni acumules deuda sin señalarla.
-- Cierra el ciclo: explorar, cambiar, validar, resumir.
+- Prefer a solid base over fast features.
+- Keep changes small and focused.
+- If a decision changes scope or direction, pause and ask for confirmation.
+- Fix the root cause instead of masking states.
+- Close the loop: explore, change, validate, summarize.
 
-## Reglas de código
+## Code Rules
 
-- Código e identificadores en inglés. Copy visible y mensajes en español.
-- Las páginas y route handlers deben ser ligeros. Lógica de negocio fuera de `app/`.
-- Los componentes presentan; las reglas viven en `lib/`.
-- Centraliza validaciones y reglas compartidas. Si algo crece, extráelo a un módulo.
-- Comentarios solo cuando aclaren una decisión no obvia.
-- Todo tipado. `next build` debe pasar sin errores de TypeScript.
+- Code, identifiers, comments, documentation, and default server messages must be in English.
+- User-facing UI copy must go through `lib/i18n.ts` when it is part of the interactive interface.
+- Pages and route handlers must stay light. Business logic belongs outside `app/`.
+- Components present data; rules live in `lib/`.
+- Centralize validation and shared rules.
+- Comments are only for non-obvious decisions.
+- Everything must be typed. `pnpm build` must pass without TypeScript errors.
 
-## Modelo de dominio — reglas clave
+## Domain Rules
 
-El modelo gira en torno a 4 tablas: `word`, `language`, `tag`, `quiz_session`.
+The current model revolves around 4 tables: `word`, `language`, `tag`, and `quiz_session`.
 
-Reglas que no se pueden romper:
+Rules that must not be broken:
 
-- Los duplicados se detectan por `(language_id, normalized_english_word)`. En código, la normalización está en `lib/text.ts`: `trim`, NFD, eliminación de marcas Unicode (`\p{Mark}`) y caracteres de formato (`\p{Cf}`) y `toLocaleLowerCase("es")`.
-- Language y Tag hacen soft-delete (active=False) si tienen palabras asociadas.
-- El tracking de progreso (`times_practiced`, `times_correct`, `last_practiced`) se actualiza en cada respuesta de quiz.
-- Una palabra "necesita práctica" si: nunca practicada, menos de 3 intentos, o precisión menor al 70%.
+- Duplicates are detected by `(language_id, normalized_english_word)`. Normalization lives in `lib/text.ts`: `trim`, NFD, Unicode mark removal (`\p{Mark}`), format character removal (`\p{Cf}`), and `toLocaleLowerCase("es")`.
+- `Language` and `Tag` use soft-delete (`active = false`) when associated words exist.
+- Progress tracking (`times_practiced`, `times_correct`, `last_practiced`) updates on every quiz answer.
+- A word needs practice when it has never been practiced, has fewer than 3 attempts, or has accuracy below 70%.
 
-Antes de cambiar el esquema: documenta el motivo, revisa impacto en datos existentes, define migración.
+Before changing the schema, document the reason, review impact on existing data, and define a migration.
 
-## Validación
+## Validation
 
-- Todo cambio funcional necesita validación explícita.
-- Prioriza tests automatizados. Si no hay tests, valida manual y documenta qué comprobaste.
-- Cambios en quizzes, scoring, progreso o persistencia requieren validación cuidadosa.
-- Cambios documentales o estructurales: explica por qué no aplica test.
+- Every functional change needs explicit validation.
+- Prefer automated tests. If there are no tests, validate manually and document what you checked.
+- Quiz, scoring, progress, import/export, and persistence changes require careful validation.
+- Documentation-only changes should state why tests do not apply.
 
-## Seguridad
+## Security
 
-- Nunca commitees secretos. Variables sensibles en `.env`.
-- Valida siempre inputs de usuario en server actions o servicios.
-- Antes de borrados o migraciones irreversibles, confirma intención.
-- La app no tiene autenticación ni rate limiting. Ver `Guides/security.md` para gaps conocidos.
+- Never commit secrets. Sensitive values belong in `.env`.
+- Validate user input in server actions or services.
+- Confirm intent before destructive deletes or irreversible migrations.
+- The app currently has no authentication or rate limiting. See `Guides/security.md` for known gaps.
 
-## Guías: fuente única y documentación viva
+## Documentation
 
-- Las guías son la base de verdad del proyecto. Siempre deben reflejar el estado actual del código.
-- Cada cambio en el código que afecte a una guía debe ir acompañado de la actualización de esa guía.
-- Si añades una ruta, server action, route handler, modelo, helper, componente o cambias un comportamiento: actualiza la guía correspondiente.
-- Cada tema tiene una guía fuente. No repitas contenido que ya está en su guía.
-- Si detectas duplicidad entre guías, corrígela.
-- Si falta una guía necesaria, créala mínima o deja un TODO.
-- Formato de las guías: solo texto, almohadillas (`#`) para headings y backticks para código. Sin tablas, sin negritas.
+- Guides are the project source of truth.
+- Any behavior change that affects a guide must update that guide.
+- If you add a route, server action, route handler, model, helper, component, or behavior, update the corresponding guide.
+- Avoid duplicated documentation. Each topic should have one source guide.
+- Guide format: plain text, `#` headings, backticks for code. No tables.
 
 ## Git
 
-Conventional Commits, una sola línea, sin cuerpo.
+Use Conventional Commits, one line, no body.
 
-Formato: `type: subject`
+Format: `type: subject`
 
 Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`
-Subject: breve, en inglés, imperativo.
 
-Ejemplos: `feat: add quiz result summary`, `fix: prevent duplicate vocabulary entries`
+Subject: short, English, imperative.
 
-## Ejecución
+Examples: `feat: add quiz result summary`, `fix: prevent duplicate vocabulary entries`
 
-- Responde siempre en español.
-- No dejes procesos persistentes corriendo sin avisar.
-- Si un comando puede tardar o modificar datos, avisa antes.
-- Comandos principales del proyecto:
-  - `pnpm dev`
-  - `pnpm build`
-  - `pnpm start`
-  - `pnpm start:local`
-  - `pnpm test`
+## Commands
+
+- `pnpm dev`
+- `pnpm build`
+- `pnpm start`
+- `pnpm start:local`
+- `pnpm test`
+
+## Collaboration Workflow
+
+All repository work must follow this flow:
+
+1. Start each day or session from `main`.
+2. Create a dedicated branch for that day or session.
+3. Keep commits focused and validated.
+4. Run `pnpm test` and `pnpm build` before opening a PR when the change can affect runtime behavior.
+5. Commit all intended changes to the session branch.
+6. Push the branch and open a pull request targeting `main`.
+7. Merge into `main` only after PR checks pass and review feedback is resolved.

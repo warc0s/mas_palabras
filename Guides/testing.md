@@ -1,6 +1,6 @@
 # Testing
 
-## Comandos
+## Commands
 
 ```bash
 pnpm test
@@ -9,17 +9,18 @@ pnpm build
 
 ## Stack
 
-- Vitest para unit tests
-- TypeScript check integrado dentro de `next build`
+- Vitest for unit tests
+- TypeScript checking through `next build`
 
-## Suite actual
+## Current Suite
 
 `tests/unit/text.test.ts`
 
-- normalización de texto (acentos, mayúsculas, marks combinantes)
-- eliminación de caracteres de formato `\p{Cf}` (ZWSP, ZWJ, BOM, LTR/RTL marks)
-- idempotencia
-- casos extremos (vacíos tras normalización)
+- text normalization
+- accent and combining-mark removal
+- format-character removal such as ZWSP, ZWJ, BOM, LTR, and RTL marks
+- idempotency
+- edge cases that normalize to empty strings
 
 `tests/unit/word-metrics.test.ts`
 
@@ -29,45 +30,48 @@ pnpm build
 
 `tests/unit/words.test.ts`
 
-- búsqueda normalizada en memoria (input y campos)
-- ordenación por precisión asc/desc con palabras no practicadas
-- desempate alfabético
+- normalized in-memory search
+- accuracy sorting with unpracticed words
+- alphabetical tie-breaks
 
 `tests/unit/flash.test.ts`
 
-- construcción y lectura de mensajes de redirect
+- redirect-message URL construction and parsing
 
 `tests/unit/import-export.test.ts`
 
-- import JSON con campo `tag`
-- rechazo de payloads sin campo `tag`
-- validación de `invalid_stats` cuando `times_correct > times_practiced`
-- validación de `invalid_integer` para booleanos, hex, exponenciales y arrays
-- preservación de stats no presentes en updates parciales (modo `update`)
-- validación de `invalid_date_format` para strings espurios como `"5"` o `"2024"`
-- resiliencia ante errores inesperados a mitad del loop (una tx por item)
-- clasificación de `P2002` como `duplicate` skipped
+- JSON import with `tag`
+- rejection of payloads without `tag`
+- `invalid_stats` when `times_correct > times_practiced`
+- `invalid_integer` for booleans, hex, exponents, and arrays
+- partial stat preservation in `update` mode
+- `invalid_date_format` for ambiguous strings
+- resilience to unexpected errors in the item loop
+- classification of Prisma `P2002` as duplicate skipped
 
 `tests/unit/quiz.test.ts`
 
-- `shuffle` (Fisher-Yates): preserva elementos, no muta el original
-- `deriveMixedDirection`: determinismo por `(sessionId, index)` y salida acotada
+- Fisher-Yates `shuffle`
+- deterministic `deriveMixedDirection`
+- compare-and-swap session advancement failure
 
-## Validación funcional mínima recomendada
+## Minimum Manual Validation
 
-Además de la suite, valida manualmente:
+Besides the automated suite, validate:
 
-1. alta de palabra
-2. edición y borrado
-3. filtros de `/verpalabras`
-4. inicio y finalización de quiz
-5. export JSON
-6. import JSON
+1. word creation
+2. editing and deletion
+3. `/verpalabras` filters
+4. quiz start and completion
+5. JSON export
+6. JSON import
+7. interface language switching
 
-## Huecos actuales
+## Current Gaps
 
-- todavía no hay E2E automáticos
-- no hay tests de integración contra Prisma ni server actions
-- `submitQuizAnswer` y `skipQuizAnswer` no tienen tests funcionales de concurrencia porque requieren mockear el comportamiento de `updateMany` con `where` condicional. La garantía de atomicidad viene del compare-and-swap sobre `currentIndex` en `advanceSessionTx`: si el `updateMany` retorna `count === 0`, la tx aborta con `quiz_question_invalid` y las stats de la palabra no se duplican.
+- no automated E2E tests yet
+- no Prisma integration tests for server actions
+- no browser accessibility tests
+- no concurrency test for full quiz submit/skip flows
 
-Si tocas quiz, import/export o persistencia, amplía la suite antes de dar por cerrado el cambio.
+If you touch quiz, import/export, persistence, or i18n, extend or rerun the suite before closing the change.

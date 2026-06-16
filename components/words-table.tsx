@@ -5,10 +5,6 @@ import { useMemo, useState, useTransition } from "react";
 
 import { bulkDeleteWordsAction, deleteWordAction } from "@/lib/actions/word-actions";
 
-const CONFIRM_BULK_DELETE = (count: number): string => `¿Eliminar ${count} palabra(s)?`;
-const CONFIRM_SINGLE_DELETE = (word: string): string =>
-  `¿Eliminar "${word}"? Esta acción no se puede deshacer.`;
-
 type WordRow = {
   id: number;
   englishWord: string;
@@ -21,7 +17,27 @@ type WordRow = {
   needsPractice: boolean;
 };
 
-export function WordsTable({ words }: { words: WordRow[] }) {
+type WordsTableCopy = {
+  clear: string;
+  delete: string;
+  deleting: string;
+  editAction: string;
+  deleteAction: string;
+  confirmBulkDeleteStart: string;
+  confirmBulkDeleteEnd: string;
+  confirmSingleDeleteStart: string;
+  confirmSingleDeleteEnd: string;
+  noNote: string;
+  new: string;
+  review: string;
+  selectAll: string;
+  selectAction: string;
+  selectedSingular: string;
+  selectedPlural: string;
+  table: readonly string[];
+};
+
+export function WordsTable({ words, copy }: { words: WordRow[]; copy: WordsTableCopy }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isPending, startTransition] = useTransition();
   const allSelected = useMemo(
@@ -44,7 +60,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
       return;
     }
     // TODO: replace window.confirm with an accessible <ConfirmDialog> component
-    if (!window.confirm(CONFIRM_BULK_DELETE(selectedIds.length))) {
+    if (!window.confirm(`${copy.confirmBulkDeleteStart}${selectedIds.length}${copy.confirmBulkDeleteEnd}`)) {
       return;
     }
 
@@ -55,7 +71,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
 
   function handleDelete(wordId: number, wordText: string) {
     // TODO: replace window.confirm with an accessible <ConfirmDialog> component
-    if (!window.confirm(CONFIRM_SINGLE_DELETE(wordText))) {
+    if (!window.confirm(`${copy.confirmSingleDeleteStart}${wordText}${copy.confirmSingleDeleteEnd}`)) {
       return;
     }
 
@@ -69,8 +85,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
       {selectedIds.length > 0 ? (
         <div className="flex flex-col gap-3 border-b border-primary-200 bg-primary-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="font-mono text-sm uppercase tracking-wide text-primary-800">
-            {selectedIds.length} palabra{selectedIds.length === 1 ? "" : "s"} seleccionada
-            {selectedIds.length === 1 ? "" : "s"}
+            {selectedIds.length} {selectedIds.length === 1 ? copy.selectedSingular : copy.selectedPlural}
           </div>
           <div className="flex gap-2">
             <button
@@ -80,7 +95,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
               type="button"
             >
               <i className="fa-solid fa-trash" />
-              <span>{isPending ? "Eliminando…" : "Eliminar"}</span>
+              <span>{isPending ? copy.deleting : copy.delete}</span>
             </button>
             <button
               className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-neutral-25 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100"
@@ -88,7 +103,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
               type="button"
             >
               <i className="fa-solid fa-xmark" />
-              <span>Limpiar</span>
+              <span>{copy.clear}</span>
             </button>
           </div>
         </div>
@@ -100,14 +115,14 @@ export function WordsTable({ words }: { words: WordRow[] }) {
             <tr className="border-b border-neutral-300 bg-neutral-50">
               <th className="w-12 px-6 py-4 text-center">
                 <input
-                  aria-label="Seleccionar todo"
+                  aria-label={copy.selectAll}
                   checked={allSelected}
                   className="h-4 w-4 rounded-sm border-neutral-400 text-primary-600 accent-primary-600"
                   onChange={toggleAll}
                   type="checkbox"
                 />
               </th>
-              {["Palabra", "Traducción", "Explicación", "Idioma", "Etiqueta", "Dominio", ""].map(
+              {copy.table.map(
                 (label, index) => (
                   <th
                     className={`px-6 py-4 font-mono text-[0.7rem] font-medium uppercase tracking-widest text-neutral-500 ${
@@ -129,7 +144,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
               >
                 <td className="px-6 py-5 text-center align-top">
                   <input
-                    aria-label={`Seleccionar ${word.englishWord}`}
+                    aria-label={`${copy.selectAction} ${word.englishWord}`}
                     checked={selectedIds.includes(word.id)}
                     className="h-4 w-4 rounded-sm border-neutral-400 text-primary-600 accent-primary-600"
                     onChange={() => toggleOne(word.id)}
@@ -160,7 +175,7 @@ export function WordsTable({ words }: { words: WordRow[] }) {
                     </p>
                   ) : (
                     <span className="font-mono text-xs uppercase tracking-wide text-neutral-300">
-                      sin nota
+                      {copy.noNote}
                     </span>
                   )}
                 </td>
@@ -196,27 +211,27 @@ export function WordsTable({ words }: { words: WordRow[] }) {
                     </div>
                   ) : (
                     <span className="font-mono text-xs uppercase tracking-wide text-neutral-300">
-                      nuevo
+                      {copy.new}
                     </span>
                   )}
                   {word.needsPractice ? (
                     <div className="mt-2 inline-flex items-center gap-1.5 font-mono text-[0.65rem] uppercase tracking-wide text-primary-600">
                       <i className="fa-solid fa-circle-exclamation" />
-                      Repasar
+                      {copy.review}
                     </div>
                   ) : null}
                 </td>
                 <td className="px-6 py-5 align-top">
                   <div className="flex items-center justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
                     <Link
-                      aria-label={`Editar ${word.englishWord}`}
+                      aria-label={`${copy.editAction} ${word.englishWord}`}
                       className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-300 text-neutral-600 transition-all hover:-translate-y-0.5 hover:border-secondary-400 hover:bg-secondary-50 hover:text-secondary-700"
                       href={`/edit/${word.id}`}
                     >
                       <i className="fa-solid fa-pen text-sm" />
                     </Link>
                     <button
-                      aria-label={`Eliminar ${word.englishWord}`}
+                      aria-label={`${copy.deleteAction} ${word.englishWord}`}
                       className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-300 text-neutral-600 transition-all hover:-translate-y-0.5 hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={isPending}
                       onClick={() => handleDelete(word.id, word.englishWord)}

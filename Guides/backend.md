@@ -1,22 +1,22 @@
 # Backend
 
-## Filosofía
+## Philosophy
 
-El servidor vive dentro de Next.js y se reparte entre:
+The server lives inside Next.js and is split between:
 
-- páginas server-side para lectura
-- server actions para mutación
-- route handlers mínimos para casos de I/O como export o fin explícito del quiz
+- server-side pages for reads
+- server actions for mutations
+- minimal route handlers for I/O cases such as export or explicit quiz ending
 
-## Acciones por dominio
+## Actions by Domain
 
 ### `lib/actions/word-actions.ts`
 
-- `createWordAction` — crea palabra y redirige a `/verpalabras`
-- `updateWordAction` — actualiza palabra existente
-- `deleteWordAction` — elimina una palabra
-- `bulkDeleteWordsAction` — borra varias palabras; valida con Zod `z.array(z.number().int().positive())`. IDs inválidos → redirect con error; array vacío → redirect con warning.
-- `importWordsAction` — procesa upload JSON y redirige con resumen
+- `createWordAction` - creates a word and redirects to `/verpalabras`
+- `updateWordAction` - updates an existing word
+- `deleteWordAction` - deletes one word
+- `bulkDeleteWordsAction` - deletes several words and validates IDs with Zod
+- `importWordsAction` - processes a JSON upload and redirects with a summary
 
 ### `lib/actions/settings-actions.ts`
 
@@ -27,45 +27,49 @@ El servidor vive dentro de Next.js y se reparte entre:
 
 ### `lib/actions/quiz-actions.ts`
 
-- `startQuizAction` — crea sesión y cookie `mas-palabras-quiz`
-- `submitQuizAnswerAction` — valida respuesta, actualiza progreso y avanza
-- `skipQuizAnswerAction` — cuenta intento fallido y avanza
-- `endQuizAction` — termina la sesión activa
+- `startQuizAction` - creates a session and the `mas-palabras-quiz` cookie
+- `submitQuizAnswerAction` - validates an answer, updates progress, and advances
+- `skipQuizAnswerAction` - counts a failed attempt and advances
+- `endQuizAction` - ends the active session
 
-`submitQuizAnswerAction` y `skipQuizAnswerAction` llaman a `revalidatePath("/")` y `revalidatePath("/verpalabras")` antes del redirect de éxito para que las stats de dashboard y listado se refresquen.
+`submitQuizAnswerAction` and `skipQuizAnswerAction` call `revalidatePath("/")` and `revalidatePath("/verpalabras")` before success redirects.
 
-El `catch` de ambas actions delega en `redirectToQuizOnError`, que distingue tres casos para no mostrar mensajes falsos al usuario:
+The quiz-action error path distinguishes:
 
-- `quiz_question_invalid` — la sesión sigue activa pero `currentIndex` avanzó (race por doble click o navegación). Si `getActiveQuizSession()` confirma que la sesión sigue viva, redirige a `/quiz_question` con info "Esa pregunta ya fue respondida." Si no, va a `/quiz` como sesión terminada.
-- `quiz_session_invalid` — la cookie no existe, la sesión fue completada o el `sessionId` del form no casa con la cookie. Redirige a `/quiz` con warning.
-- Otro error — fallo real (BD, etc.). Se loguea con `console.error` y se redirige a `/quiz` con error genérico.
+- `quiz_question_invalid` - stale question, usually from double submit or navigation
+- `quiz_session_invalid` - missing cookie, completed session, or mismatched `sessionId`
+- any other error - logged server-side and redirected as a generic error
 
-## Servicios de dominio
+## Domain Services
 
 ### `lib/words.ts`
 
-- `getDashboardStats()` — solo cuenta palabras cuyo idioma y etiqueta están activos
-- `listWords(filters)` — búsqueda normalizada en memoria (ver "Búsqueda y normalización")
+- `getDashboardStats()`
+- `listWords(filters)`
 - `getWordById(id)`
-- `createWord(input)` — captura `P2002` de Prisma y lo relanza como `duplicate_word`
-- `updateWord(id, input)` — captura `P2002` de Prisma y lo relanza como `duplicate_word`
+- `createWord(input)`
+- `updateWord(id, input)`
 - `deleteWord(id)`
 - `bulkDeleteWords(ids)`
 - `exportWords()`
 
-### Búsqueda y normalización
+`createWord` and `updateWord` catch Prisma `P2002` and rethrow `duplicate_word`.
 
-`listWords` filtra idioma y etiqueta en la query Prisma, pero el término de búsqueda se aplica en memoria tras normalizar con `normalizeText` tanto el input como los campos `englishWord`, `translation` y `explanation`. Razón: SQLite `LIKE` solo es case-insensitive ASCII y no soporta normalización Unicode; la paginación ya es en memoria, así que esta opción es coherente con el tamaño del repo personal. No escala a miles de palabras.
+### Search and Normalization
 
-### Ordenación por precisión
+`listWords` filters language and tag through Prisma, but applies free-text search in memory after normalizing the input and the `englishWord`, `translation`, and `explanation` fields.
 
-`accuracy_asc` pone primero las palabras no practicadas (precisión efectiva 0). `accuracy_desc` las pone al final. El comparator usa `getAccuracy`, que ya devuelve 0 cuando `timesPracticed === 0`, así que no hace falta un caso especial.
+Reason: SQLite `LIKE` is only case-insensitive for ASCII and does not support Unicode normalization. This is acceptable for the current personal-app scale. It will not scale to large multi-user data.
+
+### Accuracy Sorting
+
+`accuracy_asc` puts unpracticed words first. `accuracy_desc` puts them last. The comparator uses `getAccuracy`, which returns 0 when `timesPracticed === 0`.
 
 ### `lib/settings.ts`
 
-- listas activas de idiomas y etiquetas
-- alta o reactivación
-- soft-delete o hard-delete según uso
+- lists active languages and tags
+- creates or reactivates languages and tags
+- soft-deletes or hard-deletes depending on usage
 
 ### `lib/quiz.ts`
 
@@ -76,53 +80,53 @@ El `catch` de ambas actions delega en `redirectToQuizOnError`, que distingue tre
 - `skipQuizAnswer`
 - `endActiveQuiz`
 
-La sesión activa se identifica con una cookie `httpOnly` y persiste además en la tabla `quiz_session`.
+The active session is identified with an `httpOnly` cookie and also persisted in `quiz_session`.
 
-Dirección de la pregunta: el servidor deriva la dirección (`to_spanish` o `to_original`) desde `quizConfigJson` guardado en `QuizSession`, nunca desde el form. Para `mixed`, `deriveMixedDirection(sessionId, currentIndex)` produce un valor determinista por pregunta. El cliente recibe la dirección ya resuelta para mostrar el prompt, pero el input del form no la viaja: el servidor siempre la recalcula dentro de la transacción de submit.
+The server derives the question direction from `quizConfigJson`, never from the form. For `mixed`, `deriveMixedDirection(sessionId, currentIndex)` returns a deterministic direction per question.
 
-Atomicidad de submit y skip: toda la operación (leer sesión, validar `wordId`/`currentIndex`, leer palabra, actualizar palabra, avanzar sesión) ocurre dentro de una única `prisma.$transaction`. El avance de `currentIndex`/`totalQuestions` usa `updateMany` con `where: { id, currentIndex }` (compare-and-swap). Si otra petición concurrente ya avanzó el `currentIndex` entre la lectura y el avance, el `updateMany` retorna `count === 0` y se lanza `quiz_question_invalid` dentro de la tx. Esto cierra la race del doble submit: la segunda petición aborta sin incrementar dos veces las stats de la palabra. `skipQuizAnswer` recibe y valida `wordId`/`sessionId` desde el form igual que `submitQuizAnswer`, así que una acción stale de saltar no actúa sobre una pregunta distinta a la que el usuario tenía delante.
+Submit and skip are atomic. The full operation happens inside a Prisma transaction. Session advancement uses `updateMany` with `where: { id, currentIndex }` as compare-and-swap. If another request already advanced the session, the transaction throws `quiz_question_invalid` before double-counting stats.
 
-Skip cuenta como intento fallido por decisión de diseño: degrada precisión y avanza `times_practiced`. No cambiar sin actualizar este documento.
+Skip intentionally counts as a failed attempt. Do not change this without updating this guide.
 
 ### `lib/import-export.ts`
 
 - `processImport(data, overwriteMode, createMissingMode)`
-- sanitiza registros
-- parsea fechas flexibles (rango de año `2000`-`2100`)
-- crea relaciones faltantes si se ha pedido
-- detecta duplicados normalizados por idioma
-- procesa cada item en su propia `$transaction`: si un item falla, los demás se conservan
+- sanitizes records
+- parses flexible date formats
+- creates missing relations when requested
+- detects normalized duplicates by language
+- processes every item in its own transaction so one failed item does not roll back the whole import
 
-## Redirects con feedback
+## Redirect Feedback
 
-El feedback de operaciones viaja en query string. El patrón actual es:
+Operation feedback travels through query string parameters.
 
-1. la action hace la mutación
-2. invalida caché con `revalidatePath` cuando afecta a listados, dashboard o settings
-3. redirige con `status` y `message`
-4. la página muestra `FlashBanner`
+Pattern:
 
-### Importante: redirects y try/catch
+1. the action mutates state
+2. it invalidates cache with `revalidatePath` when needed
+3. it redirects with `status` and `message`
+4. the page renders `FlashBanner`
 
-`redirectWithFlash` llama a `redirect()` de Next, que lanza una excepción especial (`NEXT_REDIRECT`). Si el redirect de éxito se hace dentro de un `try/catch`, el `catch` lo captura y se ejecuta la rama de error aunque la mutación haya ido bien.
+## Redirects and `try/catch`
 
-Regla: el redirect de éxito SIEMPRE va fuera del try. Patrón correcto:
+`redirectWithFlash` calls Next's `redirect()`, which throws a special `NEXT_REDIRECT` exception. A success redirect must stay outside the `try/catch`, otherwise the catch branch will treat success as failure.
 
-```
-let result: TipoResultado;
+Correct pattern:
+
+```ts
+let result: ResultType;
 try {
-  result = await servicio(...);
+  result = await service(...);
 } catch {
-  redirectWithFlash("/ruta", "error", "mensaje de error.");
+  redirectWithFlash("/path", "error", "Error message.");
 }
 
-revalidatePath("/ruta");
-redirectWithFlash("/ruta", "success", `OK: ${result.algo}.`);
+revalidatePath("/path");
+redirectWithFlash("/path", "success", `OK: ${result.value}.`);
 ```
 
-Como `redirectWithFlash` retorna `never`, TypeScript sabe que tras el `catch` la variable `result` ya está asignada.
+## Route Handlers
 
-## Route handlers
-
-- `app/export_words/route.ts` — descarga JSON
-- `app/end_quiz/route.ts` — termina sesión y redirige
+- `app/export_words/route.ts` - downloads JSON
+- `app/end_quiz/route.ts` - ends the active quiz session and redirects

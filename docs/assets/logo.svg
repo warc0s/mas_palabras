@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="320" viewBox="0 0 960 320" role="img" aria-labelledby="title desc">
+  <title id="title">Mas Palabras logo</title>
+  <desc id="desc">A warm editorial wordmark for the Mas Palabras vocabulary app.</desc>
+  <rect width="960" height="320" rx="36" fill="#faf7f1"/>
+  <rect x="48" y="48" width="224" height="224" rx="28" fill="#1f1b17"/>
+  <text x="160" y="190" text-anchor="middle" font-family="Georgia, serif" font-size="92" font-weight="700" fill="#fffdf8">Mp</text>
+  <path d="M316 116h476" stroke="#c9472f" stroke-width="4" stroke-linecap="round"/>
+  <text x="316" y="176" font-family="Georgia, serif" font-size="68" font-weight="700" fill="#1f1b17">Mas Palabras</text>
+  <text x="320" y="220" font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#615746" letter-spacing="3">PERSONAL VOCABULARY</text>
+</svg>

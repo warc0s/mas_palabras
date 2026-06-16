@@ -1,75 +1,72 @@
 # Frontend
 
-## Stack visual
+## Visual Stack
 
 - Next.js App Router
-- React Server Components por defecto
-- Client Components solo cuando hay interacción real
+- React Server Components by default
+- Client Components only for real interaction
 - Tailwind CSS
-- `next/font` para Inter
-- Font Awesome vía stylesheet global en `app/layout.tsx`
+- `next/font`
+- Font Awesome through a global stylesheet in `app/layout.tsx`
 
-## Componentes principales
+## Main Components
 
-- `components/site-shell.tsx` — nav, footer y contenedor general
-- `components/desktop-nav.tsx` — navegación de escritorio
-- `components/mobile-nav.tsx` — menú responsive (Esc/backdrop/focus-restore)
-- `components/footer-nav.tsx` — navegación del footer (client para `aria-current`)
-- `components/flash-banner.tsx` — mensajes de estado
-- `components/words-table.tsx` — tabla con selección múltiple y borrados
-- `components/submit-button.tsx` — botón de envío reutilizable que se deshabilita en pending (`useFormStatus`)
-- `components/page-header.tsx` — cabecera editorial de página
+- `components/site-shell.tsx` - nav, footer, shared structure
+- `components/language-selector.tsx` - client language picker backed by a cookie
+- `components/desktop-nav.tsx` - desktop navigation
+- `components/mobile-nav.tsx` - responsive menu with Escape, backdrop, and focus restore
+- `components/footer-nav.tsx` - footer navigation with `aria-current`
+- `components/flash-banner.tsx` - status messages
+- `components/words-table.tsx` - table with multi-select and deletion
+- `components/submit-button.tsx` - pending-state submit button
+- `components/page-header.tsx` - shared editorial page header
 
-## Rutas UI
+## UI Routes
 
-- `/` — dashboard
-- `/maspalabras` — alta
-- `/verpalabras` — listado y filtros
-- `/edit/[id]` — edición
-- `/quiz` — configuración del quiz
-- `/quiz_question` — pregunta activa
-- `/import_words` — import JSON
-- `/settings` — idiomas y etiquetas
+- `/` - dashboard
+- `/maspalabras` - create word
+- `/verpalabras` - list and filter words
+- `/edit/[id]` - edit word
+- `/quiz` - quiz configuration
+- `/quiz_question` - active question
+- `/import_words` - JSON import
+- `/settings` - languages and tags
 
-## Línea visual
+## Internationalization
 
-Identidad **editorial / diccionario impreso, pero con superficies modernas**. Alma de léxico tipográfico cruzada con la suavidad de una app actual: nada de dashboard genérico ni glass-morphism.
+- Interface dictionaries live in `lib/i18n.ts`.
+- Supported UI locales are English, Spanish, and Catalan.
+- The active locale is stored in the `mas-palabras-locale` cookie.
+- `RootLayout` reads the locale server-side and sets `<html lang>`.
+- New visible interface copy should be added to `lib/i18n.ts` instead of being hardcoded in pages.
+- Domain values such as a saved language name or tag name are user data and should not be translated.
 
-- Fondo de papel cálido (`neutral-50`) con una trama de puntos muy sutil y una pizca de calor del acento.
-- Escala de radios redefinida en `tailwind.config.ts` (`borderRadius`): todo es más redondeado. `rounded-sm` ya vale 0.5rem; superficies grandes usan `rounded-2xl`, botones/inputs `rounded-xl`, chips y paginación `rounded-full` (píldoras).
-- Sombras suaves y difusas (`shadow-paper`, `shadow-lift`, `shadow-glow`) en vez de offsets duros. Botones y tiles se elevan ligeramente al hover (`-translate-y-0.5` + sombra mayor) para que la página invite a usarse.
-- Tarjetas tipo cartulina: borde fino `neutral-200`, esquinas `rounded-2xl`, sombra `shadow-paper`. Clase `.page-card`.
-- Navegación tipo píldora: `.nav-link` y `.mobile-nav-link` usan fondo tintado redondeado en hover/activo (`bg-primary-50`), sin subrayado.
-- Tipografía con jerarquía clara:
-  - `font-display` (**Fraunces**) para titulares, palabras y lemas. Las palabras del léxico se tratan como entradas de diccionario (serif, a veces en cursiva).
-  - `font-sans` (**Hanken Grotesk**) para cuerpo y controles.
-  - `font-mono` (**JetBrains Mono**) para etiquetas, metadatos y notación. Helpers `.eyebrow` / `.eyebrow-muted` (mayúsculas, `tracking-widest`).
-- Paleta acotada: `primary` = rojo-óxido (acento principal/marca), `secondary` = verde pino (idiomas, aciertos), `accent` = ocre (avisos/pistas), `neutral` = escala piedra cálida.
-- Detalles de carácter: reglas finas (`.rule`), numeración de entradas, fonética del nombre, citas en cursiva serif, chips `.meta-chip` para idioma/etiqueta.
+## Visual Direction
 
-Botones (`.primary-button`, `.secondary-button`, `.outline-button`), inputs y selects ya viven en `app/globals.css`. Reutiliza esas clases y `components/page-header.tsx` antes de inventar estilos nuevos.
+The app uses an editorial personal-dictionary identity with modern surfaces:
 
-Cuidado con `@apply` y valores arbitrarios que lleven `<` o comillas (p. ej. un SVG inline en `bg-[url(...)]`): rompen el build de Tailwind. Escribe esas propiedades como CSS plano dentro de la regla.
+- warm paper-like background
+- rounded card stock surfaces
+- clear typographic hierarchy
+- dictionary-entry language for vocabulary content
+- restrained rust, pine, ochre, and warm neutral palette
 
-## Dónde tocar qué
+Shared buttons, inputs, selects, textareas, chips, and cards live in `app/globals.css`. Prefer existing classes before creating new styling.
 
-- layout general, nav y footer -> `components/site-shell.tsx`
-- estilos compartidos -> `app/globals.css`
-- tabla de vocabulario -> `components/words-table.tsx`
-- copy o estructura de una pantalla -> su `app/.../page.tsx`
+Avoid inline SVG data URLs inside `@apply` rules. Tailwind can break on arbitrary values containing `<` or quotes; use plain CSS properties for those cases.
 
-## Límite server/client
+## Boundaries
 
-- páginas y fetch de datos: server component
-- selección múltiple y confirmaciones de borrado: client component
-- formularios: server actions
-- los botones de envío usan `<SubmitButton>` (`components/submit-button.tsx`) para evitar doble submit; se deshabilita durante el pending vía `useFormStatus` y acepta `pendingLabel` para mostrar feedback
+- data-fetching pages stay as Server Components
+- selection and confirmation interactions use Client Components
+- forms call server actions
+- submit buttons should use `SubmitButton` for pending-state behavior
 
-## Accesibilidad
+## Accessibility
 
-- `SubmitButton` es la forma estándar de enviar forms con server actions. Reemplaza a `<button type="submit">` en cualquier form que dispare una action.
-- El menú móvil (`components/mobile-nav.tsx`) cierra con Escape y con click en el backdrop, expone `aria-controls`/`aria-expanded` y devuelve el foco al botón al cerrar.
-- La navegación (desktop, móvil y footer) marca el enlace activo con `aria-current="page"` (mantiene `data-active` para estilos).
-- Los inputs de filtrado en `/verpalabras` llevan `<label>` accesible (el de búsqueda es `sr-only` con `id`).
-- `app/error.tsx` loguea el error con `console.error` vía `useEffect` y muestra `error.digest` si existe, para depuración.
-- `components/words-table.tsx` todavía usa `window.confirm` para borrados (mensajes extraídos a constantes `CONFIRM_*`). Pendiente sustituir por un `<ConfirmDialog>` accesible.
+- `SubmitButton` is the standard form submit control.
+- Mobile navigation exposes `aria-controls`, `aria-expanded`, closes on Escape/backdrop, and restores focus.
+- Desktop, mobile, and footer navigation set `aria-current="page"`.
+- Filter inputs in `/verpalabras` have accessible labels.
+- `app/error.tsx` logs the error in `useEffect` and shows `error.digest` when present.
+- `components/words-table.tsx` still uses `window.confirm` for deletes. Replace it with an accessible `ConfirmDialog` before treating deletion UX as finished.
