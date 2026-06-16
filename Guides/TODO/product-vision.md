@@ -2,7 +2,7 @@
 
 Mas Palabras is currently a well-structured personal vocabulary app. It lets a user create words, classify them by language and tag, browse a library, edit and delete entries, import and export JSON, and practice with a basic adaptive quiz.
 
-The next product step is not adding more buttons. The important shift is from a global personal database to a trustworthy personal vocabulary system with ownership, privacy, and a memory engine.
+The next product step is not adding more buttons. The important shift is toward a stronger vocabulary model, a clearer install path, and a memory engine.
 
 ## Core Idea
 
@@ -16,21 +16,19 @@ Users should be able to capture vocabulary they encounter, enrich it with contex
 2. Understand: add translations, senses, examples, notes, usage, and context.
 3. Remember: turn lexical entries into review cards and schedule them.
 4. Visualize: show library, progress, review load, and weak areas clearly.
-5. Own: keep data private by default, exportable, deletable, and shared only by explicit choice.
+5. Own: keep data portable, inspectable, exportable, and deletable.
 
-## Public Trust Requirements
+## Data Care Requirements
 
-Mas Palabras may contain personal study material, work vocabulary, travel notes, or sensitive examples. A public service version must treat that data seriously.
+Mas Palabras may contain personal study material, work vocabulary, travel notes, or sensitive examples.
 
-The product is not ready as a public multi-user service until:
+The product should make data care straightforward:
 
-- every private object belongs to a user or explicit shared space
-- every read and mutation checks authorization server-side
-- export is personal, not global
-- delete-account and full data export flows exist
-- public sharing is opt-in
-- logs avoid sensitive content
-- basic abuse protection exists
+- keep generated SQLite files out of git
+- document backup and restore clearly
+- make full export easy to find
+- keep logs free of vocabulary content where practical
+- avoid destructive actions without confirmation
 
 ## Learning Requirements
 
@@ -48,7 +46,7 @@ The future model should support:
 
 ## Design Requirements
 
-The app should feel like a focused vocabulary tool, not a generic SaaS dashboard.
+The app should feel like a focused vocabulary tool.
 
 Good design means:
 
@@ -78,4 +76,4 @@ For source-code publication, the repository should provide:
 - English README with screenshots
 - English contribution and security docs
 - CI that runs tests and build
-- clear warning that the deployed app is personal-use grade until auth and authorization are implemented
+- clear local setup and standalone run instructions

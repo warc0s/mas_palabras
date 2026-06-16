@@ -51,7 +51,7 @@ NEXT_PUBLIC_SITE_URL="https://your-domain.example"
 
 For development, build, and local standalone startup, the scripts convert the database path to an absolute path when starting Next.
 
-## Self-Hosted Deployment
+## Standalone Run
 
 Expected flow:
 
@@ -61,7 +61,3 @@ Expected flow:
 4. `DATABASE_URL="file:/absolute/path/prod.db" pnpm start`
 
 `pnpm start` respects the environment `DATABASE_URL`. Use `pnpm start:local` only when running against `prisma/dev.db`.
-
-## Public Hosting Warning
-
-The source repository can be public, but a deployed public instance is still personal-app grade until user accounts, authorization, data isolation, rate limiting, and stronger headers are implemented.

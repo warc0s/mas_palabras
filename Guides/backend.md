@@ -59,7 +59,7 @@ The quiz-action error path distinguishes:
 
 `listWords` filters language and tag through Prisma, but applies free-text search in memory after normalizing the input and the `englishWord`, `translation`, and `explanation` fields.
 
-Reason: SQLite `LIKE` is only case-insensitive for ASCII and does not support Unicode normalization. This is acceptable for the current personal-app scale. It will not scale to large multi-user data.
+Reason: SQLite `LIKE` is only case-insensitive for ASCII and does not support Unicode normalization. This is acceptable for the current personal-app scale. It will not scale to very large datasets.
 
 ### Accuracy Sorting
 

@@ -14,16 +14,15 @@ Do not open a public issue with exploit details for a real vulnerability.
 
 Mas Palabras is safe to publish as source code after secrets and generated local files are kept out of git.
 
-The current running app is still personal-use grade:
+Known security notes:
 
-- no authentication
-- no authorization
-- no per-user data isolation
-- no rate limiting
+- keep real `.env` files and SQLite databases out of git
+- one state-changing quiz endpoint still uses GET
 - no custom CSP
-- global vocabulary export
+- the export route returns the current SQLite vocabulary
+- Font Awesome loads from a CDN without a custom CSP or SRI
 
-Do not deploy it as a public multi-user service until those gaps are closed.
+Do not expose a running instance directly to an untrusted network without adding protection at the deployment boundary.
 
 ## Secret Handling
 

@@ -82,4 +82,4 @@ tests/unit/             # Vitest domain tests
 - The current visual language is editorial, vocabulary-focused, and Tailwind-based.
 - The schema source of truth is `prisma/schema.prisma`.
 - `pnpm dev`, `pnpm build`, and `pnpm start:local` set an absolute `DATABASE_URL` to `prisma/dev.db`.
-- `pnpm start` respects the environment `DATABASE_URL` for self-hosting.
+- `pnpm start` respects the environment `DATABASE_URL` for standalone runs.

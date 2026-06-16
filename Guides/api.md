@@ -1,6 +1,6 @@
 # API
 
-The current HTTP surface is designed for the app itself, not as a public API.
+The current HTTP surface supports the app itself: forms, redirects, and JSON download.
 
 ## Current Surface
 
@@ -14,7 +14,7 @@ The current HTTP surface is designed for the app itself, not as a public API.
 
 - returns all words as downloadable JSON
 - responds with `Content-Disposition: attachment; filename="words.json"`
-- currently exports the global vocabulary because the app has no users yet
+- exports the current SQLite vocabulary
 
 ### `GET /end_quiz`
 
@@ -25,4 +25,4 @@ The current HTTP surface is designed for the app itself, not as a public API.
 
 ## Important Note
 
-If a public API is needed later, design it as a new capability after authentication, authorization, and rate limiting exist.
+Treat route handlers as app internals, not as a stable external API contract.

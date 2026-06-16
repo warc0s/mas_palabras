@@ -1,8 +1,8 @@
-# Public Product Checklist
+# Local App Roadmap
 
-This checklist tracks the work needed to move Mas Palabras from a personal vocabulary app toward a public, reference-quality product.
+This checklist tracks work that makes Mas Palabras easier to install, maintain, and use as a personal vocabulary app.
 
-## P0 Before Running a Public Instance
+## P0 Repository and Install Quality
 
 - [x] Audit tracked files for obvious secrets and generated local data.
 - [x] Ignore local tool folders such as `.zcode/`.
@@ -10,16 +10,12 @@ This checklist tracks the work needed to move Mas Palabras from a personal vocab
 - [x] Add an interface language selector.
 - [x] Add English, Spanish, and Catalan UI dictionaries.
 - [x] Add CI for tests and production build.
-- [ ] Add authentication.
-- [ ] Add route protection for private app areas.
-- [ ] Associate words, languages, tags, and quiz sessions with a user.
-- [ ] Enforce authorization in domain services, not only in UI.
-- [ ] Convert `GET /export_words` into an authenticated per-user export.
+- [ ] Document SQLite backup and restore.
+- [ ] Add a first-run or sample-data flow.
 - [ ] Replace quiz-ending mutation through GET with a safer explicit mutation flow.
-- [ ] Add rate limiting for expensive actions.
 - [ ] Add security headers and a CSP strategy.
-- [ ] Decide whether to self-host Font Awesome, replace it, or protect it with CSP/SRI.
-- [ ] Add integration or E2E tests for auth, vocabulary CRUD, quiz, import, and export.
+- [ ] Decide whether to bundle Font Awesome locally or replace it.
+- [ ] Add integration or E2E tests for vocabulary CRUD, quiz, import, and export.
 
 ## P1 Product Quality
 
@@ -34,18 +30,9 @@ This checklist tracks the work needed to move Mas Palabras from a personal vocab
 - [ ] Add accessible confirmation dialogs instead of `window.confirm`.
 - [ ] Add automated accessibility checks.
 
-## P2 Public Ecosystem
+## P2 Local Experience
 
-- [ ] Add optional public decks with attribution and licenses.
-- [ ] Add private sharing links.
-- [ ] Add moderation and reporting for public content.
-- [ ] Add public API design only after permissions and rate limits are complete.
 - [ ] Add installable PWA support.
 - [ ] Add offline review for prepared sessions.
-
-## P3 Later Expansion
-
-- [ ] Add classroom or group spaces.
-- [ ] Add creator profiles.
-- [ ] Add public deck discovery.
-- [ ] Add billing only if product direction requires it.
+- [ ] Add a compact backup export from the settings page.
+- [ ] Add a restore flow with preview and conflict handling.

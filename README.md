@@ -4,11 +4,9 @@
 
 # Mas Palabras
 
-Mas Palabras is a local-first personal vocabulary app for people who collect words while studying, reading, working, or living in another language.
+Mas Palabras is a personal vocabulary app for people who collect words while studying, reading, working, or living in another language.
 
-It gives you a small private system to save vocabulary, organize it by language and tag, import or export it as JSON, and practice it with adaptive quizzes that focus on new and weak words.
-
-The app is intentionally simple: it is not a cloud SaaS, it does not require an account, and it stores data in a SQLite database that you control.
+It gives you a small system to save vocabulary, organize it by language and tag, import or export it as JSON, and practice it with adaptive quizzes that focus on new and weak words.
 
 ## Why This Exists
 
@@ -21,20 +19,7 @@ Language learners often keep vocabulary scattered across notebooks, notes apps, 
 - import existing lists from JSON
 - export your data whenever you want
 
-The current product is best suited for self-hosted personal use, local study, and experimentation with language-learning workflows.
-
-## Local-First Model
-
-Mas Palabras is local-first in the practical self-hosted sense:
-
-- your vocabulary lives in a SQLite file
-- there is no hosted account system
-- there is no required external database service
-- there is no telemetry or third-party analytics
-- import and export are plain JSON
-- the app can run on your machine or on a server you control
-
-This does not mean the browser app is offline-first yet. PWA and offline review are future roadmap items.
+The current product is best suited for local study and experimentation with language-learning workflows.
 
 ## Table of Contents
 
@@ -52,7 +37,6 @@ This does not mean the browser app is offline-first yet. PWA and offline review 
 - [Project Structure](#project-structure)
 - [Documentation](#documentation)
 - [Current Limits](#current-limits)
-- [Security Status](#security-status)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -274,13 +258,13 @@ pnpm build
 pnpm start:local
 ```
 
-For self-hosting, set an absolute database URL and run:
+For a standalone run with an explicit SQLite database, set an absolute database URL and run:
 
 ```bash
 DATABASE_URL="file:/absolute/path/prod.db" pnpm start
 ```
 
-Recommended self-host flow:
+Recommended standalone flow:
 
 ```bash
 pnpm install
@@ -309,40 +293,15 @@ Start with:
 - [Guides/backend.md](Guides/backend.md)
 - [Guides/frontend.md](Guides/frontend.md)
 - [Guides/security.md](Guides/security.md)
-- [Guides/TODO/public-product-checklist.md](Guides/TODO/public-product-checklist.md)
+- [Guides/TODO/local-app-roadmap.md](Guides/TODO/local-app-roadmap.md)
 - [Guides/TODO/product-vision.md](Guides/TODO/product-vision.md)
 
 ## Current Limits
 
-Mas Palabras is currently a personal app, not a finished public multi-user service.
-
-Known product limits:
-
-- no user accounts
-- no per-user data isolation
-- global vocabulary storage
-- global JSON export
 - one state-changing quiz endpoint still uses GET
-- no rate limiting
 - no custom CSP
 - no automated E2E tests
 - no offline/PWA mode yet
-
-These limits are documented so the repository can be public without pretending the app is production SaaS-ready.
-
-## Security Status
-
-This codebase has been cleaned for public repository publication, but the app should not be deployed as a public multi-user service yet.
-
-Known security gaps:
-
-- no authentication
-- no authorization
-- no per-user data isolation
-- no rate limiting
-- global JSON export
-- one state-changing quiz endpoint still uses GET
-- Font Awesome loads from a CDN without a custom CSP or SRI
 
 See [SECURITY.md](SECURITY.md) and [Guides/security.md](Guides/security.md).
 
