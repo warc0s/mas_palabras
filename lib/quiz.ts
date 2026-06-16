@@ -259,8 +259,8 @@ export async function submitQuizAnswer(input: {
   return {
     finished: false,
     message: outcome.isCorrect
-      ? "¡Correcto! Excelente trabajo."
-      : `Incorrecto. La respuesta correcta era: "${outcome.correctAnswer}"`,
+      ? "Correct. Excellent work."
+      : `Incorrect. The correct answer was: "${outcome.correctAnswer}"`,
   };
 }
 
@@ -324,7 +324,7 @@ export async function skipQuizAnswer(input: { wordId: number; sessionId: string 
 
   return {
     finished: false,
-    message: "Pregunta saltada.",
+    message: "Question skipped.",
   };
 }
 
@@ -393,7 +393,7 @@ async function finalizeQuizSummary(sessionId: number) {
 
   await clearQuizCookie();
   const accuracy = getAccuracy(session.totalQuestions, session.correctAnswers);
-  return `¡Quiz completado! Respondiste ${session.correctAnswers}/${session.totalQuestions} correctamente (${accuracy.toFixed(1)}%)`;
+  return `Quiz completed. You answered ${session.correctAnswers}/${session.totalQuestions} correctly (${accuracy.toFixed(1)}%).`;
 }
 
 function parseWordIds(raw: string): number[] {

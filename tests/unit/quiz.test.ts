@@ -69,7 +69,7 @@ describe("advanceSessionTx compare-and-swap", () => {
     });
   });
 
-  it("marca isCompleted cuando el avance llega al final del pool", async () => {
+  it("marks isCompleted when advancement reaches the end of the pool", async () => {
     const { tx, updateMany } = buildTx(1);
 
     await advanceSessionTx(tx, 42, 9, 10, false, true);
@@ -85,7 +85,7 @@ describe("advanceSessionTx compare-and-swap", () => {
     });
   });
 
-  it("lanza quiz_question_invalid cuando el CAS no avanza (count=0)", async () => {
+  it("throws quiz_question_invalid when CAS advancement fails with count 0", async () => {
     const { tx } = buildTx(0);
 
     await expect(

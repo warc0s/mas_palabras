@@ -31,7 +31,7 @@ describe("normalizeText", () => {
     expect(normalizeText("cafe\u200F")).toBe("cafe");
   });
 
-  it("descompone marcas combinantes (diacríticos)", () => {
+  it("decomposes combining marks and diacritics", () => {
     const composed = "e\u0301";
     expect(normalizeText(composed)).toBe("e");
     expect(normalizeText("Caf" + "e\u0301")).toBe("cafe");

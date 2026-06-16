@@ -3,6 +3,7 @@
 !.env.example
 .codex
 .commandcode
+.zcode/
 *.sqlite3
 *.log
 *.tsbuildinfo

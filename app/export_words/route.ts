@@ -7,7 +7,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(payload, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="palabras.json"',
+      "Content-Disposition": 'attachment; filename="words.json"',
     },
   });
 }

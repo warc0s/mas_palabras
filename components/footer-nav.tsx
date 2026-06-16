@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { isActivePath, navLinks } from "@/components/nav-data";
+import { isActivePath, type NavLink } from "@/components/nav-data";
 
-export function FooterNav() {
+export function FooterNav({ links }: { links: NavLink[] }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex flex-wrap gap-x-8 gap-y-2">
-      {navLinks.map((link) => (
+      {links.map((link) => (
         <Link
           aria-current={isActivePath(pathname, link.href) ? "page" : undefined}
           className="font-mono text-[0.78rem] uppercase tracking-wide text-neutral-600 hover:text-primary-700"

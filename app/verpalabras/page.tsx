@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/flash-banner";
 import { WordsTable } from "@/components/words-table";
 import { getSingleParam, resolveSearchParams } from "@/lib/flash";
+import { getDictionary } from "@/lib/i18n";
 import { getActiveTags, getActiveLanguages } from "@/lib/settings";
 import { getAccuracy, needsPractice } from "@/lib/word-metrics";
 import { listWords } from "@/lib/words";
@@ -27,7 +28,7 @@ export default async function ViewWordsPage({
     | "accuracy_asc"
     | "needs_practice";
 
-  const [languages, tags, data] = await Promise.all([
+  const [languages, tags, data, dictionary] = await Promise.all([
     getActiveLanguages(),
     getActiveTags(),
     listWords({
@@ -38,6 +39,7 @@ export default async function ViewWordsPage({
       page: Number.isInteger(page) ? page : 1,
       perPage: Number.isInteger(perPage) ? perPage : 25,
     }),
+    getDictionary(),
   ]);
 
   const words = data.words.map((word) => ({
@@ -76,28 +78,27 @@ export default async function ViewWordsPage({
       {/* Header */}
       <div className="mb-8 flex flex-col gap-6 border-b border-neutral-300 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <span className="eyebrow">El léxico</span>
+          <span className="eyebrow">{dictionary.words.eyebrow}</span>
           <h1 className="mt-3 font-display text-5xl font-semibold tracking-tight text-neutral-900 md:text-6xl">
-            Tu vocabulario
+            {dictionary.words.title}
           </h1>
           <p className="mt-3 font-mono text-sm uppercase tracking-wide text-neutral-500">
-            {data.totalWords} entrada{data.totalWords === 1 ? "" : "s"} registrada
-            {data.totalWords === 1 ? "" : "s"}
+            {dictionary.words.registered(data.totalWords)}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <Link className="outline-button px-4 py-2.5 text-sm" href="/import_words">
             <i className="fa-solid fa-file-import" />
-            <span>Importar</span>
+            <span>{dictionary.common.import}</span>
           </Link>
           <Link className="outline-button px-4 py-2.5 text-sm" href="/export_words">
             <i className="fa-solid fa-file-export" />
-            <span>Exportar</span>
+            <span>{dictionary.common.export}</span>
           </Link>
           <Link className="primary-button px-4 py-2.5 text-sm" href="/maspalabras">
             <i className="fa-solid fa-plus" />
-            <span>Añadir palabra</span>
+            <span>{dictionary.common.addWord}</span>
           </Link>
         </div>
       </div>
@@ -106,7 +107,7 @@ export default async function ViewWordsPage({
       <form className="page-card mb-6 p-6" method="GET">
         <div className="relative mb-5">
           <label className="sr-only" htmlFor="search-input">
-            Buscar
+            {dictionary.words.search}
           </label>
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-neutral-400">
             <i className="fa-solid fa-magnifying-glass" />
@@ -116,17 +117,17 @@ export default async function ViewWordsPage({
             defaultValue={rawSearch ?? ""}
             id="search-input"
             name="search"
-            placeholder="Buscar en tu vocabulario…"
+            placeholder={dictionary.words.searchPlaceholder}
           />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="input-label" htmlFor="language">
-              Idioma
+              {dictionary.common.language}
             </label>
             <select className="select-input" defaultValue={languageId} id="language" name="language">
-              <option value={0}>Todos los idiomas</option>
+              <option value={0}>{dictionary.words.allLanguages}</option>
               {languages.map((language) => (
                 <option key={language.id} value={language.id}>
                   {language.language}
@@ -136,10 +137,10 @@ export default async function ViewWordsPage({
           </div>
           <div>
             <label className="input-label" htmlFor="tag">
-              Etiqueta
+              {dictionary.common.tag}
             </label>
             <select className="select-input" defaultValue={tagId} id="tag" name="tag">
-              <option value={0}>Todas las etiquetas</option>
+              <option value={0}>{dictionary.words.allTags}</option>
               {tags.map((tag) => (
                 <option key={tag.id} value={tag.id}>
                   {tag.tag}
@@ -149,21 +150,21 @@ export default async function ViewWordsPage({
           </div>
           <div>
             <label className="input-label" htmlFor="sort_by">
-              Ordenar
+              {dictionary.words.sort}
             </label>
             <select className="select-input" defaultValue={sortBy} id="sort_by" name="sort_by">
-              <option value="english_word">Palabra (A-Z)</option>
-              <option value="translation">Traducción (A-Z)</option>
-              <option value="created_at_desc">Más recientes</option>
-              <option value="created_at_asc">Más antiguas</option>
-              <option value="accuracy_desc">Mayor precisión</option>
-              <option value="accuracy_asc">Menor precisión</option>
-              <option value="needs_practice">Necesitan práctica</option>
+              <option value="english_word">{dictionary.words.sortOptions.word}</option>
+              <option value="translation">{dictionary.words.sortOptions.translation}</option>
+              <option value="created_at_desc">{dictionary.words.sortOptions.newest}</option>
+              <option value="created_at_asc">{dictionary.words.sortOptions.oldest}</option>
+              <option value="accuracy_desc">{dictionary.words.sortOptions.highestAccuracy}</option>
+              <option value="accuracy_asc">{dictionary.words.sortOptions.lowestAccuracy}</option>
+              <option value="needs_practice">{dictionary.words.sortOptions.needsPractice}</option>
             </select>
           </div>
           <div>
             <label className="input-label" htmlFor="per_page">
-              Por página
+              {dictionary.words.perPage}
             </label>
             <select className="select-input" defaultValue={data.perPage} id="per_page" name="per_page">
               {[10, 25, 50, 100].map((value) => (
@@ -177,7 +178,7 @@ export default async function ViewWordsPage({
 
         <button className="primary-button mt-5 px-4 py-2.5 text-sm" type="submit">
           <i className="fa-solid fa-filter" />
-          <span>Aplicar filtros</span>
+          <span>{dictionary.common.applyFilters}</span>
         </button>
       </form>
 
@@ -185,22 +186,43 @@ export default async function ViewWordsPage({
       <div className="page-card overflow-hidden">
         {words.length > 0 ? (
           <>
-            <WordsTable words={words} />
+            <WordsTable
+              copy={{
+                clear: dictionary.common.clear,
+                confirmBulkDeleteEnd: dictionary.words.confirmBulkDeleteEnd,
+                confirmBulkDeleteStart: dictionary.words.confirmBulkDeleteStart,
+                confirmSingleDeleteEnd: dictionary.words.confirmSingleDeleteEnd,
+                confirmSingleDeleteStart: dictionary.words.confirmSingleDeleteStart,
+                delete: dictionary.common.delete,
+                deleteAction: dictionary.common.delete,
+                deleting: dictionary.common.deleting,
+                editAction: dictionary.common.edit,
+                new: dictionary.common.new,
+                noNote: dictionary.common.noNote,
+                review: dictionary.common.review,
+                selectAll: dictionary.words.selectAll,
+                selectAction: dictionary.words.selectAction,
+                selectedPlural: dictionary.words.selectedPlural,
+                selectedSingular: dictionary.words.selectedSingular,
+                table: dictionary.words.table,
+              }}
+              words={words}
+            />
 
             <div className="flex flex-col gap-4 border-t border-neutral-200 bg-neutral-50 px-6 py-4 md:flex-row md:items-center md:justify-between">
               <div className="font-mono text-xs uppercase tracking-wide text-neutral-500">
-                {start}–{end} de {data.totalWords} · página {data.page}/{data.totalPages}
+                {dictionary.words.pageStatus(start, end, data.totalWords, data.page, data.totalPages)}
               </div>
               <div className="flex gap-2">
                 <PaginationLink
                   disabled={data.page <= 1}
                   href={`/verpalabras?${buildPageQuery(queryBase, data.page - 1)}`}
-                  label="← Anterior"
+                  label={`← ${dictionary.common.previous}`}
                 />
                 <PaginationLink
                   disabled={data.page >= data.totalPages}
                   href={`/verpalabras?${buildPageQuery(queryBase, data.page + 1)}`}
-                  label="Siguiente →"
+                  label={`${dictionary.common.next} →`}
                 />
               </div>
             </div>
@@ -211,19 +233,19 @@ export default async function ViewWordsPage({
               <i className="fa-solid fa-book-open" />
             </div>
             <h2 className="font-display text-3xl font-semibold text-neutral-900">
-              El léxico está en blanco
+              {dictionary.words.emptyTitle}
             </h2>
             <p className="mx-auto mt-3 max-w-md text-neutral-600">
-              Añade tu primera palabra o importa un conjunto completo para empezar tu diccionario.
+              {dictionary.words.emptyText}
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link className="primary-button" href="/maspalabras">
                 <i className="fa-solid fa-plus" />
-                <span>Añadir primera palabra</span>
+                <span>{dictionary.words.addFirst}</span>
               </Link>
               <Link className="outline-button" href="/import_words">
                 <i className="fa-solid fa-file-import" />
-                <span>Importar vocabulario</span>
+                <span>{dictionary.words.importVocabulary}</span>
               </Link>
             </div>
           </div>

@@ -19,7 +19,7 @@ export async function createWordAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectWithFlash("/maspalabras", "error", "Revisa los campos del formulario.");
+    redirectWithFlash("/maspalabras", "error", "Review the form fields.");
   }
 
   try {
@@ -31,7 +31,7 @@ export async function createWordAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/verpalabras");
   revalidatePath("/maspalabras");
-  redirectWithFlash("/verpalabras", "success", "Palabra agregada exitosamente.");
+  redirectWithFlash("/verpalabras", "success", "Word added successfully.");
 }
 
 export async function updateWordAction(formData: FormData) {
@@ -45,7 +45,7 @@ export async function updateWordAction(formData: FormData) {
   });
 
   if (!Number.isInteger(wordId) || !parsed.success) {
-    redirectWithFlash("/verpalabras", "error", "No se pudo actualizar la palabra.");
+    redirectWithFlash("/verpalabras", "error", "The word could not be updated.");
   }
 
   try {
@@ -57,19 +57,19 @@ export async function updateWordAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/verpalabras");
   revalidatePath(`/edit/${wordId}`);
-  redirectWithFlash("/verpalabras", "success", "Palabra actualizada exitosamente.");
+  redirectWithFlash("/verpalabras", "success", "Word updated successfully.");
 }
 
 export async function deleteWordAction(wordId: number) {
   try {
     await deleteWord(wordId);
   } catch {
-    redirectWithFlash("/verpalabras", "error", "No se pudo eliminar la palabra.");
+    redirectWithFlash("/verpalabras", "error", "The word could not be deleted.");
   }
 
   revalidatePath("/");
   revalidatePath("/verpalabras");
-  redirectWithFlash("/verpalabras", "success", "Palabra eliminada exitosamente.");
+  redirectWithFlash("/verpalabras", "success", "Word deleted successfully.");
 }
 
 const bulkDeleteSchema = z.array(z.number().int().positive());
@@ -77,12 +77,12 @@ const bulkDeleteSchema = z.array(z.number().int().positive());
 export async function bulkDeleteWordsAction(wordIds: number[]) {
   const parsed = bulkDeleteSchema.safeParse(wordIds);
   if (!parsed.success) {
-    redirectWithFlash("/verpalabras", "error", "La selección de palabras no es válida.");
+    redirectWithFlash("/verpalabras", "error", "The word selection is not valid.");
   }
 
   const validIds = parsed.data;
   if (validIds.length === 0) {
-    redirectWithFlash("/verpalabras", "warning", "No se seleccionaron palabras.");
+    redirectWithFlash("/verpalabras", "warning", "No words were selected.");
   }
 
   const deleted = await bulkDeleteWords(validIds);
@@ -91,7 +91,7 @@ export async function bulkDeleteWordsAction(wordIds: number[]) {
   redirectWithFlash(
     "/verpalabras",
     "success",
-    `${deleted} palabra${deleted === 1 ? "" : "s"} eliminada${deleted === 1 ? "" : "s"}.`,
+    `${deleted} ${deleted === 1 ? "word" : "words"} deleted.`,
   );
 }
 
@@ -101,18 +101,18 @@ export async function importWordsAction(formData: FormData) {
   const createMissing = formData.get("createMissing");
 
   if (!(file instanceof File) || file.size === 0) {
-    redirectWithFlash("/import_words", "error", "Selecciona un archivo JSON.");
+    redirectWithFlash("/import_words", "error", "Select a JSON file.");
   }
 
   if (file.size > 10 * 1024 * 1024) {
-    redirectWithFlash("/import_words", "error", "El archivo es demasiado grande.");
+    redirectWithFlash("/import_words", "error", "The file is too large.");
   }
 
   let data: unknown;
   try {
     data = JSON.parse(await file.text());
   } catch {
-    redirectWithFlash("/import_words", "error", "El archivo no contiene JSON válido.");
+    redirectWithFlash("/import_words", "error", "The file does not contain valid JSON.");
   }
 
   let result: ImportResult;
@@ -123,7 +123,7 @@ export async function importWordsAction(formData: FormData) {
       createMissing === "skip" ? "skip" : "create",
     );
   } catch {
-    redirectWithFlash("/import_words", "error", "No se pudo procesar el archivo.");
+    redirectWithFlash("/import_words", "error", "The file could not be processed.");
   }
 
   revalidatePath("/");
@@ -132,25 +132,25 @@ export async function importWordsAction(formData: FormData) {
   redirectWithFlash(
     "/verpalabras",
     "success",
-    `Importación completada: ${result.success} ok, ${result.skipped} omitidas, ${result.errors} con error.`,
+    `Import completed: ${result.success} ok, ${result.skipped} skipped, ${result.errors} with errors.`,
   );
 }
 
 function mapWordError(error: unknown): string {
   if (!(error instanceof Error)) {
-    return "Ocurrió un error inesperado.";
+    return "An unexpected error occurred.";
   }
 
   switch (error.message) {
     case "duplicate_word":
-      return "La palabra ya existe en este idioma.";
+      return "The word already exists in this language.";
     case "language_not_found":
-      return "El idioma seleccionado no existe o está inactivo.";
+      return "The selected language does not exist or is inactive.";
     case "tag_not_found":
-      return "La etiqueta seleccionada no existe o está inactiva.";
+      return "The selected tag does not exist or is inactive.";
     case "word_not_found":
-      return "La palabra no existe.";
+      return "The word does not exist.";
     default:
-      return "Ocurrió un error inesperado.";
+      return "An unexpected error occurred.";
   }
 }
