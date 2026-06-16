@@ -17,14 +17,14 @@ export async function createLanguageAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectWithFlash("/settings", "error", "Introduce un idioma válido.");
+    redirectWithFlash("/settings", "error", "Enter a valid language.");
   }
 
   const message = await createOrReactivateLanguage(parsed.data.name);
   revalidatePath("/settings");
   revalidatePath("/maspalabras");
   revalidatePath("/edit/[id]");
-  redirectWithFlash("/settings", message.includes("ya existe") ? "warning" : "success", message);
+  redirectWithFlash("/settings", message.includes("already exists") ? "warning" : "success", message);
 }
 
 export async function createTagAction(formData: FormData) {
@@ -33,14 +33,14 @@ export async function createTagAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectWithFlash("/settings", "error", "Introduce una etiqueta válida.");
+    redirectWithFlash("/settings", "error", "Enter a valid tag.");
   }
 
   const message = await createOrReactivateTag(parsed.data.name);
   revalidatePath("/settings");
   revalidatePath("/maspalabras");
   revalidatePath("/edit/[id]");
-  redirectWithFlash("/settings", message.includes("ya existe") ? "warning" : "success", message);
+  redirectWithFlash("/settings", message.includes("already exists") ? "warning" : "success", message);
 }
 
 export async function deleteLanguageAction(languageId: number) {
@@ -48,11 +48,11 @@ export async function deleteLanguageAction(languageId: number) {
   try {
     message = await deleteLanguage(languageId);
   } catch {
-    redirectWithFlash("/settings", "error", "No se pudo eliminar el idioma.");
+    redirectWithFlash("/settings", "error", "The language could not be deleted.");
   }
 
   revalidatePath("/settings");
-  redirectWithFlash("/settings", message.includes("desactivado") ? "info" : "success", message);
+  redirectWithFlash("/settings", message.includes("deactivated") ? "info" : "success", message);
 }
 
 export async function deleteTagAction(tagId: number) {
@@ -60,13 +60,13 @@ export async function deleteTagAction(tagId: number) {
   try {
     message = await deleteTag(tagId);
   } catch {
-    redirectWithFlash("/settings", "error", "No se pudo eliminar la etiqueta.");
+    redirectWithFlash("/settings", "error", "The tag could not be deleted.");
   }
 
   revalidatePath("/settings");
   redirectWithFlash(
     "/settings",
-    message.includes("desactivada") ? "info" : "success",
+    message.includes("deactivated") ? "info" : "success",
     message,
   );
 }

@@ -1,27 +1,28 @@
 # API
 
-La superficie HTTP actual está pensada para la propia app.
+The current HTTP surface is designed for the app itself, not as a public API.
 
-## Qué existe ahora
+## Current Surface
 
-- páginas de App Router para lectura/render
-- server actions para formularios y mutaciones internas
-- route handlers internos solo para necesidades concretas
+- App Router pages for reads and rendering
+- server actions for forms and internal mutations
+- internal route handlers only for concrete I/O needs
 
-## Endpoints HTTP reales
+## Real HTTP Endpoints
 
 ### `GET /export_words`
 
-- devuelve todas las palabras en JSON
-- responde con `Content-Disposition: attachment; filename="palabras.json"`
+- returns all words as downloadable JSON
+- responds with `Content-Disposition: attachment; filename="words.json"`
+- currently exports the global vocabulary because the app has no users yet
 
 ### `GET /end_quiz`
 
-- termina la sesión activa si existe
-- rechaza con 403 si `sec-fetch-site` indica `cross-site` o `same-site` (mitigación CSRF sobre GET)
-- limpia la cookie del quiz
-- redirige a `/quiz` con mensaje informativo
+- ends the active quiz session if one exists
+- rejects requests with 403 when `sec-fetch-site` is `cross-site` or `same-site`
+- clears the quiz cookie
+- redirects to `/quiz` with an informational message
 
-## Nota importante
+## Important Note
 
-Si en el futuro se necesita una API pública, habrá que diseñarla como una capacidad nueva.
+If a public API is needed later, design it as a new capability after authentication, authorization, and rate limiting exist.

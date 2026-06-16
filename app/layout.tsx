@@ -3,6 +3,7 @@ import { Fraunces, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { SiteShell } from "@/components/site-shell";
+import { dictionaries, getLocale } from "@/lib/i18n";
 
 import "./globals.css";
 
@@ -29,15 +30,18 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Más Palabras — Léxico personal",
-  description: "Un diccionario personal vivo: registra vocabulario y afínalo con quizzes adaptativos.",
+  title: dictionaries.en.meta.title,
+  description: dictionaries.en.meta.description,
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const locale = await getLocale();
+  const dictionary = dictionaries[locale];
+
   return (
     <html
       className={`${display.variable} ${sans.variable} ${mono.variable}`}
-      lang="es"
+      lang={locale}
     >
       <head>
         <link crossOrigin="" href="https://cdnjs.cloudflare.com" rel="preconnect" />
@@ -49,7 +53,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body className="font-sans">
-        <SiteShell>{children}</SiteShell>
+        <SiteShell dictionary={dictionary} locale={locale}>
+          {children}
+        </SiteShell>
       </body>
     </html>
   );

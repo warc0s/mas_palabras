@@ -5,13 +5,17 @@ import { PageHeader } from "@/components/page-header";
 import { SubmitButton } from "@/components/submit-button";
 import { importWordsAction } from "@/lib/actions/word-actions";
 import { resolveSearchParams } from "@/lib/flash";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function ImportWordsPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await resolveSearchParams(searchParams);
+  const [params, dictionary] = await Promise.all([
+    resolveSearchParams(searchParams),
+    getDictionary(),
+  ]);
 
   return (
     <>
@@ -19,34 +23,34 @@ export default async function ImportWordsPage({
 
       <div className="mx-auto max-w-3xl">
         <PageHeader
-          eyebrow="Importar · JSON"
-          subtitle="Carga un lote de palabras desde un archivo JSON."
-          title="Importar palabras"
+          eyebrow={dictionary.importPage.eyebrow}
+          subtitle={dictionary.importPage.subtitle}
+          title={dictionary.importPage.title}
         />
         <div className="page-card p-8">
           <div className="mb-8 overflow-hidden rounded-2xl bg-neutral-900 text-neutral-25 shadow-paper">
             <div className="flex items-center justify-between border-b border-neutral-700 px-5 py-3">
-              <span className="eyebrow text-neutral-400">Formato esperado</span>
-              <span className="font-mono text-xs text-neutral-500">palabras.json</span>
+              <span className="eyebrow text-neutral-400">{dictionary.importPage.expectedFormat}</span>
+              <span className="font-mono text-xs text-neutral-500">{dictionary.importPage.filename}</span>
             </div>
             <pre className="overflow-x-auto px-5 py-4 font-mono text-sm leading-relaxed text-neutral-100">
               <code>{`[
   {
     "english_word": "house",
-    "translation": "casa",
-    "explanation": "donde la gente vive",
-    "language": "Inglés",
+    "translation": "home",
+    "explanation": "where people live",
+    "language": "English",
     "tag": "A1"
   }
 ]`}</code>
             </pre>
             <div className="space-y-1 border-t border-neutral-700 px-5 py-3 text-sm text-neutral-400">
               <p>
-                <span className="text-primary-300">Requeridos:</span> english_word, translation,
+                <span className="text-primary-300">{dictionary.importPage.required}</span> english_word, translation,
                 language, tag
               </p>
               <p>
-                <span className="text-secondary-300">Opcionales:</span> explanation, times_practiced,
+                <span className="text-secondary-300">{dictionary.importPage.optional}</span> explanation, times_practiced,
                 times_correct, last_practiced
               </p>
             </div>
@@ -55,40 +59,40 @@ export default async function ImportWordsPage({
           <form action={importWordsAction} className="space-y-6">
             <div>
               <label className="input-label" htmlFor="file">
-                Archivo JSON
+                {dictionary.importPage.jsonFile}
               </label>
               <input accept=".json" className="text-input" id="file" name="file" required type="file" />
               <p className="mt-2 font-mono text-xs uppercase tracking-wide text-neutral-500">
-                Solo .json · máximo 10&nbsp;MB
+                {dictionary.importPage.fileHint}
               </p>
             </div>
 
             <div>
               <label className="input-label" htmlFor="overwriteDuplicates">
-                Manejar Duplicados
+                {dictionary.importPage.duplicateHandling}
               </label>
               <select className="select-input" defaultValue="skip" id="overwriteDuplicates" name="overwriteDuplicates">
-                <option value="skip">Omitir palabras duplicadas</option>
-                <option value="update">Actualizar palabras existentes</option>
+                <option value="skip">{dictionary.importPage.skipDuplicates}</option>
+                <option value="update">{dictionary.importPage.updateDuplicates}</option>
               </select>
             </div>
 
             <div>
               <label className="input-label" htmlFor="createMissing">
-                Idiomas/Etiquetas Faltantes
+                {dictionary.importPage.missingHandling}
               </label>
               <select className="select-input" defaultValue="create" id="createMissing" name="createMissing">
-                <option value="create">Crear automáticamente</option>
-                <option value="skip">Omitir palabras con datos faltantes</option>
+                <option value="create">{dictionary.importPage.createMissing}</option>
+                <option value="skip">{dictionary.importPage.skipMissing}</option>
               </select>
             </div>
 
             <div className="flex gap-4">
-              <SubmitButton className="primary-button flex-1" pendingLabel="Importando…">
-                Importar Palabras
+              <SubmitButton className="primary-button flex-1" pendingLabel={dictionary.importPage.importing}>
+                {dictionary.importPage.importWords}
               </SubmitButton>
               <Link className="secondary-button flex-1" href="/verpalabras">
-                Cancelar
+                {dictionary.common.cancel}
               </Link>
             </div>
           </form>

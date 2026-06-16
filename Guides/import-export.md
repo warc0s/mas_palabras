@@ -2,9 +2,9 @@
 
 ## Export
 
-Ruta: `GET /export_words`
+Route: `GET /export_words`
 
-Devuelve un array JSON descargable con esta forma:
+Returns a downloadable JSON array:
 
 ```json
 [
@@ -12,8 +12,8 @@ Devuelve un array JSON descargable con esta forma:
     "id": 1,
     "english_word": "house",
     "translation": "casa",
-    "explanation": "donde la gente vive",
-    "language": "Inglés",
+    "explanation": "where people live",
+    "language": "English",
     "tag": "A1",
     "times_practiced": 0,
     "times_correct": 0,
@@ -24,19 +24,21 @@ Devuelve un array JSON descargable con esta forma:
 ]
 ```
 
+The download filename is `words.json`.
+
 ## Import
 
-Ruta: `/import_words`
+Route: `/import_words`
 
-El formulario acepta un JSON array con objetos como:
+The form accepts a JSON array:
 
 ```json
 [
   {
     "english_word": "house",
     "translation": "casa",
-    "explanation": "donde la gente vive",
-    "language": "Inglés",
+    "explanation": "where people live",
+    "language": "English",
     "tag": "A1",
     "times_practiced": 2,
     "times_correct": 1,
@@ -45,57 +47,54 @@ El formulario acepta un JSON array con objetos como:
 ]
 ```
 
-## Opciones
+## Options
 
-### Duplicados
+### Duplicates
 
-- `skip` — omite la palabra si ya existe por idioma + palabra normalizada
-- `update` — actualiza la existente
+- `skip` - skip the word when it already exists by language plus normalized word
+- `update` - update the existing word
 
-### Relaciones faltantes
+### Missing Relations
 
-- `create` — crea idiomas o etiquetas inexistentes
-- `skip` — omite la palabra
+- `create` - create missing languages or tags
+- `skip` - skip the word
 
-## Parseo de fechas
+## Date Parsing
 
-Se aceptan:
+Accepted:
 
-- `dd/mm/yyyy` (también con guiones `dd-mm-yyyy`)
+- `dd/mm/yyyy`, also with dashes
 - `yyyy/mm/dd`
 - ISO 8601
-- timestamp Unix numérico en segundos (solo como `number`, no como string)
-- `null`, `""`, `Nunca`, `nunca`, `never`
+- numeric Unix timestamp in seconds, only as `number`
+- `null`, `""`, `Never`, `never`
 
-Restricciones:
+Restrictions:
 
-- En los formatos nativos (`new Date(string)`) el año debe estar entre `2000` y `2100` (ambos incluidos). Fechas fuera de ese rango se rechazan con `invalid_date_format`.
-- Los strings puramente numéricos (como `"5"` o `"2024"`) se rechazan con `invalid_date_format`. Son ambiguos: V8 los interpreta de formas sorprendentes (p. ej. `"5"` pasa a año 2001). Si quieres usar un timestamp Unix, envía un `number`, no un string.
-- Los formatos `dd/mm/yyyy` y `yyyy/mm/dd` también validan el año dentro del rango `2000`-`2100`.
+- Native date parsing must produce a year from `2000` through `2100`.
+- Purely numeric strings such as `"5"` or `"2024"` are rejected as `invalid_date_format`.
+- If you want a Unix timestamp, send a JSON number, not a string.
 
-## Parseo de estadísticas
+## Stat Parsing
 
-- `times_practiced` y `times_correct` son opcionales e independientes en el JSON.
-- Si el JSON trae solo `times_practiced`, en modo `update` solo se actualiza ese campo; `times_correct` se preserva. Lo simétrico aplica si solo viene `times_correct`.
-- Invariante `times_correct <= times_practiced` validada en los tres caminos:
-  - create: contra defaults (0/0). `{ times_correct: 1 }` solo se rechaza porque implica 1 > 0.
-  - update con ambos campos: contra los valores nuevos.
-  - update parcial: contra los valores efectivos (campo nuevo + valor existente del otro).
-- Cualquier violación se reporta como `invalid_stats`.
-- Solo se aceptan `number` y `string` con formato `/^-?\d+$/`. Cualquier otro tipo (booleanos, arrays, objetos, hex, exponenciales) se rechaza con `invalid_integer`.
+- `times_practiced` and `times_correct` are optional and independent.
+- In `update` mode, partial stat updates preserve missing fields.
+- `times_correct <= times_practiced` is validated on create, full update, and partial update.
+- Violations are reported as `invalid_stats`.
+- Integers accept JSON numbers and strings matching `/^-?\d+$/`.
+- Booleans, arrays, objects, hex strings, and exponent notation are rejected as `invalid_integer`.
 
-## Modelo de transacciones
+## Transaction Model
 
-Cada línea del JSON se procesa en su propia transacción Prisma (`$transaction` por item).
+Every JSON item is processed in its own Prisma transaction.
 
-- Si un item falla (error inesperado, `P2002`, FK roto, etc.), los demás items ya importados se conservan.
-- Pierde atomicidad entre items a cambio de resiliencia: mejor importar 48 de 50 líneas que perder todo por un fallo en la línea 49.
-- `P2002` (unique constraint) en `create` o `update` se clasifica como `duplicate` (skipped): normalmente significa que la palabra se creó entre el `findFirst` y el `create` (race condition con otro proceso o con un item anterior).
-- Cualquier otro error de base de datos se registra como `unknown_error` (error) y se continúa con el siguiente item.
-- Los conjuntos de `createdLanguages` / `createdTags` solo se alimentan tras confirmar el commit de la mini-tx del item, para no reportar relaciones que se hayan rollback-eado.
-- `pendingNewRecords` sigue como red de seguridad intra-import, aunque con una tx por item el `findFirst` ya ve los commits previos.
+- If one item fails, previously imported items stay committed.
+- This trades cross-item atomicity for resilience.
+- Prisma `P2002` is classified as duplicate skipped.
+- Other database errors are recorded as `unknown_error` and processing continues.
+- `createdLanguages` and `createdTags` are updated only after each item transaction commits.
 
-## Códigos de incidencia por línea
+## Per-Item Incident Codes
 
 - `missing_fields`
 - `empty_fields`

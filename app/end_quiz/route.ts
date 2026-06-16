@@ -9,6 +9,6 @@ export async function GET(request: Request) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const message = (await endActiveQuiz()) ?? "No había sesión de quiz activa.";
+  const message = (await endActiveQuiz()) ?? "There was no active quiz session.";
   return NextResponse.redirect(new URL(buildFlashUrl("/quiz", "info", message), request.url));
 }
