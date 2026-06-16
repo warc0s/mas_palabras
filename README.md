@@ -305,7 +305,6 @@ docs/assets/        # README images and public assets
 
 Start with:
 
-- [AGENTS.md](AGENTS.md)
 - [Guides/architecture.md](Guides/architecture.md)
 - [Guides/backend.md](Guides/backend.md)
 - [Guides/frontend.md](Guides/frontend.md)
