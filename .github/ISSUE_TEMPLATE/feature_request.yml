@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a focused improvement for Mas Palabras.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: Please keep requests concrete and tied to a real learning workflow.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What learning or maintenance problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the smallest useful version of the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
